@@ -10,7 +10,7 @@ assignees: ''
 ## Description
 
 ### User Story / Problem
-_As a_ **(user persona)** _I want_ **(functionality)** _so that_ **(value)**
+As a (user persona) I want (functionality) so that (value).
 
 ### Acceptance Criteria
 - [ ] Defined and testable acceptance criterion 1
