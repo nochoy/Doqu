@@ -2,7 +2,7 @@
 name: New feature
 about: Add a new feature
 title: "[FEATURE]"
-labels: ''
+labels: enhancement
 assignees: ''
 
 ---
