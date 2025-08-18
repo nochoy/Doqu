@@ -24,6 +24,11 @@ Closes #<issue-number> (if applicable)
 - Weird kinks to know about your code, etc.
 - Mention new issue from incomplete tasks 
 
+<details>
+  <summary>Screenshots & Demos</summary>
+
+</details>
+
 ## Checklist:
 
 - [ ] PR title format: `Feature: ...`, `Bugfix: ...`, `Install: ...`
