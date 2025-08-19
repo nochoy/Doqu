@@ -30,5 +30,5 @@ git checkout -b feature/ai-quiz-generation
 
 ### Prerequisites
 - Install Node.js v22.18.0
-- Install Python 3.13.5
+- Install Python 3.12.10
 - Install Docker Desktop
