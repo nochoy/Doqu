@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/workspaces/doqu:cached # Mount the entire project root
+      - frontend_node_modules:/workspaces/doqu/frontend/node_modules # Named volume for node_modules
+      - frontend_next_cache:/workspaces/doqu/frontend/.next # Named volume for .next cache
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /workspaces/doqu/frontend
+          ignore:
+            - node_modules/
+            - .next/
+        - action: rebuild
+          path: ./frontend/package.json
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /app
+          ignore:
+            - venv/
+            - __pycache__/
+        - action: rebuild
+          path: ./backend/requirements.txt
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://user:password@db:5432/doqudb
+
+  db:
+    image: postgres:16
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=doqudb
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
+  frontend_node_modules:
+  frontend_next_cache:

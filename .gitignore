@@ -1,6 +1,66 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+.venv
 
-#Ignore vscode AI rules
-.github\copilot-instructions.md
+# Environment variables
+.env
+.env.local
+.env.production
+.env.staging
+.env.development
 
-#Extensions
-.qodo
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+*.egg-info/
+
+# Testing
+.coverage
+.nyc_output
+htmlcov/
+.pytest_cache/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Docker
+.dockerignore
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Extenstions
+.github/copilot-instructions.md
+.zencoder
