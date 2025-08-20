@@ -72,7 +72,7 @@ Doqu/
 │   │   ├── 📁 components/       # Reusable React components
 │   │   │   ├── ui/               # Shadcn/ui primitive components
 │   │   │   └── shared/           # Shared application components
-│   │   └── 📁 contexts/         # React context providersstate management
+│   │   └── 📁 contexts/         # React context providers & state management
 │   │   ├── 📁 lib/              # Utility libraries
 │   │   │   ├── socket.ts         # WebSocket client configuration
 │   │   │   ├── utils.ts          # Helper functions

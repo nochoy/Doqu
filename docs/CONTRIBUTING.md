@@ -73,7 +73,7 @@ This project is configured to use [VS Code Dev Containers](https://code.visualst
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/your-org/doqu.git
+    git clone https://github.com/nochoy/doqu.git
     cd doqu
     ```
 
@@ -109,7 +109,6 @@ If you prefer not to use Dev Containers:
 2.  **Install Dependencies:**
     ```bash
     # Backend
-    cd backend
     pip install -r requirements-dev.txt
 
     # Frontend
