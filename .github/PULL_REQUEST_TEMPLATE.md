@@ -35,5 +35,6 @@ Closes #<issue-number> (if applicable)
 - [ ] Ran prettier to ensure consistent styling
 - [ ] Ran linter to ensure no lint errors
 - [ ] Added/updated tests for >= 80% code coverage
+- [ ] Ran code in dev container
 - [ ] Resolved all CodeRabbit & Qodo Merge comments
 - [ ] CI passes
