@@ -50,6 +50,15 @@ This is the FastAPI backend for Doqu, a real-time quiz platform built with Pytho
 2. **Access the API:**
    Open [http://localhost:8000](http://localhost:8000) in your browser to interact with the API.
 
+3. **Shut down the containers:**
+   ```bash
+   # Stop the containers
+   docker-compose stop
+
+   # Delete the containers
+   docker-compose down
+   ```
+
 ### Interactive Documentation
 
 - **Swagger UI**: http://localhost:8000/docs
@@ -110,18 +119,6 @@ black --check app/
 ### Format with Import Sorting
 ```bash
 black app/ && isort app/
-```
-
-## 🔄 Pre-commit Hooks
-
-### Install Pre-commit
-```bash
-pre-commit install
-```
-
-### Run Pre-commit Manually
-```bash
-pre-commit run --all-files
 ```
 
 ## 📊 Code Quality Scripts
