@@ -15,7 +15,7 @@ This is the Next.js frontend for the Doqu real-time quiz platform.
 
    ```bash
    git clone https://github.com/nochoy/Doqu.git
-   
+
    cd Doqu/frontend
    ```
 
@@ -62,6 +62,7 @@ This is the Next.js frontend for the Doqu real-time quiz platform.
 | `npm run lint:fix`      | Run ESLint autofixer         |
 | `npm run format`        | Format code with Prettier    |
 | `npm run format:check`  | Check formatting w/o fixing  |
+| `npm run typecheck`     | Run TypeScript type checking |
 | `npm run test`          | Run tests                    |
 | `npm run test:watch`    | Run tests in watch mode      |
 | `npm run test:coverage` | Run tests with coverage      |
