@@ -1,7 +1,7 @@
+import asyncpg
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import OperationalError
-import asyncpg
 
 from app.api import auth
 from app.core.config import settings
