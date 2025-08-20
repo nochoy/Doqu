@@ -27,8 +27,11 @@ async def startup_event():
     try:
         await init_db()
     except (OperationalError, asyncpg.exceptions.ConnectionDoesNotExistError, OSError) as e:
-        print("\n🛑 ERROR: COULD NOT CONNECT TO THE DATABASE. Is your Postgres container running?\n")
+        print(
+            "\n🛑 ERROR: COULD NOT CONNECT TO THE DATABASE. Is your Postgres container running?\n"
+        )
         print(f"Error details: {e}\n")
+
 
 @app.get("/")
 async def root():
