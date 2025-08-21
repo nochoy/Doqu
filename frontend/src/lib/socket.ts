@@ -9,8 +9,8 @@ class SocketService {
     if (!this.socket) {
       this.socket = io(SOCKET_URL, { transports: ['websocket'] });
     }
-      return this.socket;
-    }
+    return this.socket;
+  }
 
   disconnect() {
     this.socket?.disconnect();
