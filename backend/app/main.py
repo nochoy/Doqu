@@ -6,6 +6,7 @@ from sqlalchemy.exc import OperationalError
 from app.api import auth
 from app.core.config import settings
 from app.db import check_db_connection, init_db
+from app.api import quiz
 
 app = FastAPI(title="Doqu API", description="Real-time quiz platform API", version="1.0.0")
 
@@ -20,6 +21,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth.router, prefix="/api/v1")
+app.include_router(quiz.router, prefix="/quiz", tags=["quiz"])
 
 
 @app.on_event("startup")
