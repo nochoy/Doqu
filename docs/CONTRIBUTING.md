@@ -49,11 +49,13 @@ git push origin feature/your-feature-name
 
 ## 📋 Code Review Etiquette
 All code changes must go through a Pull Request (PR) review before being merged into the development branch. Code reviews help us keep the project consistent, maintainable, and bug-free.
-1. Check PR description to make sure it includes all changes and relevant details
-2. Check AI review bot comments to make sure all are resolved
-3. Check files changed for bugs, correctness, readability, questionable changes and leave comments if needed
-4. Pull branch locally and run on dev container
-5. Submit review on GitHub with:
+
+1. Complete review within 24 hours of PR being created
+2. Check PR description to make sure it includes all changes and relevant details
+3. Check AI review bot comments to make sure all are resolved
+4. Check files changed for bugs, correctness, readability, questionable changes and leave comments if needed
+5. Pull branch locally and run on dev container
+6. Submit review on GitHub with:
     - **Request changes** - critical additions/modifications are needed for correctness, readability, or consistency
     - **Comment** - insignificant additions/modifications
     - **Approve** - no additions/modifications needed
