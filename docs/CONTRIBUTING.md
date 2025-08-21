@@ -140,14 +140,16 @@ If you prefer not to use Dev Containers:
 
 4.  **Database Setup:**
     ```bash
+    cd backend
+
     # Start PostgreSQL
     docker compose up -d db
 
-    # Run migrations
-    cd backend
+    # Activate venv
     source venv/bin/activate    # Linux/MacOS
     venv/Scripts/activate       # Windows
 
+    # Run migrations
     alembic upgrade head
     ```
 
@@ -167,6 +169,12 @@ If you prefer not to use Dev Containers:
 ### Database Management
 
 ```bash
+cd backend
+
+# Activate venv
+source venv/bin/activate    # Linux/MacOS
+venv/Scripts/activate       # Windows
+
 # Create initial migration
 alembic revision --autogenerate -m "Initial tables"
 
