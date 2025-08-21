@@ -1,4 +1,4 @@
-import asyncpg
+import asyncpg  # type: ignore
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import OperationalError
@@ -23,7 +23,7 @@ app.include_router(auth.router, prefix="/api/v1")
 
 
 @app.on_event("startup")
-async def startup_event():
+async def startup_event() -> None:
     try:
         await init_db()
     except (OperationalError, asyncpg.exceptions.ConnectionDoesNotExistError, OSError) as e:
@@ -34,12 +34,12 @@ async def startup_event():
 
 
 @app.get("/")
-async def root():
+async def root() -> dict[str, str]:
     return {"message": "Welcome to Doqu API", "version": "1.0.0"}
 
 
 @app.get("/health")
-async def health_check():
+async def health_check() -> dict[str, str]:
     if await check_db_connection():
         return {"status": "ok", "database_connection": "successful"}
     else:
