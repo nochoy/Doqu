@@ -144,6 +144,10 @@ If you prefer not to use Dev Containers:
     docker compose up -d db
 
     # Run migrations
+    cd backend
+    source venv/bin/activate    # Linux/MacOS
+    venv/Scripts/activate       # Windows
+
     alembic upgrade head
     ```
 
