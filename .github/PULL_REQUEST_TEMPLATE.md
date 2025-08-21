@@ -33,7 +33,7 @@ Closes #<issue-number> (if applicable)
 - [ ] Linked issue
 - [ ] Updated docs/wiki/README (if applicable)
 - [ ] Added jsdocs/docstrings to new functions
-- [ ] Ran prettier to ensure consistent styling
+- [ ] Ran formatter to ensure consistent styling
 - [ ] Ran linter to ensure no lint errors
 - [ ] Added/updated tests for >= 80% code coverage
 - [ ] Ran code in dev container
