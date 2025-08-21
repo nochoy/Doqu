@@ -35,10 +35,10 @@ git commit -m "feat: add new quiz generation endpoint"
 # Push and create PR
 git push origin feature/your-feature-name
 
-# Create PR to develop branch
+# Create PR to dev branch
 ```
 
-## ✏️ Pull Request Etiquette & Merge Rules
+## ✏️ Pull Request (PR) Etiquette & Merge Rules
 1. Open a PR targeting the **dev** branch (ONLY **dev** can merge into **main**)
 2. Receive at least one reviewer approval
 3. Write and pass new tests
@@ -46,6 +46,17 @@ git push origin feature/your-feature-name
 5. PR must pass CI (lint, tests, build)
 6. Once approved and CI is green, merge using "**Create a merge commit**"
 7. Never merge directly to main—use a release PR when ready for production.
+
+## 📋 Code Review Etiquette
+All code changes must go through a Pull Request (PR) review before being merged into the development branch. Code reviews help us keep the project consistent, maintainable, and bug-free.
+1. Check PR description to make sure it includes all changes and relevant details
+2. Check AI review bot comments to make sure all are resolved
+3. Check files changed for bugs, correctness, readability, questionable changes and leave comments if needed
+4. Pull branch locally and run on dev container
+5. Submit review on GitHub with:
+    - **Request changes** - critical additions/modifications are needed for correctness, readability, or consistency
+    - **Comment** - insignificant additions/modifications
+    - **Approve** - no additions/modifications needed
 
 ## 🔑 Key Environment Variables
 
@@ -199,9 +210,9 @@ npm run type-check
 
 ### API Documentation
 
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-- **OpenAPI Schema**: http://localhost:8000/openapi.json
+- **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+- **OpenAPI Schema**: [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json)
 
 ## 🆘 Getting Help
 
