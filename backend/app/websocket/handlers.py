@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-import socketio
+import socketio  # type: ignore
 
 # Create a Socket.IO server
 sio = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi")
@@ -9,13 +9,13 @@ sio = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi")
 
 
 @sio.event
-async def connect(sid: str, environ: Dict[str, Any]):
+async def connect(sid: str, environ: Dict[str, Any]) -> None:
     """Handle client connection."""
     print(f"Client {sid} connected")
     await sio.emit("connected", {"message": "Welcome to Doqu!"}, room=sid)
 
 
 @sio.event
-async def disconnect(sid: str):
+async def disconnect(sid: str) -> None:
     """Handle client disconnection."""
     print(f"Client {sid} disconnected")

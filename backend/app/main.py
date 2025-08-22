@@ -1,5 +1,7 @@
+import asyncpg  # type: ignore
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.exc import OperationalError
 
 from app.api import auth
 from app.core.config import settings
@@ -21,17 +23,23 @@ app.include_router(auth.router, prefix="/api/v1")
 
 
 @app.on_event("startup")
-async def startup_event():
-    await init_db()
+async def startup_event() -> None:
+    try:
+        await init_db()
+    except (OperationalError, asyncpg.exceptions.ConnectionDoesNotExistError, OSError) as e:
+        print(
+            "\n🛑 ERROR: COULD NOT CONNECT TO THE DATABASE. Is your Postgres container running?\n"
+        )
+        print(f"Error details: {e}\n")
 
 
 @app.get("/")
-async def root():
+async def root() -> dict[str, str]:
     return {"message": "Welcome to Doqu API", "version": "1.0.0"}
 
 
 @app.get("/health")
-async def health_check():
+async def health_check() -> dict[str, str]:
     if await check_db_connection():
         return {"status": "ok", "database_connection": "successful"}
     else:

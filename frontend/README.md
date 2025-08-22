@@ -6,7 +6,7 @@ This is the Next.js frontend for the Doqu real-time quiz platform.
 
 ### Prerequisites
 
-- Node.js v22.18.0 or higher
+- Node.js v18.x or higher
 - npm v10.8.2 or higher
 
 ### Installation
@@ -15,6 +15,7 @@ This is the Next.js frontend for the Doqu real-time quiz platform.
 
    ```bash
    git clone https://github.com/nochoy/Doqu.git
+
    cd Doqu/frontend
    ```
 
@@ -52,17 +53,19 @@ This is the Next.js frontend for the Doqu real-time quiz platform.
 
 ### Available Scripts
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run start` | Start production server |
-| `npm run test` | Run tests |
-| `npm run test:watch` | Run tests in watch mode |
-| `npm run test:coverage` | Run tests with coverage |
-| `npm run lint` | Run ESLint |
-| `npm run format` | Format code with Prettier |
-| `npm run type-check` | Run TypeScript type checking |
+| Script                  | Description                  |
+| ----------------------- | ---------------------------- |
+| `npm run dev`           | Start development server     |
+| `npm run build`         | Build for production         |
+| `npm run start`         | Start production server      |
+| `npm run lint`          | Run ESLint                   |
+| `npm run lint:fix`      | Run ESLint autofixer         |
+| `npm run format`        | Format code with Prettier    |
+| `npm run format:check`  | Check formatting w/o fixing  |
+| `npm run typecheck`     | Run TypeScript type checking |
+| `npm run test`          | Run tests                    |
+| `npm run test:watch`    | Run tests in watch mode      |
+| `npm run test:coverage` | Run tests with coverage      |
 
 ## 🔧 Configuration
 
@@ -97,12 +100,6 @@ npm test -- --testPathPattern=AuthContext
 npm test -- --debug
 ```
 
-### Run E2E Tests
-
-```bash
-npm run test:e2e
-```
-
 ## 🔍 Linting & Code Quality
 
 ### Run ESLint
@@ -123,12 +120,6 @@ npm run lint:fix
 npm run type-check
 ```
 
-### Run All Quality Checks
-
-```bash
-npm run quality
-```
-
 ## 🎨 Formatting
 
 ### Format All Code
@@ -147,20 +138,6 @@ npm run format:check
 
 ```bash
 npx prettier --write src/components/Button.tsx
-```
-
-## 🔄 Pre-commit Hooks
-
-### Install Husky (if not already installed)
-
-```bash
-npm run prepare
-```
-
-### Run Pre-commit Manually
-
-```bash
-npx lint-staged
 ```
 
 ## 📊 Build & Production

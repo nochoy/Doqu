@@ -6,7 +6,7 @@ from sqlmodel import SQLModel
 from .engine import async_engine
 
 
-async def init_db():
+async def init_db() -> None:
     """Initialize database with tables and extensions"""
     async with async_engine.begin() as conn:
         # Create all tables

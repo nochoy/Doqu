@@ -4,7 +4,7 @@ Please provide a short summary of the changes made in this PR in 1-2 sentences.
 ## Related Issue
 Closes #<issue-number> (if applicable)
 
-## Descrption
+## Description
 ### Additions
 - Bullet-list of additions
 - E.g., “Added PDF parsing endpoint”, “Implemented WebSocket question sync”
@@ -13,7 +13,10 @@ Closes #<issue-number> (if applicable)
 - E.g. "Updated button component hover animation", "Changed color of search bar to blue"
 
 ## Screenshots 
-- Frontend changes (if applicable)
+<details>
+  <summary>Screenshots & Demos</summary>
+
+</details>
 
 ## How to Test Locally
 1. `git checkout dev && git pull`
@@ -24,18 +27,15 @@ Closes #<issue-number> (if applicable)
 - Weird kinks to know about your code, etc.
 - Mention new issue from incomplete tasks 
 
-<details>
-  <summary>Screenshots & Demos</summary>
-
-</details>
-
 ## Checklist:
 
-- [ ] PR title format: `Feature: ...`, `Bugfix: ...`, `Install: ...`
+- [ ] PR title format: `Feature: ...`, `Bugfix: ...`, `Setup: ...`
 - [ ] Linked issue
 - [ ] Updated docs/wiki/README (if applicable)
-- [ ] Ran prettier to ensure consistent styling
+- [ ] Added jsdocs/docstrings to new functions
+- [ ] Ran formatter to ensure consistent styling
 - [ ] Ran linter to ensure no lint errors
-- [ ] Added/updated tests for >= 90% code coverage
-- [ ] Resolved all CodeRabbit comments
+- [ ] Added/updated tests for >= 80% code coverage
+- [ ] Ran code in dev container
+- [ ] Resolved all CodeRabbit & Qodo Merge comments
 - [ ] CI passes
