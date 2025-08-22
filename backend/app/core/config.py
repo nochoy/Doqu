@@ -20,12 +20,14 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: Optional[str] = None
 
     # CORS
-    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:3001"]
+    CORS_ORIGINS: list = ["http://localhost:3000", "http://localhost:3001"]
 
     # AI/ML
     GOOGLE_API_KEY: Optional[str] = None
 
-    model_config = {"env_file": ".env", "extra": "allow"}
+    class Config:
+        env_file = ".env"
+        extra = "allow"
 
 
-settings = Settings()  # type: ignore[call-arg]
+settings = Settings()
