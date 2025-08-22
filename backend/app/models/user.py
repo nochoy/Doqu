@@ -12,7 +12,6 @@ class User(SQLModel, table=True):
     email: str = Field(unique=True, index=True, nullable=False)
     username: str = Field(unique=True, index=True, nullable=False)
     full_name: Optional[str] = Field(default=None)
-    password: str = Field(nullable=False)
     is_active: bool = Field(default=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = Field(default=None)
