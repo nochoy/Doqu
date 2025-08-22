@@ -97,7 +97,7 @@ This project is configured to use [VS Code Dev Containers](https://code.visualst
 
 3.  **Reopen in Dev Container:**
     - VS Code will detect the `.devcontainer` configuration
-    - Click "Reopen in Container" when prompted
+        - Click "Reopen in Container" when prompted
     - Or use Command Palette (`Ctrl+Shift+P`) → "Dev Containers: Reopen in Container"
 
 4.  **Environment Setup:**
@@ -108,13 +108,14 @@ This project is configured to use [VS Code Dev Containers](https://code.visualst
 
 ### Manual Setup (Alternative)
 
-If you prefer not to use Dev Containers:
+If you prefer not to use Dev Containers and instead develop locally:
 
 1. **Create Virtual Environment**
    ```bash
    cd backend 
    
    python -m venv venv
+
    source venv/bin/activate   # Linux/Mac
    venv\Scripts\activate      # Windows
    ```
@@ -142,15 +143,16 @@ If you prefer not to use Dev Containers:
     ```bash
     cd backend
 
-    # Start PostgreSQL
-    docker compose up -d db
+    # Build and start the DB container
+    docker compose up db --build
+    # Or start the existing DB container:
+    docker compose up db
+    # Or start the existing DB container w/o terminal logs:
+    docker compose up db -d
 
     # Activate venv
     source venv/bin/activate    # Linux/MacOS
     venv/Scripts/activate       # Windows
-
-    # Run migrations
-    alembic upgrade head
     ```
 
 5.  **Start Services:**
@@ -163,6 +165,14 @@ If you prefer not to use Dev Containers:
     cd frontend
     npm run dev
     ```
+6. **Shut down the containers:**
+   ```bash
+   # Stop the containers
+   docker compose stop
+
+   # Delete the containers
+   docker compose down
+   ```
 
 ## 🔧 Development Workflow
 
@@ -200,9 +210,6 @@ pytest --cov=app tests/
 cd frontend
 npm test
 npm run test:watch
-
-# E2E tests (when available)
-npm run test:e2e
 ```
 
 ### Code Quality

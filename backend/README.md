@@ -20,6 +20,7 @@ This is the FastAPI backend for Doqu, a real-time quiz platform built with Pytho
 2. **Create virtual environment:**
    ```bash
    python -m venv venv
+
    source venv/bin/activate   # Linux/Mac
    venv\Scripts\activate      # Windows
    ```
@@ -41,22 +42,25 @@ This is the FastAPI backend for Doqu, a real-time quiz platform built with Pytho
 
 ### Running with Docker
 
-1. **Build and start the containers:**
-   From the root of the project, run:
+1. **Build and start the database container:**
    ```bash
-   docker-compose up --build
+   # Build and start the DB container
+   docker compose up db --build
+
+   # Or start the existing DB container:
+   docker compose up db
+
+   # Or start the existing DB container w/o terminal logs:
+   docker compose up db -d
    ```
 
-2. **Access the API:**
-   Open [http://localhost:8000](http://localhost:8000) in your browser to interact with the API.
-
-3. **Shut down the containers:**
+2. **Shut down the containers:**
    ```bash
    # Stop the containers
-   docker-compose stop
+   docker compose stop
 
    # Delete the containers
-   docker-compose down
+   docker compose down
    ```
 
 ### Interactive Documentation
