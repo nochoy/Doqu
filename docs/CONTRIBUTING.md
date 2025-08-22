@@ -79,15 +79,15 @@ This project is configured to use [VS Code Dev Containers](https://code.visualst
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - [Visual Studio Code](https://code.visualstudio.com/)
 - [VS Code Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-- Node.js v22.18.0
-- Python 3.12.10
+- Node.js v18.x 
+- Python 3.12.x
 
 ### Getting Started with Dev Containers
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/nochoy/doqu.git
-    cd doqu
+    git clone https://github.com/nochoy/Doqu.git
+    cd Doqu
     ```
 
 2.  **Open in VS Code:**
@@ -132,6 +132,8 @@ If you prefer not to use Dev Containers and instead develop locally:
 
 3.  **Environment Configuration:**
     ```bash
+    cd backend
+    
     # Backend environment
     cp backend/.env.example backend/.env
 
@@ -217,7 +219,7 @@ npm run test:watch
 ```bash
 # Backend linting & formatting
 cd backend
-black . --check
+black app/
 flake8
 mypy app/
 isort .
@@ -226,7 +228,7 @@ isort .
 cd frontend
 npm run lint
 npm run format
-npm run type-check
+npm run typecheck
 ```
 
 ### API Documentation

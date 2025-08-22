@@ -6,7 +6,7 @@ This is the Next.js frontend for the Doqu real-time quiz platform.
 
 ### Prerequisites
 
-- Node.js v22.18.0 or higher
+- Node.js v18.x or higher
 - npm v10.8.2 or higher
 
 ### Installation
