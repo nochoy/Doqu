@@ -3,13 +3,20 @@ import pytest_asyncio
 from httpx import AsyncClient
 from sqlmodel import SQLModel
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.pool import StaticPool # Import StaticPool
 
 from app.main import app
 from app.db.session import get_db
 
 # Use the async-compatible SQLite driver
-DATABASE_URL = "sqlite+aiosqlite:///:memory:"
-engine = create_async_engine(DATABASE_URL, echo=False)
+DATABASE_URL = "sqlite+aiosqlite:///:memory:?cache=shared" # Add ?cache=shared
+
+engine = create_async_engine(
+    DATABASE_URL,
+    echo=False,
+    connect_args={"uri": True},
+    poolclass=StaticPool,
+)
 
 async def get_session_override():
     async with AsyncSession(engine) as session:

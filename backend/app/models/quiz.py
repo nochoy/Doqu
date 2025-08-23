@@ -1,7 +1,7 @@
 from sqlmodel import Field, SQLModel, Relationship
 from datetime import datetime
 from .question import Question
-from typing import List
+# from typing import List
 
 class Quiz(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
