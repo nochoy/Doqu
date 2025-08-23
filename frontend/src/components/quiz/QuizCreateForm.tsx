@@ -28,8 +28,17 @@ export default function QuizCreateForm({ onClose }: QuizCreateFormProps) {
 
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
-        const inputValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
-        setFormData({ ...formData, [name]: inputValue });
+
+        const isCheckbox = type === 'checkbox';
+        let inputValue: string | boolean | number = isCheckbox 
+            ? (e.target as HTMLInputElement).checked 
+            : value;
+
+        if (name === 'difficulty') {
+            inputValue = Number(value);
+        }
+
+        setFormData(prev => ({ ...prev, [name]: inputValue as any }));
     };
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
