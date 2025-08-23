@@ -1,5 +1,5 @@
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException, Response
+from typing import List, Annotated
+from fastapi import APIRouter, Depends, HTTPException, Response, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud import quiz as crud_quiz
@@ -9,10 +9,10 @@ from app.db.session import get_db
 
 router = APIRouter()
 
-@router.post("/", response_model=quiz_schemas.QuizRead)
+@router.post("/", response_model=quiz_schemas.QuizRead, status_code=201)
 async def create_quiz(
     *,
-    session: AsyncSession = Depends(get_db),
+    session: Annotated[AsyncSession, Depends(get_db)],
     quiz_in: quiz_schemas.QuizCreate
 ):
     """
@@ -26,9 +26,9 @@ async def create_quiz(
 @router.get("/", response_model=List[quiz_schemas.QuizRead])
 async def read_quizzes(
     *,
-    session: AsyncSession = Depends(get_db),
-    skip: int = 0,
-    limit: int = 100
+    session: Annotated[AsyncSession, Depends(get_db)],
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000)
 ):
     """
     Retrieve all quizzes with pagination.
@@ -39,7 +39,7 @@ async def read_quizzes(
 @router.get("/{quiz_id}", response_model=quiz_schemas.QuizRead)
 async def read_quiz(
     *,
-    session: AsyncSession = Depends(get_db),
+    session: Annotated[AsyncSession, Depends(get_db)],
     quiz_id: int
 ):
     """
@@ -53,7 +53,7 @@ async def read_quiz(
 @router.patch("/{quiz_id}", response_model=quiz_schemas.QuizRead)
 async def update_quiz(
     *,
-    session: AsyncSession = Depends(get_db),
+    session: Annotated[AsyncSession, Depends(get_db)],
     quiz_id: int,
     quiz_in: quiz_schemas.QuizUpdate
 ):
@@ -72,7 +72,7 @@ async def update_quiz(
 @router.delete("/{quiz_id}", status_code=204)
 async def delete_quiz(
     *,
-    session: AsyncSession = Depends(get_db),
+    session: Annotated[AsyncSession, Depends(get_db)],
     quiz_id: int,
 ):
     """

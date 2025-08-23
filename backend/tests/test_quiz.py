@@ -22,7 +22,12 @@ async def get_session_override():
     async with AsyncSession(engine) as session:
         yield session
 
-app.dependency_overrides[get_db] = get_session_override
+@pytest_asyncio.fixture(autouse=True)
+async def override_db_dep():
+    app.dependency_overrides[get_db] = get_session_override
+    yield
+    app.dependency_overrides.clear()
+
 
 # This fixture creates a clean database for each test
 @pytest_asyncio.fixture(autouse=True)
@@ -51,7 +56,7 @@ async def test_create_quiz(client: AsyncClient):
         json={"title": "Test Quiz", "description": "Desc", "category": "Test", "difficulty": 3, "is_public": True}
     )
     data = response.json()
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert data["title"] == "Test Quiz"
 
 @pytest.mark.asyncio
@@ -72,3 +77,21 @@ async def test_read_quiz(client: AsyncClient):
 async def test_read_quiz_not_found(client: AsyncClient):
     response = await client.get("/quiz/999")
     assert response.status_code == 404
+
+@pytest.mark.asyncio
+async def test_update_quiz(client: AsyncClient):
+    created = await client.post("/quiz/", json={"title": "T", "description": "D", "category": "C", "difficulty": 2, "is_public": True})
+    quiz_id = created.json()["id"]
+    resp = await client.patch(f"/quiz/{quiz_id}", json={"title": "T2"})
+    assert resp.status_code == 200
+    assert resp.json()["title"] == "T2"
+
+@pytest.mark.asyncio
+async def test_delete_quiz(client: AsyncClient):
+    created = await client.post("/quiz/", json={"title": "TD", "description": "D", "category": "C", "difficulty": 2, "is_public": True})
+    quiz_id = created.json()["id"]
+    resp = await client.delete(f"/quiz/{quiz_id}")
+    assert resp.status_code == 204
+    # ensure 404 after delete
+    resp2 = await client.get(f"/quiz/{quiz_id}")
+    assert resp2.status_code == 404

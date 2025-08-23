@@ -1,7 +1,8 @@
-from sqlmodel import Field, SQLModel, Relationship
-from datetime import datetime
-from .question import Question
+from sqlmodel import Field, SQLModel
+from datetime import datetime, timezone
+# from .question import Question
 # from typing import List
+# When question table is created, reimplement (import Relationship from sqlmodel)
 
 class Quiz(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -9,8 +10,8 @@ class Quiz(SQLModel, table=True):
     title: str
     description: str
     category: str = Field(index=True)
-    difficulty: int
+    difficulty: int = Field(ge=1, le=5)
     is_public: bool = Field(default=True)
     # questions: List["Question"] = Relationship(back_populates="quiz")
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     
