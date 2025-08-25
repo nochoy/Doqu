@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import OperationalError
 
-from app.api import auth
+from app.api import auth, quiz
 from app.core.config import settings
 from app.db import check_db_connection, init_db
 
@@ -20,6 +20,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth.router, prefix="/api/v1")
+app.include_router(quiz.router, prefix="/api/quizzes", tags=["quizzes"])
 
 
 @app.on_event("startup")
