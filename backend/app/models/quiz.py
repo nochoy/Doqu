@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from pydantic import Field as PydanticField
 from sqlalchemy import Column, DateTime
 from sqlmodel import Field, SQLModel
 
@@ -16,13 +15,13 @@ class Quiz(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 
     # TODO: Implement Field(foreign_key="user.id") for when User table is created (incl imports)
-    owner_id: str = Field()
+    owner_id: str = Field(max_length=36, index=True, nullable=False)
 
-    title: str = Field(max_length=50)
+    title: str = Field(max_length=50, nullable=False)
     description: Optional[str] = Field(default=None, max_length=250, nullable=True)
     category: Optional[str] = Field(default=None, index=True, nullable=True)
     difficulty: Optional[int] = Field(default=None, ge=1, le=5, nullable=True)
-    is_public: bool = Field(default=True)
+    is_public: bool = Field(default=True, nullable=False)
     created_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), nullable=False),
         default_factory=lambda: datetime.now(timezone.utc),
@@ -36,7 +35,7 @@ class Quiz(SQLModel, table=True):
 
 
 class QuizBase(SQLModel):
-    """Common quiz fields to inherit from"""
+    """Base model for quiz data, all optional fields"""
 
     title: Optional[str] = Field(default=None, max_length=50)
     description: Optional[str] = Field(default=None, max_length=250)
@@ -45,24 +44,29 @@ class QuizBase(SQLModel):
     is_public: Optional[bool] = None
 
 
-# creating a quiz (what the user sends to the API)
 class QuizCreate(QuizBase):
+    """Model for creating new quiz, requires title"""
+
     title: str = Field(max_length=50)
 
 
-# updating a quiz (all fields are optional)
 class QuizUpdate(QuizBase):
+    """Model for updating a quiz, all optional fields"""
+
     pass
 
 
-# reading a quiz (what the API sends back to the user)
-# inherits from Create schema and adds fields the DB generates
 class QuizRead(QuizCreate):
+    """Model for reading quiz data"""
+
+    title: str
+    is_public: bool
     id: int
     owner_id: str
     created_at: datetime
 
 
-# reading a quiz with all of its questions
 class QuizReadWithQuestions(QuizRead):
-    questions: List["QuestionRead"] = PydanticField(default_factory=list)
+    """Model for reading all questions in a quiz"""
+
+    questions: List["QuestionRead"] = Field(default_factory=list)

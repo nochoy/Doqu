@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
@@ -61,22 +61,25 @@ async def get_quizzes(*, session: AsyncSession, skip: int = 0, limit: int = 100)
     return list(quizzes)
 
 
-async def update_quiz(*, session: AsyncSession, db_quiz: Quiz, quiz_in: QuizUpdate) -> Quiz:
+async def update_quiz(
+    *, session: AsyncSession, quiz_id: int, quiz_in: QuizUpdate
+) -> Optional[Quiz]:
     """
     Update an existing quiz.
 
     Args:
         session (AsyncSession): The DB session
-        db_quiz (Quiz): Existing quiz object to update
+        quiz_id (int): Existing quiz id to update
         quiz_in (QuizUpdate): Pydantic model with fields to update
 
     Returns:
         Quiz: Updated Quiz DB object
     """
-    # data from the input schema excluding any unset
-    update_data = quiz_in.model_dump(exclude_unset=True)
+    db_quiz = await session.get(Quiz, quiz_id)
+    if not db_quiz:
+        return None
 
-    # update object with new data
+    update_data = quiz_in.model_dump(exclude_unset=True)
     db_quiz.sqlmodel_update(update_data)
 
     session.add(db_quiz)
@@ -85,13 +88,17 @@ async def update_quiz(*, session: AsyncSession, db_quiz: Quiz, quiz_in: QuizUpda
     return db_quiz
 
 
-async def remove_quiz(*, session: AsyncSession, db_quiz: Quiz) -> None:
+async def remove_quiz(*, session: AsyncSession, quiz_id: int) -> bool:
     """
     Delete a quiz from the database.
 
     Args:
         session (AsyncSession): The DB session
-        db_quiz (Quiz): Quiz object to delete
+        quiz_id (int): Quiz id to delete
     """
+    db_quiz = await session.get(Quiz, quiz_id)
+    if not db_quiz:
+        return False
     await session.delete(db_quiz)
     await session.commit()
+    return True

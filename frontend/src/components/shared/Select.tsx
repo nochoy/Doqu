@@ -2,70 +2,40 @@
 
 import { ComponentProps } from 'react';
 
-type SelectVariant = 'category' | 'difficulty';
+interface SelectOption {
+  value: string | number;
+  label: string;
+}
 
 interface SelectProps extends ComponentProps<'select'> {
   label: string;
-  variant: SelectVariant;
+  options: SelectOption[];
 }
 
-const categories = [
-  'Arts',
-  'Biology',
-  'Chemistry',
-  'Computers',
-  'English',
-  'Fun',
-  'Geography',
-  'History',
-  'Mathematics',
-  'Physics',
-  'Science',
-  'Social Studies',
-];
-const difficultyOptions = [
-  { value: 1, label: '1 (Easiest)' },
-  { value: 2, label: '2' },
-  { value: 3, label: '3' },
-  { value: 4, label: '4' },
-  { value: 5, label: '5 (Hardest)' },
-];
-
-export default function Select({ label, id, variant, ...props }: SelectProps) {
-  let options;
-
-  if (variant === 'category') {
-    options = (
-      <>
-        <option value="" disabled>
-          Select a category
-        </option>
-        {categories.map(category => (
-          <option key={category} value={category}>
-            {category}
-          </option>
-        ))}
-      </>
-    );
-  } else if (variant === 'difficulty') {
-    options = difficultyOptions.map(opt => (
-      <option key={opt.value} value={opt.value}>
-        {opt.label}
-      </option>
-    ));
-  }
+export default function Select({ label, id, options, className, ...props }: SelectProps) {
+  const selectId = id;
 
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
+      <label
+        htmlFor={selectId}
+        className="block text-sm font-medium text-foreground mb-1 text-left"
+      >
         {label}
       </label>
       <select
-        id={id}
-        className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+        id={selectId}
+        className={`block w-full px-3 py-2 bg-background border border-input rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring ${className ?? ''}`}
         {...props}
       >
-        {options}
+        <option value="" disabled>
+          Select an option
+        </option>
+        {options.map(opt => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
       </select>
     </div>
   );

@@ -7,7 +7,8 @@ import Button from '../shared/Button';
 import Input from '../shared/Input';
 import Textarea from '../shared/Textarea';
 import Select from '../shared/Select';
-import VisibilityToggle from '../shared/VisibilityToggle';
+import OptionToggle from '../shared/OptionToggle';
+import XIcon from '../icons/XIcon';
 
 interface QuizCreateModalProps {
   onClose: () => void;
@@ -17,9 +18,32 @@ interface QuizModalData {
   title: string;
   description: string;
   category: string;
-  difficulty: number;
+  difficulty: number | null;
   is_public: boolean;
 }
+
+const categoryOptions = [
+  'Arts',
+  'Biology',
+  'Chemistry',
+  'Computers',
+  'English',
+  'Fun',
+  'Geography',
+  'History',
+  'Mathematics',
+  'Physics',
+  'Science',
+  'Social Studies',
+].map(c => ({ value: c, label: c }));
+
+const difficultyOptions = [
+  { value: 1, label: '1 (Easiest)' },
+  { value: 2, label: '2' },
+  { value: 3, label: '3' },
+  { value: 4, label: '4' },
+  { value: 5, label: '5 (Hardest)' },
+];
 
 export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
   const router = useRouter();
@@ -27,7 +51,7 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
     title: '',
     description: '',
     category: '',
-    difficulty: 1,
+    difficulty: null,
     is_public: true,
   });
   const [error, setError] = useState<string | null>(null);
@@ -39,12 +63,12 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
     const { name, value, type } = e.target;
 
     const isCheckbox = type === 'checkbox';
-    let inputValue: string | boolean | number = isCheckbox
+    let inputValue: string | boolean | number | null = isCheckbox
       ? (e.target as HTMLInputElement).checked
       : value;
 
     if (name === 'difficulty') {
-      inputValue = Number(value);
+      inputValue = value === '' ? null : Number(value);
     }
 
     setFormData(prev => ({ ...prev, [name as keyof QuizModalData]: inputValue }));
@@ -56,7 +80,9 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
     setError(null);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quizzes/`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? '';
+      const endpoint = `${baseUrl}/api/quizzes/`;
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,8 +94,13 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
         throw new Error('Failed to create quiz. Please try again');
       }
 
-      const newQuiz = await response.json();
-      router.push(`/quiz/${newQuiz.id}/edit`);
+      type CreateQuizResponse = { id: number };
+      const newQuiz = (await response.json()) as CreateQuizResponse;
+      if (newQuiz?.id != null) {
+        router.push(`/quiz/${newQuiz.id}/edit`);
+      } else {
+        throw new Error('Quiz created but response did not include an id.');
+      }
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -84,30 +115,25 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
   const DESC_MAX_LENGTH = 250;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-2xl relative">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="quiz-settings-title"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div className="bg-background p-6 rounded-lg shadow-2xl w-full max-w-2xl relative sm:p-8">
         {/* X Button */}
-        <button
+        <Button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 cursor-pointer"
+          variant="secondary"
+          className="absolute top-4 right-4" // Position the button
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-        <h2 className="text-xl font-semibold mb-6">Quiz Settings</h2>
+          <XIcon className="h-6 w-6 text-gray-500 hover:text-gray-800" />
+        </Button>
+        <h2 id="quiz-settings-title" className="text-xl font-semibold mb-6 text-left">
+          Quiz Settings
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Title */}
           <div>
@@ -155,23 +181,27 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
               id="category"
               value={formData.category}
               onChange={handleChange}
-              variant="category"
+              options={categoryOptions}
             ></Select>
             <Select
               label="Difficulty"
               name="difficulty"
               id="difficulty"
-              value={formData.difficulty}
+              value={formData.difficulty ?? ''}
               onChange={handleChange}
-              variant="difficulty"
+              options={difficultyOptions}
             />
           </div>
 
           {/* Public/Private Toggle */}
-          <VisibilityToggle
+          <OptionToggle
             label="Visibility"
-            isPublic={formData.is_public}
-            onChange={isPublicValue => setFormData({ ...formData, is_public: isPublicValue })}
+            optionOne="Public"
+            optionTwo="Private"
+            selectedValue={formData.is_public ? 'Public' : 'Private'}
+            onChange={value => {
+              setFormData({ ...formData, is_public: value === 'Public' });
+            }}
           />
 
           {error && <p className="text-sm text-red-600">{error}</p>}
