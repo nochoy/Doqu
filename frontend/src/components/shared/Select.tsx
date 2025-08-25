@@ -2,14 +2,16 @@
 
 import { ComponentProps } from 'react';
 
-interface SelectOption {
+export interface SelectOption {
   value: string | number;
   label: string;
 }
 
-interface SelectProps extends ComponentProps<'select'> {
+export interface SelectProps extends ComponentProps<'select'> {
   label: string;
   options: SelectOption[];
+  placeholder?: string;
+  labelClassName?: string;
 }
 
 export default function Select({ label, id, options, className, ...props }: SelectProps) {

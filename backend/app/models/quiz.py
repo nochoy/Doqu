@@ -14,7 +14,7 @@ class Quiz(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
 
-    # TODO: Implement Field(foreign_key="user.id") for when User table is created (incl imports)
+    # TODO: Implement Field(foreign_key="users.id") for when User table is created (incl imports)
     owner_id: str = Field(max_length=36, index=True, nullable=False)
 
     title: str = Field(max_length=50, nullable=False)
@@ -59,8 +59,6 @@ class QuizUpdate(QuizBase):
 class QuizRead(QuizCreate):
     """Model for reading quiz data"""
 
-    title: str
-    is_public: bool
     id: int
     owner_id: str
     created_at: datetime
