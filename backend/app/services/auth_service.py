@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.models.user import User, TokenData
+from app.services.user_service import get_user_by_email
 
 # Password hashing context
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -104,9 +105,4 @@ async def authenticate_user(db: AsyncSession, email: str, password: str) -> User
   if not user or not user.password or not verify_password(password, user.password):
     return None
   return user
-  
-
-
-
-
 
