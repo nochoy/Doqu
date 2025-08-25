@@ -28,7 +28,7 @@ async def create_quiz(*, session: AsyncSession, quiz_in: QuizCreate, owner_id: s
     return db_quiz
 
 
-async def get_quiz(*, session: AsyncSession, quiz_id: int) -> Quiz | None:
+async def get_quiz(*, session: AsyncSession, quiz_id: int) -> Optional[Quiz]:
     """
     Get a single quiz by its ID.
 
@@ -55,7 +55,10 @@ async def get_quizzes(*, session: AsyncSession, skip: int = 0, limit: int = 100)
         List[Quiz]: List of quiz objects
     """
     # TODO: Add filtering based on category, difficulty, owner id, etc
-    statement = select(Quiz).offset(skip).limit(limit)
+    max_limit = 100
+    safe_limit = max(0, min(limit, max_limit))
+    safe_skip = max(0, skip)
+    statement = select(Quiz).order_by(Quiz.id).offset(safe_skip).limit(safe_limit) # type: ignore
     result = await session.execute(statement)
     quizzes = result.scalars().all()
     return list(quizzes)
@@ -73,7 +76,7 @@ async def update_quiz(
         quiz_in (QuizUpdate): Pydantic model with fields to update
 
     Returns:
-        Quiz: Updated Quiz DB object
+        Optional[Quiz]: Updated Quiz DB object if found, else None
     """
     db_quiz = await session.get(Quiz, quiz_id)
     if not db_quiz:

@@ -36,7 +36,9 @@ export default function OptionToggle({
         {/* Button 1 */}
         <button
           type="button"
-          onClick={() => onChange(optionOne)}
+          onClick={() => {
+            if (selectedValue !== optionOne && !disabled) onChange(optionOne);
+          }}
           disabled={disabled}
           className={`w-1/2 h-full rounded-md text-sm font-medium z-10 transition-colors duration-300 cursor-pointer 
             ${!isOptionOneSelected ? 'text-muted-foreground' : 'text-primary-foreground'}`}
@@ -47,7 +49,9 @@ export default function OptionToggle({
         {/* Button 2 */}
         <button
           type="button"
-          onClick={() => onChange(optionTwo)}
+          onClick={() => {
+            if (selectedValue !== optionTwo && !disabled) onChange(optionTwo);
+          }}
           disabled={disabled}
           className={`w-1/2 h-full rounded-md text-sm font-medium z-10 transition-colors duration-300 cursor-pointer
             ${isOptionOneSelected ? 'text-muted-foreground' : 'text-primary-foreground'}`}
