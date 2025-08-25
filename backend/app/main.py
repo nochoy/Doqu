@@ -19,7 +19,7 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(auth.router, prefix="/api/v1")
+app.include_router(auth.router, prefix="/api")
 
 
 @app.on_event("startup")
