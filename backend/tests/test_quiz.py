@@ -3,19 +3,29 @@ import pytest_asyncio
 from httpx import AsyncClient
 from sqlmodel import SQLModel
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.pool import StaticPool
 
 from app.main import app
 from app.db.session import get_db
 
 # Use the async-compatible SQLite driver
-DATABASE_URL = "sqlite+aiosqlite:///:memory:"
-engine = create_async_engine(DATABASE_URL, echo=False)
+DATABASE_URL = "sqlite+aiosqlite:///:memory:?cache=shared"
+engine = create_async_engine(
+    DATABASE_URL,
+    echo=False,
+    connect_args={"uri": True},
+    poolclass=StaticPool,
+)
 
 async def get_session_override():
     async with AsyncSession(engine) as session:
         yield session
 
-app.dependency_overrides[get_db] = get_session_override
+@pytest_asyncio.fixture(autouse=True)
+async def override_db_dep():
+    app.dependency_overrides[get_db] = get_session_override
+    yield
+    app.dependency_overrides.clear()
 
 # This fixture creates a clean database for each test
 @pytest_asyncio.fixture(autouse=True)
