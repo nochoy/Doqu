@@ -31,6 +31,7 @@ async def read_user_me(current_user: User = Depends(get_current_active_user)) ->
 async def read_user_by_id(
     user_id: Annotated[uuid.UUID, Path()],
     session: Annotated[AsyncSession, get_db],
+    _: Annotated[User, Depends(get_current_active_user)],
 ) -> UserRead:
     """
     Retrieve a user's information by their unique user ID.
@@ -49,7 +50,7 @@ async def read_user_by_id(
 async def read_user_by_email(
     email: Annotated[str, Query()],
     session: Annotated[AsyncSession, get_db],
-    _: User = Depends(get_current_active_user),
+    _: Annotated[User, Depends(get_current_active_user)],
 ) -> UserRead:
     """
     Retrieve a user's information by their unique email address.
