@@ -16,8 +16,8 @@ async def get_user_by_id(session: AsyncSession, user_id: uuid.UUID) -> UserRead 
         `user_id`: UUID of the user to retrieve.
 
     Returns:
-        User object if found, None otherwise.
-    """
+        UserRead: The User object if found, otherwise None. Includes id, username, email,
+        active status, and created timestamp.    """
     return await session.get(User, user_id)
 
 
@@ -30,7 +30,8 @@ async def get_user_by_email(session: AsyncSession, email: str) -> UserRead | Non
         `email`: Email of the user to retrieve.
 
     Returns:
-        The User object if found, otherwise None.
+        UserRead: The User object if found, otherwise None. Includes id, username, email,
+        active status, and created timestamp.
     """
     statement = select(User).where(User.email == email)
     result = await session.execute(statement)
@@ -46,7 +47,8 @@ async def create_user(session: AsyncSession, user_in: UserCreate) -> UserRead:
         `user_in`: `UserCreate` object containing the details of the user to be created.
 
     Returns:
-        The newly created User object.
+        UserRead: The newly created User object with id, username, email,
+        active status, and created timestamp.
     """
     new_user = User(
         email=user_in.email,

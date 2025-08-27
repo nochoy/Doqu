@@ -6,15 +6,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.db.session import get_db
-from app.models.user import Token, User, UserCreate, UserLogin, UserRead
+from app.models.user import Token, UserCreate, UserLogin, UserRead
 from app.services import auth_service, user_service
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
-@router.post("/register", response_model=UserRead)
+@router.post("/register", response_model=UserRead, status_code=201)
 async def register(
     user_create: UserCreate, 
-    session: Annotated[AsyncSession, get_db],
+    session: Annotated[AsyncSession, Depends(get_db)],
 ) -> UserRead:
     """
     Register a new user.
@@ -42,7 +42,7 @@ async def register(
 @router.post("/login", response_model=Token)
 async def login(
     form_data: UserLogin, 
-    session: Annotated[AsyncSession, get_db],
+    session: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict:
     """
     Authenticate a user and return a JWT access token.

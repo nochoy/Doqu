@@ -10,8 +10,8 @@ from app.services import user_service
 
 router = APIRouter(prefix="/users", tags=["users"])
 
-@router.get("/me", response_model=UserRead)
-async def read_user_me(current_user: User = Depends(get_current_active_user)) -> UserRead:
+@router.get("/me", response_model=UserRead, summary="Read currently logged in user")
+async def read_user_me(current_user: Annotated[User, Depends(get_current_active_user)]) -> UserRead:
     """
     Retrieve the current authenticated user's information.
 
@@ -30,7 +30,7 @@ async def read_user_me(current_user: User = Depends(get_current_active_user)) ->
 @router.get("/{user_id}", response_model=UserRead)
 async def read_user_by_id(
     user_id: Annotated[uuid.UUID, Path()],
-    session: Annotated[AsyncSession, get_db],
+    session: Annotated[AsyncSession, Depends(get_db)],
     _: Annotated[User, Depends(get_current_active_user)],
 ) -> UserRead:
     """
@@ -49,7 +49,7 @@ async def read_user_by_id(
 @router.get("/", response_model=UserRead)
 async def read_user_by_email(
     email: Annotated[str, Query()],
-    session: Annotated[AsyncSession, get_db],
+    session: Annotated[AsyncSession, Depends(get_db)],
     _: Annotated[User, Depends(get_current_active_user)],
 ) -> UserRead:
     """
