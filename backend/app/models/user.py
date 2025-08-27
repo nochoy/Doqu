@@ -17,7 +17,7 @@ class User(SQLModel, table=True):
     """
     __tablename__ = "users"
 
-    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, sa_column=Column(UUID(as_uuid=True)), primary_key=True, nullable=False)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     email: str = Field(unique=True, index=True, nullable=False)
     username: str = Field(unique=True, nullable=False)
     password: Optional[str] = Field(default=None, nullable=True)
