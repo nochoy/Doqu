@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import OperationalError
 
 from app.api import auth
+from app.api import user
 from app.core.config import settings
 from app.db import check_db_connection, init_db
 
@@ -56,6 +57,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth.router, prefix="/api")
+app.include_router(user.router, prefix="/api")
 
 
 @app.get("/")
