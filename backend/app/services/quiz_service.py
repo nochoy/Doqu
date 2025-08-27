@@ -140,8 +140,6 @@ async def remove_quiz(session: AsyncSession, quiz_id: int, user_id: uuid.UUID) -
         QuizPermissionException: If user is not owner
     """
     db_quiz = await get_quiz(session=session, quiz_id=quiz_id)
-    if not db_quiz:
-        raise QuizNotFoundException("Quiz not found.")
     if db_quiz.owner_id != user_id:
         raise QuizPermissionException("User does not have permission to delete this quiz.")
     try:

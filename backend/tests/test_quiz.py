@@ -23,11 +23,13 @@ OWNER_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
 ATTACKER_ID = uuid.UUID("00000000-0000-0000-0000-000000000002")
 
 async def get_session_override():
+    """Override for get_db dependency to provide test database session."""
     async with AsyncSession(engine) as session:
         yield session
 
 @pytest_asyncio.fixture(autouse=True)
 async def override_db_dep():
+    """Override database dependency and clean up after test."""
     app.dependency_overrides[get_db] = get_session_override
     yield
     app.dependency_overrides.clear()
@@ -201,8 +203,6 @@ async def test_update_quiz_permission_denied(client: AsyncClient):
     # Assert that the permission was denied
     assert response.status_code == 403
     
-    # Clean up the override
-    app.dependency_overrides.clear()
 
 
 @pytest.mark.asyncio
@@ -225,6 +225,3 @@ async def test_delete_quiz_permission_denied(client: AsyncClient):
 
     # Assert that the permission was denied
     assert delete_response.status_code == 403
-
-    # Clean up the override
-    app.dependency_overrides.clear()
