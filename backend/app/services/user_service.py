@@ -3,11 +3,11 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from app.models.user import User, UserCreate
+from app.models.user import User, UserCreate, UserRead
 from app.services import auth_service
 
 
-async def get_user_by_id(session: AsyncSession, user_id: uuid.UUID) -> User | None:
+async def get_user_by_id(session: AsyncSession, user_id: uuid.UUID) -> UserRead | None:
     """
     Retrieve a user from the database by their unique UUID.
 
@@ -21,7 +21,7 @@ async def get_user_by_id(session: AsyncSession, user_id: uuid.UUID) -> User | No
     return await session.get(User, user_id)
 
 
-async def get_user_by_email(session: AsyncSession, email: str) -> User | None:
+async def get_user_by_email(session: AsyncSession, email: str) -> UserRead | None:
     """
     Retrieve a user from the database by their email.
 
@@ -37,7 +37,7 @@ async def get_user_by_email(session: AsyncSession, email: str) -> User | None:
     return result.scalars().first()
 
 
-async def create_user(session: AsyncSession, user_in: UserCreate) -> User:
+async def create_user(session: AsyncSession, user_in: UserCreate) -> UserRead:
     """
     Create a new user in the database.
 
