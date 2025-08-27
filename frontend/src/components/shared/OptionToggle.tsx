@@ -1,5 +1,7 @@
 'use client';
 
+import React, { useId } from 'react';
+
 interface OptionToggleProps {
   label: string;
   optionOne: string;
@@ -17,17 +19,30 @@ export default function OptionToggle({
   onChange,
   disabled,
 }: OptionToggleProps) {
+  const labelId = useId();
   const isOptionOneSelected = selectedValue === optionOne;
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (disabled) return;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      onChange(isOptionOneSelected ? optionTwo : optionOne);
+    }
+  };
   return (
     <div>
-      <label className="block text-sm font-medium text-foreground text-left">{label}</label>
+      <label id={labelId} className="block text-sm font-medium text-foreground text-left">
+        {label}
+      </label>
       <div
-        className="mt-2 p-1 rounded-lg flex items-center bg-muted relative w-full h-11"
+        className="mt-2 p-1 rounded-lg flex items-center bg-background relative w-full h-11"
         role="radiogroup"
-        aria-label={label}
+        aria-labelledby={labelId}
+        aria-disabled={disabled || undefined}
+        onKeyDown={handleKeyDown}
       >
         {/* Sliding bar */}
         <span
+          aria-hidden="true"
           className={`absolute top-1 h-9 w-1/2 rounded-md bg-primary shadow-md transform transition-transform duration-300 ease-in-out
             ${isOptionOneSelected ? 'translate-x-0' : 'translate-x-full'}`}
           style={{ left: '2px' }}
@@ -36,6 +51,10 @@ export default function OptionToggle({
         {/* Button 1 */}
         <button
           type="button"
+          role="radio"
+          aria-checked={isOptionOneSelected}
+          aria-disabled={disabled || undefined}
+          tabIndex={isOptionOneSelected ? 0 : -1}
           onClick={() => {
             if (selectedValue !== optionOne && !disabled) onChange(optionOne);
           }}
@@ -49,6 +68,10 @@ export default function OptionToggle({
         {/* Button 2 */}
         <button
           type="button"
+          role="radio"
+          aria-checked={!isOptionOneSelected}
+          aria-disabled={disabled || undefined}
+          tabIndex={isOptionOneSelected ? 0 : -1}
           onClick={() => {
             if (selectedValue !== optionTwo && !disabled) onChange(optionTwo);
           }}

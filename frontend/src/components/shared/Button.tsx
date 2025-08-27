@@ -22,14 +22,16 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const baseStyles =
-    'inline-flex items-center justify-center rounded-md py-2 px-4 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
+    'inline-flex items-center justify-center rounded-lg py-2 px-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
 
   const finalDisabled = Boolean(isLoading || disabledProp);
 
   const variantStyles: Record<ButtonVariant, string> = {
-    primary: 'border border-transparent bg-primary text-primary-foreground hover:bg-primary/90',
-    secondary: 'border border-input bg-secondary text-secondary-foreground hover:bg-secondary/80',
-    ghost: 'border-0 hover:bg-accent hover:text-accent-foreground',
+    primary:
+      'border border-transparent bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs',
+    secondary:
+      'border border-input bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-xs',
+    ghost: 'hover:bg-accent hover:text-accent-foreground',
   };
 
   const sizeStyles: Record<ButtonSize, string> = {
