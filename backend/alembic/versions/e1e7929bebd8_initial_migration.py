@@ -25,28 +25,28 @@ def upgrade() -> None:
     op.create_table(
         'quiz',
         sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('owner_id', sa.Uuid(), nullable=False),
+        sa.Column('owner_id', sa.UUID(), nullable=False),
         sa.Column('title', sqlmodel.sql.sqltypes.AutoString(length=50), nullable=False),
         sa.Column('description', sqlmodel.sql.sqltypes.AutoString(length=250), nullable=True),
         sa.Column('category', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column('difficulty', sa.Integer(), nullable=True),
-        sa.Column('is_public', sa.Boolean(), nullable=False),
-        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-        sa.PrimaryKeyConstraint('id')
+        sa.Column('is_public', sa.Boolean(), nullable=False, server_default=sa.true()),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.PrimaryKeyConstraint('id'),
     )
     op.create_index(op.f('ix_quiz_category'), 'quiz', ['category'], unique=False)
     op.create_index(op.f('ix_quiz_owner_id'), 'quiz', ['owner_id'], unique=False)
     op.create_table(
         'users',
-        sa.Column('id', sa.Uuid(), nullable=False),
+        sa.Column('id', sa.UUID(), nullable=False),
         sa.Column('email', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column('username', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column('full_name', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column('password', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column('is_active', sa.Boolean(), nullable=False),
-        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+        sa.Column('is_active', sa.Boolean(), nullable=False, server_default=sa.true()),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
-        sa.PrimaryKeyConstraint('id')
+        sa.PrimaryKeyConstraint('id'),
     )
     op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
     op.create_index(op.f('ix_users_username'), 'users', ['username'], unique=True)

@@ -84,7 +84,7 @@ async def read_quiz(
     try:
         db_quiz = await quiz_service.get_quiz(session=session, quiz_id=quiz_id)
     except QuizNotFoundException:
-        raise HTTPException(status_code=404, detail="Quiz not found")
+        raise HTTPException(status_code=404, detail="Quiz not found") from None
     return QuizRead.model_validate(db_quiz)
 
 
@@ -117,11 +117,13 @@ async def update_quiz(
             session=session, quiz_id=quiz_id, quiz_in=quiz_in, user_id=user_id
         )
     except QuizNotFoundException:
-        raise HTTPException(status_code=404, detail="Quiz not found")
+        raise HTTPException(status_code=404, detail="Quiz not found") from None
     except QuizPermissionException:
-        raise HTTPException(status_code=403, detail="Not authorized to update this quiz")
+        raise HTTPException(status_code=403, detail="Not authorized to update this quiz") from None
     except ValueError:
-        raise HTTPException(status_code=422, detail="Cannot set non-nullable fields to null")
+        raise HTTPException(
+            status_code=422, detail="Cannot set non-nullable fields to null"
+        ) from None
     return QuizRead.model_validate(updated_quiz)
 
 
@@ -145,12 +147,11 @@ async def delete_quiz(
     Returns:
         Status code 204 No Content Successful
     """
-    # TODO: check ownership
 
     try:
         await quiz_service.remove_quiz(session=session, quiz_id=quiz_id, user_id=user_id)
     except QuizNotFoundException:
-        raise HTTPException(status_code=404, detail="Quiz not found")
+        raise HTTPException(status_code=404, detail="Quiz not found") from None
     except QuizPermissionException:
-        raise HTTPException(status_code=403, detail="Not authorized to delete this quiz")
+        raise HTTPException(status_code=403, detail="Not authorized to delete this quiz") from None
     return
