@@ -1,9 +1,9 @@
 from datetime import timedelta
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.dependencies import get_current_active_user
 from app.core.config import settings
 from app.db.session import get_db
 from app.models.user import Token, User, UserCreate, UserLogin, UserRead
@@ -12,7 +12,10 @@ from app.services import auth_service, user_service
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 @router.post("/register", response_model=UserRead)
-async def register(user_create: UserCreate, session: AsyncSession = Depends(get_db)) -> UserRead:
+async def register(
+    user_create: UserCreate, 
+    session: Annotated[AsyncSession, get_db],
+) -> UserRead:
     """
     Register a new user.
 
@@ -37,7 +40,10 @@ async def register(user_create: UserCreate, session: AsyncSession = Depends(get_
 
 
 @router.post("/login", response_model=Token)
-async def login(form_data: UserLogin, session: AsyncSession = Depends(get_db)) -> dict:
+async def login(
+    form_data: UserLogin, 
+    session: Annotated[AsyncSession, get_db],
+) -> dict:
     """
     Authenticate a user and return a JWT access token.
 
@@ -68,19 +74,3 @@ async def login(form_data: UserLogin, session: AsyncSession = Depends(get_db)) -
 
     return {"access_token": access_token, "token_type": "bearer"}
 
-
-@router.get("/me", response_model=UserRead)
-async def read_users_me(current_user: User = Depends(get_current_active_user)) -> UserRead:
-    """
-    Retrieve the current authenticated user's information.
-
-    This endpoint allows the currently authenticated user to fetch their own user details.
-    It uses the `get_current_active_user` dependency to ensure the user is authenticated.
-
-    Args:
-        `current_user` (User): The currently authenticated user, provided by the dependency.
-
-    Returns:
-        User: The authenticated user's information.
-    """
-    return current_user
