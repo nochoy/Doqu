@@ -20,7 +20,7 @@ class User(SQLModel, table=True):
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     email: str = Field(unique=True, index=True, nullable=False)
-    username: str = Field(unique=True, nullable=False)
+    username: str = Field(nullable=False)
     password: Optional[str] = Field(default=None, nullable=True)
     google_id: Optional[str] = Field(default=None, nullable=True, unique=True, index=True)
     is_active: bool = Field(default=True, nullable=False)
