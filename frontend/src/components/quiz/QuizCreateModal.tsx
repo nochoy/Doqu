@@ -8,7 +8,7 @@ import Input from '../shared/Input';
 import Textarea from '../shared/Textarea';
 import Select from '../shared/Select';
 import OptionToggle from '../shared/OptionToggle';
-import XIcon from '../icons/XIcon';
+import { X } from '@phosphor-icons/react';
 
 interface QuizCreateModalProps {
   onClose: () => void;
@@ -119,20 +119,20 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="quiz-settings-title"
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50"
     >
-      <div className="bg-background p-6 rounded-lg shadow-2xl w-full max-w-2xl relative sm:p-8">
+      <div className="bg-card p-6 rounded-lg shadow-2xl w-full max-w-2xl relative sm:p-8">
         {/* X Button */}
         <Button
           type="button"
           onClick={onClose}
-          variant="secondary"
+          variant="ghost"
           className="absolute top-4 right-4" // Position the button
         >
-          <XIcon className="h-6 w-6 text-gray-500 hover:text-gray-800" />
+          <X size={24} className="text-muted-foreground" />
         </Button>
         <h2 id="quiz-settings-title" className="text-xl font-semibold mb-6 text-left">
-          Quiz Settings
+          Create a Quiz
         </h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Title */}
