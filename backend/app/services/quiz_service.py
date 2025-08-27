@@ -1,6 +1,7 @@
 import uuid
 from typing import List
 
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
@@ -38,7 +39,7 @@ async def create_quiz(session: AsyncSession, quiz_in: QuizCreate, owner_id: uuid
     session.add(db_quiz)
     try:
         await session.commit()
-    except Exception:
+    except SQLAlchemyError:
         await session.rollback()
         raise
     await session.refresh(db_quiz)
@@ -54,7 +55,7 @@ async def get_quiz(session: AsyncSession, quiz_id: int) -> Quiz:
         quiz_id (int): The ID of the quiz to retrieve
 
     Returns:
-        Optional[Quiz]: Quiz object
+        Quiz: Quiz object
 
     Raises:
         QuizNotFoundException: If quiz id not found
@@ -99,7 +100,7 @@ async def update_quiz(
         quiz_in (QuizUpdate): Pydantic model with fields to update
 
     Returns:
-        Optional[Quiz]: Updated Quiz DB object if found, else None
+        Quiz: Updated Quiz DB object if found
 
     Raises:
         QuizNotFoundException: If quiz id not found
@@ -109,18 +110,18 @@ async def update_quiz(
     if db_quiz.owner_id != user_id:
         raise QuizPermissionException("User does not have permission to update this quiz.")
 
-    update_data = quiz_in.model_dump(exclude_unset=True, exclude_none=True)
+    raw_update_data = quiz_in.model_dump(exclude_unset=True)
     non_nullable_cols = {
         c.name for c in db_quiz.__class__.__table__.columns if not c.nullable  # type: ignore
     }
-    invalid_nulls = [k for k, v in update_data.items() if v is None and k in non_nullable_cols]
+    invalid_nulls = [k for k, v in raw_update_data.items() if k in non_nullable_cols and v is None]
     if invalid_nulls:
         raise ValueError(f"Cannot set non-nullable fields to null: {', '.join(invalid_nulls)}")
-    if update_data:
-        db_quiz.sqlmodel_update(update_data)
+    if raw_update_data:
+        db_quiz.sqlmodel_update(raw_update_data)
     try:
         await session.commit()
-    except Exception:
+    except SQLAlchemyError:
         await session.rollback()
         raise
     await session.refresh(db_quiz)
@@ -145,7 +146,7 @@ async def remove_quiz(session: AsyncSession, quiz_id: int, user_id: uuid.UUID) -
     try:
         await session.delete(db_quiz)
         await session.commit()
-    except Exception:
+    except SQLAlchemyError:
         await session.rollback()
         raise
     return
