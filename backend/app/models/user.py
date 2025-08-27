@@ -51,7 +51,19 @@ class UserCreate(BaseModel):
         if self.password and self.google_id:
             raise ValueError("Cannot provide both password and google_id")
         return self
+    
+class UserRead(BaseModel):
+    """
+    Pydantic model for reading user information.
 
+    This model is used to represent user data that is read from the database,
+    including email, username, user ID, active status, and creation timestamp.
+    """
+    email: EmailStr
+    username: str
+    id: uuid.UUID
+    is_active: bool
+    created_at: datetime
 
 class UserLogin(BaseModel):
     """
