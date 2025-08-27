@@ -12,12 +12,12 @@ from app.services import auth_service, user_service
 # OAuth2PasswordBearer is used to extract the token from the Authorization header
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
-async def get_current_user(db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme)) -> User:
+async def get_current_user(session: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme)) -> User:
   """
   FastAPI dependency to authenticate and retrieve the current user based on the provided JWT token.
 
   Args:
-      `db`: Async database session for executing queries.
+      `session`: Async database session for executing queries.
       `token`: The OAuth2 (JWT) token extracted from the Authorization header.
 
   Returns:
@@ -36,7 +36,7 @@ async def get_current_user(db: AsyncSession = Depends(get_db), token: str = Depe
   if token_data is None:
     raise credentials_exception
   
-  user = await user_service.get_user_by_id(db, token_data.user_id)
+  user = await user_service.get_user_by_id(session, token_data.user_id)
   if user is None:
     raise credentials_exception
 

@@ -14,7 +14,7 @@ from app.services import auth_service, user_service
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 @router.post("/register", response_model=User)
-async def register(user_create: UserCreate, db: AsyncSession = Depends(get_db)) -> User:
+async def register(user_create: UserCreate, session: AsyncSession = Depends(get_db)) -> User:
     """
     Register a new user.
 
@@ -24,12 +24,12 @@ async def register(user_create: UserCreate, db: AsyncSession = Depends(get_db)) 
 
     Args:
         `user_create` (`UserCreate`): User creation data (email and password)
-        `db` (AsyncSession): Async database session for executing queries.
+        `session` (AsyncSession): Async database session for executing queries.
 
     Returns:
         User: The newly created user.
     """
-    existing_user_email = await auth_service.get_user_by_email(db, user_create.email)
+    existing_user_email = await auth_service.get_user_by_email(session, user_create.email)
     if existing_user_email:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -39,7 +39,7 @@ async def register(user_create: UserCreate, db: AsyncSession = Depends(get_db)) 
     return await user_service.create_user(user_create)
 
 @router.post("/login", response_model=User)
-async def login(form_data: UserLogin, db: AsyncSession = Depends(get_db)) -> dict:
+async def login(form_data: UserLogin, session: AsyncSession = Depends(get_db)) -> dict:
     """
     Authenticate a user and return a JWT access token.
 
@@ -49,12 +49,12 @@ async def login(form_data: UserLogin, db: AsyncSession = Depends(get_db)) -> dic
 
     Args:
         `form_data` (UserLogin): User login data (email and password).
-        `db` (AsyncSession): Async database session for executing queries.
+        `session` (AsyncSession): Async database session for executing queries.
 
     Returns:
         dict: A dictionary containing the access token and token type.
     """
-    user = await auth_service.authenticate_user(db, form_data.email, form_data.password)
+    user = await auth_service.authenticate_user(session, form_data.email, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
