@@ -88,19 +88,19 @@ def get_data_from_token(token: str) -> TokenData | None:
   return token_data
 
 ##### Database Functions #####
-async def authenticate_user(db: AsyncSession, email: str, password: str) -> User | None:
+async def authenticate_user(session: AsyncSession, email: str, password: str) -> User | None:
   """
   Authenticate a user by their email and password.
 
   Args:
-      `db`: Async database session for executing queries.
+      `session`: Async database session for executing queries.
       `email`: Email of the user to authenticate.
       `password`: Plain text password of the user to authenticate.
 
   Returns:
       The authenticated User object if credentials are valid, otherwise None.
   """
-  user = await get_user_by_email(db, email)
+  user = await get_user_by_email(session, email)
 
   if not user or not user.password or not verify_password(password, user.password):
     return None
