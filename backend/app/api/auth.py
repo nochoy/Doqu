@@ -1,17 +1,16 @@
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
 
+from app.api.dependencies import get_current_active_user
 from app.core.config import settings
 from app.db.session import get_db
-from app.api.dependencies import get_current_active_user
 from app.models.user import User, UserCreate, UserLogin
 from app.services import auth_service, user_service
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
+
 
 @router.post("/register", response_model=User)
 async def register(user_create: UserCreate, session: AsyncSession = Depends(get_db)) -> User:
@@ -32,11 +31,11 @@ async def register(user_create: UserCreate, session: AsyncSession = Depends(get_
     existing_user_email = await auth_service.get_user_by_email(session, user_create.email)
     if existing_user_email:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registerd"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registerd"
         )
 
-    return await user_service.create_user(user_create)
+    return await user_service.create_user(session, user_create)
+
 
 @router.post("/login", response_model=User)
 async def login(form_data: UserLogin, session: AsyncSession = Depends(get_db)) -> dict:

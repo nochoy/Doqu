@@ -1,13 +1,15 @@
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
+
 import asyncpg  # type: ignore
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import OperationalError
-from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
 from app.api import auth
 from app.core.config import settings
 from app.db import check_db_connection, init_db
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
@@ -38,11 +40,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Shutdown logic here if needed
     print("FastAPI application has shutdown.")
 
+
 app = FastAPI(
-    title="Doqu API", 
-    description="Real-time quiz platform API", 
-    version="1.0.0", 
-    lifespan=lifespan
+    title="Doqu API", description="Real-time quiz platform API", version="1.0.0", lifespan=lifespan
 )
 
 # Configure CORS
