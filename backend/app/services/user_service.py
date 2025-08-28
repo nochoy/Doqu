@@ -3,11 +3,11 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from app.models.user import User, UserCreate, UserRead
+from app.models.user import User, UserCreate
 from app.services import auth_service
 
 
-async def get_user_by_id(session: AsyncSession, user_id: uuid.UUID) -> UserRead | None:
+async def get_user_by_id(session: AsyncSession, user_id: uuid.UUID) -> User | None:
     """
     Retrieve a user from the database by their unique UUID.
 
@@ -16,12 +16,12 @@ async def get_user_by_id(session: AsyncSession, user_id: uuid.UUID) -> UserRead 
         `user_id`: UUID of the user to retrieve.
 
     Returns:
-        UserRead: The User object if found, otherwise None. Includes id, username, email,
-        active status, and created timestamp.    """
+        User: The User object if found, otherwise None.
+    """
     return await session.get(User, user_id)
 
 
-async def get_user_by_email(session: AsyncSession, email: str) -> UserRead | None:
+async def get_user_by_email(session: AsyncSession, email: str) -> User | None:
     """
     Retrieve a user from the database by their email.
 
@@ -30,15 +30,14 @@ async def get_user_by_email(session: AsyncSession, email: str) -> UserRead | Non
         `email`: Email of the user to retrieve.
 
     Returns:
-        UserRead: The User object if found, otherwise None. Includes id, username, email,
-        active status, and created timestamp.
+        User: The User object if found, otherwise None.
     """
     statement = select(User).where(User.email == email)
     result = await session.execute(statement)
     return result.scalars().first()
 
 
-async def create_user(session: AsyncSession, user_in: UserCreate) -> UserRead:
+async def create_user(session: AsyncSession, user_in: UserCreate) -> User:
     """
     Create a new user in the database.
 
@@ -47,8 +46,7 @@ async def create_user(session: AsyncSession, user_in: UserCreate) -> UserRead:
         `user_in`: `UserCreate` object containing the details of the user to be created.
 
     Returns:
-        UserRead: The newly created User object with id, username, email,
-        active status, and created timestamp.
+        User: The newly created User object.
     """
     new_user = User(
         email=user_in.email,
