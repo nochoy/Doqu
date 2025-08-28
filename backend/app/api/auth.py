@@ -1,17 +1,22 @@
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.db.session import get_db
 from app.models.user import Token, UserCreate, UserLogin, UserRead
+from app.utils.responses import get_responses
 from app.services import auth_service, user_service
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
-@router.post("/register", response_model=UserRead, status_code=201)
+@router.post("/register", 
+    response_model=UserRead, 
+    status_code=status.HTTP_201_CREATED, 
+    responses=get_responses(400)
+)
 async def register(
     user_create: UserCreate, 
     session: Annotated[AsyncSession, Depends(get_db)],
@@ -43,7 +48,7 @@ async def register(
 async def login(
     form_data: UserLogin, 
     session: Annotated[AsyncSession, Depends(get_db)],
-) -> dict:
+) -> Token:
     """
     Authenticate a user and return a JWT access token.
 
