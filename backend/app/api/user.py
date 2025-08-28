@@ -11,7 +11,7 @@ from app.utils.responses import get_responses
 
 router = APIRouter(prefix="/users", tags=["users"])
 
-user_not_found_exception = HTTPException(
+UserNotFoundException = HTTPException(
     status_code=status.HTTP_404_NOT_FOUND,
     detail="User not found",
 )
@@ -56,7 +56,7 @@ async def read_user_by_id(
     """
     user = await user_service.get_user_by_id(session, user_id)
     if not user:
-        raise user_not_found_exception
+        raise UserNotFoundException
     return user
 
 
@@ -79,6 +79,6 @@ async def read_user_by_email(
     """
     user = await user_service.get_user_by_email(session, email)
     if not user:
-        raise user_not_found_exception
+        raise UserNotFoundException
     return user
 
