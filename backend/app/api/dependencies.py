@@ -1,4 +1,5 @@
 from typing import Annotated
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,8 +11,9 @@ from app.services import auth_service, user_service
 # HTTPBearer is used to extract the token from the Authorization header
 http_scheme = HTTPBearer(auto_error=False)
 
+
 async def get_current_user(
-    session: Annotated[AsyncSession, Depends(get_db)], 
+    session: Annotated[AsyncSession, Depends(get_db)],
     http_credentials: Annotated[HTTPAuthorizationCredentials, Depends(http_scheme)],
 ) -> User:
     """
@@ -36,7 +38,7 @@ async def get_current_user(
 
     if http_credentials is None:
         raise credentials_exception
-    
+
     token = http_credentials.credentials
     token_data = auth_service.get_data_from_token(token)
     if token_data is None:
