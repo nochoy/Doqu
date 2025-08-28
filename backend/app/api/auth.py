@@ -1,24 +1,26 @@
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.db.session import get_db
 from app.models.user import Token, UserCreate, UserLogin, UserRead
-from app.utils.responses import get_responses
 from app.services import auth_service, user_service
+from app.utils.responses import get_responses
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
-@router.post("/register", 
-    response_model=UserRead, 
-    status_code=status.HTTP_201_CREATED, 
-    responses=get_responses(400)
+
+@router.post(
+    "/register",
+    response_model=UserRead,
+    status_code=status.HTTP_201_CREATED,
+    responses=get_responses(400),
 )
 async def register(
-    user_create: UserCreate, 
+    user_create: UserCreate,
     session: Annotated[AsyncSession, Depends(get_db)],
 ) -> UserRead:
     """
@@ -41,12 +43,13 @@ async def register(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registerd"
         )
 
-    return await user_service.create_user(session, user_create)
+    user = await user_service.create_user(session, user_create)
+    return UserRead.model_validate(user)
 
 
 @router.post("/login", response_model=Token)
 async def login(
-    form_data: UserLogin, 
+    form_data: UserLogin,
     session: Annotated[AsyncSession, Depends(get_db)],
 ) -> Token:
     """
@@ -77,5 +80,4 @@ async def login(
         expires_delta=access_token_expires,
     )
 
-    return {"access_token": access_token, "token_type": "bearer"}
-
+    return Token.model_validate({"access_token": access_token, "token_type": "bearer"})

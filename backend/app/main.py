@@ -6,8 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import OperationalError
 
-from app.api import auth
-from app.api import user
+from app.api import auth, user
 from app.core.config import settings
 from app.db import check_db_connection, init_db
 

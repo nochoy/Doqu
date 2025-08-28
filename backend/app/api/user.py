@@ -1,5 +1,6 @@
-from typing import Annotated
 import uuid
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,10 +17,12 @@ UserNotFoundException = HTTPException(
     detail="User not found",
 )
 
-@router.get("/me", 
-    response_model=UserRead, 
-    summary="Read currently logged in user", 
-    responses=get_responses(401)
+
+@router.get(
+    "/me",
+    response_model=UserRead,
+    summary="Read currently logged in user",
+    responses=get_responses(401),
 )
 async def read_user_me(current_user: Annotated[User, Depends(get_current_active_user)]) -> UserRead:
     """
@@ -32,10 +35,11 @@ async def read_user_me(current_user: Annotated[User, Depends(get_current_active_
         `current_user` (User): Current authenticated active user, provided by the dependency
 
     Returns:
-        UserRead: The authenticated user's information including id, username, email, 
+        UserRead: The authenticated user's information including id, username, email,
         active status, and created timestamp.
     """
-    return current_user
+    return UserRead.model_validate(current_user)
+
 
 @router.get("/{user_id}", response_model=UserRead, responses=get_responses(401, 404))
 async def read_user_by_id(
@@ -51,13 +55,13 @@ async def read_user_by_id(
         `session` (AsyncSession): Async database session for executing queries.
 
     Returns:
-        UserRead: The requested user's information including id, username, email, 
+        UserRead: The requested user's information including id, username, email,
         active status, and created timestamp.
     """
     user = await user_service.get_user_by_id(session, user_id)
     if not user:
         raise UserNotFoundException
-    return user
+    return UserRead.model_validate(user)
 
 
 @router.get("/", response_model=UserRead, responses=get_responses(401, 404))
@@ -80,5 +84,4 @@ async def read_user_by_email(
     user = await user_service.get_user_by_email(session, email)
     if not user:
         raise UserNotFoundException
-    return user
-
+    return UserRead.model_validate(user)
