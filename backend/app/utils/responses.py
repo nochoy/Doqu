@@ -13,6 +13,9 @@ def get_responses(*codes: int) -> Dict[int | str, Dict[str, Any]]:
     Returns:
         A dictionary where the keys are the provided status codes and the values are dictionaries
         containing the error response model and description for each code.
+
+    Raises:
+        ValueError: If any provided status code is not supported.
     """
     base = {
         400: {"model": ErrorResponse, "description": "Error: Bad Request"},
