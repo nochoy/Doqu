@@ -36,69 +36,108 @@ Doqu is a real-time quiz platform with AI-powered quiz generation, enhanced play
 ```
 Doqu/
 ├── 📁 backend/                  # FastAPI backend service
+│   ├── 📁 alembic/              # Database migrations
+│   │   ├── versions/            # Migration files
+│   │   ├── env.py               # Migration environment
+│   │   ├── script.py.mako       # Migration template
+│   │   └── README               # Alembic documentation
 │   ├── 📁 app/                  # Main application package
 │   │   ├── 📁 api/              # REST API endpoints (v1)
-│   │   │   ├── auth.py           # Authentication & authorization
+│   │   │   ├── auth.py          # Authentication & authorization endpoints
+│   │   │   ├── dependencies.py  # FastAPI dependencies
+│   │   │   └── user.py          # User management endpoints
 │   │   ├── 📁 core/             # Core configurations & settings
-│   │   │   └── config.py         # Environment variables & app config
+│   │   │   └── config.py        # Environment variables & app config
 │   │   ├── 📁 db/               # Database layer
-│   │   │   ├── engine.py         # SQLAlchemy engine configuration
-│   │   │   ├── session.py        # Database session management
-│   │   │   ├── init_db.py        # Database initialization
-│   │   │   └── utils.py          # Database utilities
+│   │   │   ├── base.py          # Database base classes
+│   │   │   ├── engine.py        # SQLAlchemy engine configuration
+│   │   │   ├── session.py       # Database session management
+│   │   │   ├── init_db.py       # Database initialization
+│   │   │   └── utils.py         # Database utilities
 │   │   ├── 📁 models/           # SQLModel database models
-│   │   │   ├── user.py           # User & authentication models
+│   │   │   ├── error.py         # Error response models
+│   │   │   └── user.py          # User & authentication models
+│   │   ├── 📁 services/         # Business logic layer
+│   │   │   ├── auth_service.py  # Authentication services
+│   │   │   └── user_service.py  # User management services
+│   │   ├── 📁 utils/            # Utility functions
+│   │   │   └── responses.py     # Response utilities
 │   │   ├── 📁 websocket/        # Real-time communication
-│   │   │   └── handlers.py       # WebSocket event handlers
-│   │   ├── main.py               # FastAPI application factory
-│   │   └── __init__.py           # Package initialization
+│   │   │   └── handlers.py      # WebSocket event handlers
+│   │   └── main.py              # FastAPI application factory
 │   ├── 📁 tests/                # Backend test suite
-│   ├── requirements.txt          # Production dependencies
-│   ├── requirements-dev.txt      # Development dependencies
-│   ├── .env.example              # Environment variable templates
-│   ├── pyproject.toml            # Python project configuration
-│   ├── Dockerfile                # Backend container image
-│   └── README.md                 # Backend-specific documentation
+│   │   ├── conftest.py          # Pytest configuration
+│   │   ├── test_auth.py         # Authentication tests
+│   │   └── test_user.py         # User management tests
+│   ├── 📁 htmlcov/              # Test coverage reports
+│   ├── .env.example             # Environment variable templates
+│   ├── .flake8                  # Python linting configuration
+│   ├── .gitignore               # Git ignore patterns
+│   ├── alembic.ini              # Alembic configuration
+│   ├── Dockerfile               # Backend container image
+│   ├── pyproject.toml           # Python project configuration
+│   ├── pytest.ini               # Pytest configuration
+│   ├── README.md                # Backend-specific documentation
+│   ├── requirements-dev.txt     # Development dependencies
+│   └── requirements.txt         # Production dependencies
 │
 ├── 📁 frontend/                 # Next.js frontend service
 │   ├── 📁 src/
+│   │   ├── 📁 __tests__/        # Frontend test suite
+│   │   │   └── simple.test.tsx  # Basic test example
 │   │   ├── 📁 app/              # Next.js 15 app directory
-│   │   │   ├── api/              # Next.js API routes (proxy)
-│   │   │   ├── login/            # Authentication pages
-│   │   │   ├── globals.css       # Global styles & Tailwind
-│   │   │   ├── layout.tsx        # Root layout component
-│   │   │   └── page.tsx          # Home page component
+│   │   │   ├── api/             # Next.js API routes (proxy)
+│   │   │   │   └── auth.ts      # Authentication API routes
+│   │   │   ├── login/           # Authentication pages
+│   │   │   │   └── page.tsx     # Login page component
+│   │   │   ├── globals.css      # Global styles & Tailwind
+│   │   │   ├── layout.tsx       # Root layout component
+│   │   │   └── page.tsx         # Home page component
 │   │   ├── 📁 components/       # Reusable React components
-│   │   │   ├── ui/               # Shadcn/ui primitive components
+│   │   │   ├── login/           # Login-specific components
+│   │   │   ├── ui/              # Shadcn/ui primitive components
 │   │   │   └── shared/           # Shared application components
-│   │   └── 📁 contexts/         # React context providers & state management
+│   │   ├── 📁 contexts/         # React context providers
 │   │   ├── 📁 lib/              # Utility libraries
-│   │   │   ├── socket.ts         # WebSocket client configuration
-│   │   │   ├── utils.ts          # Helper functions
-│   │   │   └── api.ts            # API client configuration
-│   │   ├── 📁 types/            # TypeScript type definitions
-│   │   │   └── auth.ts           # Authentication-related types
-│   │   └── 📁 __tests__/        # Frontend test suite
+│   │   │   ├── socket.ts        # WebSocket client configuration
+│   │   │   ├── utils.ts         # Helper functions
+│   │   │   └── api.ts           # API client configuration
+│   │   └── 📁 types/            # TypeScript type definitions
+│   │       └── auth.ts          # Authentication-related types
 │   ├── 📁 public/               # Static assets
-│   ├── package.json              # Node.js dependencies
-│   ├── tsconfig.json             # TypeScript configuration
-│   ├── next.config.ts            # Next.js configuration
-│   ├── tailwind.config.ts        # Tailwind CSS configuration
-│   ├── .env.example              # Environment variable templates
-│   ├── Dockerfile                # Frontend container image
-│   └── README.md                 # Frontend-specific documentation
+│   ├── .env.example             # Environment variable templates
+│   ├── .eslintrc.json           # ESLint configuration
+│   ├── .gitignore               # Git ignore patterns
+│   ├── .prettierignore          # Prettier ignore patterns
+│   ├── .prettierrc              # Prettier configuration
+│   ├── components.json          # Shadcn/ui configuration
+│   ├── Dockerfile               # Frontend container image
+│   ├── eslint.config.mjs        # ESLint configuration
+│   ├── jest.config.js           # Jest test configuration
+│   ├── jest.setup.js            # Jest setup file
+│   ├── next.config.ts           # Next.js configuration
+│   ├── package-lock.json        # Node.js lock file
+│   ├── package.json             # Node.js dependencies
+│   ├── postcss.config.mjs       # PostCSS configuration
+│   ├── README.md                # Frontend-specific documentation
+│   ├── tailwind.config.ts       # Tailwind CSS configuration
+│   └── tsconfig.json            # TypeScript configuration
 │
 ├── 📁 docs/                     # Project documentation
-│   └── CONTRIBUTING.md           # Development guidelines
+│   └── CONTRIBUTING.md          # Development guidelines
 │
-├── 📁 alembic/                  # Root-level migrations (shared)
 ├── 📁 .devcontainer/            # VS Code development container
+│   └── devcontainer.json        # Dev container configuration
+│
 ├── 📁 .github/                  # GitHub workflows & templates
-├── docker-compose.yml            # Multi-service orchestration
-├── docker-compose.override.yml   # Local development overrides
-├── .gitignore                    # Git ignore patterns
-├── LICENSE                       # Project license
-└── README.md                     # This file
+│   ├── ISSUE_TEMPLATE/          # Issue templates
+│   └── PULL_REQUEST_TEMPLATE.md # PR template
+│
+├── .dockerignore                # Docker ignore patterns
+├── .gitignore                   # Git ignore patterns
+├── docker-compose.yml           # Multi-service orchestration
+├── LICENSE                      # Project license
+└── README.md                    # This file
 ```
 
 ## 🏹 Data Flow Architecture
