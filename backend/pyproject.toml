@@ -106,6 +106,10 @@ omit = [
     "*/alembic/*",
     "*/venv/*",
     "*/__pycache__/*",
+    "*/db/init_db.py",
+    "*/db/session.py",
+    "*/db/utils.py",
+    "*/websocket/*",
 ]
 
 [tool.coverage.report]

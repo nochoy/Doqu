@@ -60,6 +60,7 @@ class UserRead(BaseModel):
     This model is used to represent user data that is read from the database,
     including email, username, user ID, active status, and creation timestamp.
     """
+
     # Validate fields from SQLAlchemy object attributes
     model_config = ConfigDict(from_attributes=True)
 
