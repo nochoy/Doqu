@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+from passlib.exc import UnknownHashError, MissingBackendError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -36,9 +37,12 @@ def verify_password(plaintext_password: str, hashed_password: str) -> bool:
         `hashed_password`: The hashed password to compare against
 
     Returns:
-        True if the password matches, False otherwise
+        True if the password matches, False otherwise or errors out
     """
-    return bool(password_context.verify(plaintext_password, hashed_password))
+    try:
+        return bool(password_context.verify(plaintext_password, hashed_password))
+    except (UnknownHashError, MissingBackendError, ValueError):
+        return False
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
@@ -87,7 +91,7 @@ def get_data_from_token(token: str) -> TokenData | None:
             return None
 
         token_data = TokenData(user_id=uuid.UUID(user_id), email=email)
-    except JWTError:
+    except (JWTError, ValueError):
         return None
     return token_data
 
