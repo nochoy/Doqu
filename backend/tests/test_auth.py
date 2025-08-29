@@ -206,7 +206,7 @@ async def test_read_users_me_success(async_client: AsyncClient, session: AsyncSe
         async_client, "me@example.com", "meuser", "mepassword"
     )
 
-    # Access /api/auth/users/me
+    # Access /api/users/me
     response = await async_client.get(
         "/api/users/me", headers={"Authorization": f"Bearer {access_token}"}
     )
@@ -254,7 +254,7 @@ async def test_read_users_me_inactive_user(async_client: AsyncClient, session: A
     login_response = await async_client.post("/api/auth/login", json=login_data)
     token = Token(**login_response.json())
 
-    # Access /api/auth/users/me
+    # Access /api/users/me
     response = await async_client.get(
         "/api/users/me", headers={"Authorization": f"Bearer {token.access_token}"}
     )
