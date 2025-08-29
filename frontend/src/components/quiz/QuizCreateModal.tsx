@@ -3,12 +3,14 @@
 import { useState, FormEvent, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
-import Button from '../shared/Button';
-import Input from '../shared/Input';
-import Textarea from '../shared/Textarea';
-import Select from '../shared/Select';
-import OptionToggle from '../shared/OptionToggle';
-import { X } from '@phosphor-icons/react';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Textarea } from '../ui/textarea';
+import { Select } from '../ui/select';
+import OptionToggle from '../ui/OptionToggle';
+import { XIcon } from '@phosphor-icons/react';
+import { SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface QuizCreateModalProps {
   onClose: () => void;
@@ -74,6 +76,11 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
     setFormData(prev => ({ ...prev, [name as keyof QuizModalData]: inputValue }));
   };
 
+  const handleSelectChange = (name: keyof QuizModalData) => (value: string) => {
+    const event = { target: { name, value } } as ChangeEvent<HTMLInputElement>;
+    handleChange(event);
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -129,7 +136,7 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
           variant="ghost"
           className="absolute top-4 right-4" // Position the button
         >
-          <X size={24} className="text-muted-foreground" />
+          <XIcon size={24} className="text-muted-foreground" />
         </Button>
         <h2 id="quiz-settings-title" className="text-xl font-semibold mb-6 text-left">
           Create a Quiz
@@ -137,14 +144,17 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Title */}
           <div>
+            <Label htmlFor="title" className="text-left">
+              Title
+            </Label>
             <Input
-              label="Title"
               name="title"
               id="title"
               value={formData.title}
               onChange={handleChange}
               required
               placeholder="Untitled Quiz"
+              className="mt-2"
               maxLength={TITLE_MAX_LENGTH}
             />
             <p
@@ -156,14 +166,16 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
 
           {/* Description*/}
           <div>
+            <Label htmlFor="description" className="text-left">
+              Description
+            </Label>
             <Textarea
-              label="Description"
               name="description"
               id="description"
-              rows={4}
               value={formData.description}
               onChange={handleChange}
               placeholder="A fun quiz!"
+              className="mt-2 h-32"
               maxLength={DESC_MAX_LENGTH}
             />
             <p
@@ -175,22 +187,47 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
 
           {/* Category / Difficulty*/}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Select
-              label="Category"
-              name="category"
-              id="category"
-              value={formData.category}
-              onChange={handleChange}
-              options={categoryOptions}
-            ></Select>
-            <Select
-              label="Difficulty"
-              name="difficulty"
-              id="difficulty"
-              value={formData.difficulty ?? ''}
-              onChange={handleChange}
-              options={difficultyOptions}
-            />
+            {/* Category Select */}
+            <div>
+              <Label htmlFor="category">Category</Label>
+              <Select
+                name="category"
+                value={formData.category}
+                onValueChange={handleSelectChange('category')}
+              >
+                <SelectTrigger id="category" className="w-full mt-2">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categoryOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Difficulty Select */}
+            <div>
+              <Label htmlFor="difficulty">Difficulty</Label>
+              <Select
+                name="difficulty"
+                value={String(formData.difficulty ?? '')}
+                onValueChange={handleSelectChange('difficulty')}
+              >
+                <SelectTrigger id="difficulty" className="w-full mt-2">
+                  <SelectValue placeholder="Select a difficulty" />
+                </SelectTrigger>
+                <SelectContent>
+                  {difficultyOptions.map(option => (
+                    <SelectItem key={option.value} value={String(option.value)}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Public/Private Toggle */}

@@ -8,12 +8,13 @@ from app.db.session import get_db
 from app.models.quiz import QuizCreate, QuizRead, QuizUpdate
 from app.services import quiz_service
 from app.services.quiz_service import QuizNotFoundException, QuizPermissionException
+from app.utils.responses import get_responses
 
 router = APIRouter()
 
 
 async def get_current_user_id() -> uuid.UUID:
-    # In a real app, this would decode a JWT token and return the user's ID.
+    # TODO: Use /api/auth.py's get_current_user()
     return uuid.UUID("00000000-0000-0000-0000-000000000000")
 
 
@@ -63,7 +64,7 @@ async def read_quizzes(
     return [QuizRead.model_validate(quiz) for quiz in quizzes]
 
 
-@router.get("/{quiz_id}", response_model=QuizRead)
+@router.get("/{quiz_id}", response_model=QuizRead, responses=get_responses(404))
 async def read_quiz(
     session: Annotated[AsyncSession, Depends(get_db)],
     quiz_id: Annotated[int, Path(ge=1)],
@@ -88,7 +89,7 @@ async def read_quiz(
     return QuizRead.model_validate(db_quiz)
 
 
-@router.patch("/{quiz_id}", response_model=QuizRead)
+@router.patch("/{quiz_id}", response_model=QuizRead, responses=get_responses(404, 403))
 async def update_quiz(
     session: Annotated[AsyncSession, Depends(get_db)],
     quiz_id: Annotated[int, Path(ge=1)],
@@ -127,7 +128,7 @@ async def update_quiz(
     return QuizRead.model_validate(updated_quiz)
 
 
-@router.delete("/{quiz_id}", status_code=204)
+@router.delete("/{quiz_id}", status_code=204, responses=get_responses(404, 403))
 async def delete_quiz(
     session: Annotated[AsyncSession, Depends(get_db)],
     quiz_id: Annotated[int, Path(ge=1)],
