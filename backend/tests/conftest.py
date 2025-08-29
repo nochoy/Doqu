@@ -9,8 +9,6 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlmodel import SQLModel
 
-from app.core.config import settings
-from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
 

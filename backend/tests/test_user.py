@@ -3,17 +3,8 @@ import uuid
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import Session, select
 
-from app.core.config import settings
-from app.models.user import Token, User, UserCreate, UserRead
-from app.services.auth_service import create_access_token, hash_password
-from app.services.user_service import (  # Import user_service functions
-    get_user_by_email,
-    get_user_by_id,
-)
-
-# Assuming 'async_client' and 'session' fixtures are available from conftest.py
+from app.models.user import Token, User, UserRead
 
 
 # Helper to register and login a user, returning the token and user_id
