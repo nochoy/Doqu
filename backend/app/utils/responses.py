@@ -22,4 +22,7 @@ def get_responses(*codes: int) -> Dict[int | str, Dict[str, Any]]:
         409: {"model": ErrorResponse, "description": "Error: Conflict"},
     }
 
-    return {code: base[code] for code in codes if code in base}
+    unknown = [c for c in codes if c not in base]
+    if unknown:
+        raise ValueError(f"Unsupported response code(s): {unknown}")
+    return {code: base[code] for code in codes}
