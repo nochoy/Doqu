@@ -32,9 +32,9 @@ async def get_user_by_email(session: AsyncSession, email: str) -> User | None:
     Returns:
         User: The User object if found, otherwise None.
     """
-    statement = select(User).where(User.email == email)
+    statement = select(User).where(User.email == email.strip().lower())
     result = await session.execute(statement)
-    return result.scalars().first()
+    return result.scalar_one_or_none()
 
 
 async def create_user(session: AsyncSession, user_in: UserCreate) -> User:
@@ -49,9 +49,9 @@ async def create_user(session: AsyncSession, user_in: UserCreate) -> User:
         User: The newly created User object.
     """
     new_user = User(
-        email=user_in.email,
+        email=user_in.email.strip().lower(),
         username=user_in.username,
-        password=auth_service.hash_password(user_in.password) if user_in.password else None,
+        password=auth_service.hash_password(user_in.password.strip()) if user_in.password else None,
         google_id=user_in.google_id,
     )
 
