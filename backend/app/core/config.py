@@ -22,7 +22,7 @@ class Settings(BaseSettings):
         `GOOGLE_CLIENT_SECRET` (Optional[str]): The Google OAuth client secret.
         `CORS_ORIGINS` (list[str]): A list of allowed CORS origins.
         `GOOGLE_API_KEY` (Optional[str]): The Google API key for AI/ML services.
-        `model_config` (dict): Configuration for the Pydantic model, including the \
+        `model_config` (SettingsConfigDict): Configuration for the Pydantic model, including the \
             environment file and extra settings.
     """
 
