@@ -22,7 +22,7 @@ UserNotFoundException = HTTPException(
     "/me",
     response_model=UserRead,
     summary="Read currently logged in user",
-    responses=get_responses(401),
+    responses=get_responses(401, 403),
 )
 async def read_user_me(current_user: Annotated[User, Depends(get_current_active_user)]) -> UserRead:
     """
@@ -81,7 +81,7 @@ async def read_user_by_email(
     Returns:
         UserRead object containing the user's information.
     """
-    user = await user_service.get_user_by_email(session, email.lower())
+    user = await user_service.get_user_by_email(session, email)
     if not user:
         raise UserNotFoundException
     return UserRead.model_validate(user)
