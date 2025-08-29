@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import socketio  # type: ignore
 
@@ -9,7 +9,7 @@ sio = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi")
 
 
 @sio.event
-async def connect(sid: str, environ: Dict[str, Any]) -> None:
+async def connect(sid: str, environ: Dict[str, Any]) -> Optional[bool]:
     """Handle client connection."""
     print(f"Client {sid} connected")
     await sio.emit("connected", {"message": "Welcome to Doqu!"}, room=sid)
