@@ -28,7 +28,7 @@ async def register(
     Register a new user.
 
     This endpoint allows for the registration of a new user. It checks if the email
-    provided is already registered and raises an HTTP 400 error if it is. If the email
+    provided is already registered and raises an HTTP 409 error if it is. If the email
     is not registered, it creates a new user.
 
     Args:
@@ -36,7 +36,7 @@ async def register(
         `session` (AsyncSession): Async database session for executing queries.
 
     Returns:
-        User: The newly created user.
+        UserRead: The newly created user.
     """
 
     try:
@@ -63,7 +63,7 @@ async def login(
         `session` (AsyncSession): Async database session for executing queries.
 
     Returns:
-        dict: A dictionary containing the access token and token type.
+        Token: Access token and token type
     """
     user = await auth_service.authenticate_user(session, form_data.email, form_data.password)
     if not user:
