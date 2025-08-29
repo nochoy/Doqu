@@ -18,6 +18,7 @@ def get_responses(*codes: int) -> Dict[int | str, Dict[str, Any]]:
         400: {"model": ErrorResponse, "description": "Error: Bad Request"},
         401: {"model": ErrorResponse, "description": "Error: Unauthorized"},
         404: {"model": ErrorResponse, "description": "Error: Not Found"},
+        409: {"model": ErrorResponse, "description": "Error: Conflict"},
     }
 
     return {code: base[code] for code in codes if code in base}

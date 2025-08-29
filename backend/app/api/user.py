@@ -2,6 +2,7 @@ import uuid
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
+from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_active_user
@@ -41,7 +42,7 @@ async def read_user_me(current_user: Annotated[User, Depends(get_current_active_
     return UserRead.model_validate(current_user)
 
 
-@router.get("/{user_id}", response_model=UserRead, responses=get_responses(401, 404))
+@router.get("/{user_id}", response_model=UserRead, responses=get_responses(401, 403, 404))
 async def read_user_by_id(
     user_id: Annotated[uuid.UUID, Path()],
     session: Annotated[AsyncSession, Depends(get_db)],
@@ -64,9 +65,9 @@ async def read_user_by_id(
     return UserRead.model_validate(user)
 
 
-@router.get("/", response_model=UserRead, responses=get_responses(401, 404))
+@router.get("/", response_model=UserRead, responses=get_responses(401, 403, 404))
 async def read_user_by_email(
-    email: Annotated[str, Query()],
+    email: Annotated[EmailStr, Query(description="User email address")],
     session: Annotated[AsyncSession, Depends(get_db)],
     _: Annotated[User, Depends(get_current_active_user)],
 ) -> UserRead:
@@ -81,7 +82,7 @@ async def read_user_by_email(
     Returns:
         UserRead object containing the user's information.
     """
-    user = await user_service.get_user_by_email(session, email)
+    user = await user_service.get_user_by_email(session, email.lower())
     if not user:
         raise UserNotFoundException
     return UserRead.model_validate(user)

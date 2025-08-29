@@ -15,15 +15,14 @@ from app.services.auth_service import create_access_token
 async def register_and_login_user(client: AsyncClient, email: str, username: str, password: str):
     register_data = {"email": email, "username": username, "password": password}
     register_response = await client.post("/api/auth/register", json=register_data)
-    assert register_response.status_code == 201
+    assert register_response.status_code == 201, f"Registration failed: {register_response.json()}"
     user_id = UserRead(**register_response.json()).id
 
     login_data = {"email": email, "password": password}
     login_response = await client.post("/api/auth/login", json=login_data)
-    assert login_response.status_code == 200
+    assert login_response.status_code == 200, f"Login failed: {login_response.json()}"
     token = Token(**login_response.json())
     return token.access_token, user_id
-
 
 @pytest.mark.asyncio
 async def test_register_user_success_email_password(
@@ -101,7 +100,7 @@ async def test_register_user_duplicate_email(async_client: AsyncClient, session:
         "password": "anotherpassword",
     }
     response = await async_client.post("/api/auth/register", json=duplicate_user_data)
-    assert response.status_code == 400
+    assert response.status_code == 409
     assert "Email already registered" in response.json()["detail"]
 
 
@@ -211,7 +210,6 @@ async def test_read_users_me_success(async_client: AsyncClient, session: AsyncSe
     response = await async_client.get(
         "/api/users/me", headers={"Authorization": f"Bearer {access_token}"}
     )
-    print("******RESPONSE: ", response)
     assert response.status_code == 200
     user_read = UserRead(**response.json())
     assert user_read.email == "me@example.com"
@@ -260,7 +258,7 @@ async def test_read_users_me_inactive_user(async_client: AsyncClient, session: A
     response = await async_client.get(
         "/api/users/me", headers={"Authorization": f"Bearer {token.access_token}"}
     )
-    assert response.status_code == 400
+    assert response.status_code == 403
     assert "Inactive user" in response.json()["detail"]
 
 

@@ -5,6 +5,7 @@ import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
+from sqlalchemy import StaticPool
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlmodel import SQLModel
@@ -13,21 +14,20 @@ from app.db.session import get_db
 from app.main import app
 
 # Test database URL - using SQLite in-memory for tests
-DATABASE_URL = "sqlite+aiosqlite:///:memory:?cache=shared"
+DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 # Create test engine
 engine = create_async_engine(
     DATABASE_URL,
     echo=False,
-    connect_args={"uri": True},
+    poolclass=StaticPool,
 )
 TestingSessionLocal = sessionmaker(
-    autocommit=False,
+    expire_on_commit=False,
     autoflush=False,
     class_=AsyncSession,
     bind=engine,
 )
-
 
 @pytest.fixture(scope="session")
 def event_loop():
