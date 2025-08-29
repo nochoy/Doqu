@@ -40,10 +40,15 @@ async def get_current_user(
         raise credentials_exception
 
     token = http_credentials.credentials
-    token_data = auth_service.get_data_from_token(token)
+    if not token:
+        raise credentials_exception
+    try:
+        token_data = auth_service.get_data_from_token(token)
+    except Exception:
+        raise credentials_exception
     if token_data is None:
         raise credentials_exception
-
+    
     user = await user_service.get_user_by_id(session, token_data.user_id)
     if user is None:
         raise credentials_exception
@@ -67,6 +72,6 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
         HTTPException: If the user is not active.
     """
     if not current_user.is_active:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user")
 
     return current_user

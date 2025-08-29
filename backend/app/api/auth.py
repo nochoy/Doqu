@@ -3,6 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
 from app.core.config import settings
 from app.db.session import get_db
@@ -17,7 +18,7 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
     "/register",
     response_model=UserRead,
     status_code=status.HTTP_201_CREATED,
-    responses=get_responses(400),
+    responses=get_responses(409),
 )
 async def register(
     user_create: UserCreate,
@@ -37,17 +38,17 @@ async def register(
     Returns:
         User: The newly created user.
     """
-    existing_user_email = await auth_service.get_user_by_email(session, user_create.email)
-    if existing_user_email:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered"
-        )
 
-    user = await user_service.create_user(session, user_create)
+    try:
+        user = await user_service.create_user(session, user_create)
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Email already registered"
+        )
     return UserRead.model_validate(user)
 
 
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=Token, responses=get_responses(401))
 async def login(
     form_data: UserLogin,
     session: Annotated[AsyncSession, Depends(get_db)],

@@ -73,7 +73,7 @@ async def test_read_user_by_id_inactive_user(async_client: AsyncClient, session:
     response = await async_client.get(
         f"/api/users/{user_id}", headers={"Authorization": f"Bearer {access_token}"}
     )
-    assert response.status_code == 400
+    assert response.status_code == 403
     assert "Inactive user" in response.json()["detail"]
 
 
@@ -144,7 +144,7 @@ async def test_read_user_by_email_inactive_user(async_client: AsyncClient, sessi
         params={"email": "inactiveemail@example.com"},
         headers={"Authorization": f"Bearer {access_token}"},
     )
-    assert response.status_code == 400
+    assert response.status_code == 403
     assert "Inactive user" in response.json()["detail"]
 
 
@@ -201,8 +201,8 @@ async def test_read_user_by_email_invalid_email_format(
         params={"email": "invalid-email"},  # Invalid email
         headers={"Authorization": f"Bearer {access_token}"},
     )
-    assert response.status_code == 404  # FastAPI query parameter validation error
-    assert "User not found" in response.json()["detail"]
+    assert response.status_code == 422  # FastAPI query parameter validation error
+    assert "value is not a valid email address" in response.json()["detail"][0]["msg"]
 
 
 @pytest.mark.asyncio
