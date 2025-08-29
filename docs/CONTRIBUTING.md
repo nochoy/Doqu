@@ -132,7 +132,8 @@ If you prefer not to use Dev Containers and instead develop locally:
 
 3.  **Environment Configuration:**
     ```bash
-    cd backend
+    # From the root directory
+    cd ..
     
     # Backend environment
     cp backend/.env.example backend/.env

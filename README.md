@@ -16,7 +16,7 @@ Doqu is a real-time quiz platform with AI-powered quiz generation, enhanced play
 - **📊 Quiz Analytics**: Detailed dashboards for created, played, and saved quizzes, including performance metrics, comments, and ratings.
 - **🤼 Team Mode**: Play quizzes in teams with auto-assignment, team chat, and collaborative answering.
 - **👤 Profile Page**: View user's created quizzes, recent activity, analytics, and edit profile information.
-- **📡 Offline Mode for PGA**: Play quizzes offline with later score synchronization.
+- **📡 Offline Mode for PWA**: Play quizzes offline with later score synchronization.
 - **👓 Spectator Mode**: Watch live games with real-time updates on player answers and aggregate statistics.
 
 ## 🚀 Tech Stack
@@ -52,7 +52,6 @@ Doqu/
 │   │   │   └── handlers.py       # WebSocket event handlers
 │   │   ├── main.py               # FastAPI application factory
 │   │   └── __init__.py           # Package initialization
-│   ├── 📁 alembic/              # Database migrations
 │   ├── 📁 tests/                # Backend test suite
 │   ├── requirements.txt          # Production dependencies
 │   ├── requirements-dev.txt      # Development dependencies
@@ -95,7 +94,6 @@ Doqu/
 ├── 📁 alembic/                  # Root-level migrations (shared)
 ├── 📁 .devcontainer/            # VS Code development container
 ├── 📁 .github/                  # GitHub workflows & templates
-├── alembic.ini                   # Alembic configuration
 ├── docker-compose.yml            # Multi-service orchestration
 ├── docker-compose.override.yml   # Local development overrides
 ├── .gitignore                    # Git ignore patterns
