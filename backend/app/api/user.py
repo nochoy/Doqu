@@ -1,10 +1,9 @@
 import uuid
 from typing import Annotated
+from pydantic import EmailStr
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
-from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.api.dependencies import get_current_active_user
 from app.db.session import get_db
 from app.models.user import User, UserRead
