@@ -1,5 +1,5 @@
 import uuid
-from typing import List
+from typing import Any, List, cast
 
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -82,10 +82,11 @@ async def get_quizzes(session: AsyncSession, skip: int = 0, limit: int = 100) ->
     max_limit = 100
     safe_limit = max(0, min(limit, max_limit))
     safe_skip = max(0, skip)
-    statement = select(Quiz).order_by(Quiz.id).offset(safe_skip).limit(safe_limit)  # type: ignore
+    quiz_table = cast(Any, Quiz).__table__
+    statement = select(Quiz).order_by(quiz_table.c.id).offset(safe_skip).limit(safe_limit)
     result = await session.execute(statement)
     quizzes = result.scalars().all()
-    return quizzes  # type: ignore
+    return list(quizzes)
 
 
 async def update_quiz(
