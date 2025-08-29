@@ -9,7 +9,7 @@ sio = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi")
 
 
 @sio.event
-async def connect(sid: str, environ: Dict[str, Any]) -> Optional[bool]:
+async def connect(sid: str, environ: Dict[str, Any]) -> None:
     """Handle client connection."""
     print(f"Client {sid} connected")
     await sio.emit("connected", {"message": "Welcome to Doqu!"}, room=sid)

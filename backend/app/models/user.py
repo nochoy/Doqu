@@ -99,7 +99,8 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     """
-    Pydantic model for data extracted from JWT token after being successfully decoded and validated.    """
+    Pydantic model for data extracted from JWT token after being successfully decoded and validated.
+    """
 
     user_id: uuid.UUID
     email: EmailStr

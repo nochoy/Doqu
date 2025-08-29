@@ -48,7 +48,7 @@ async def get_current_user(
         raise credentials_exception
     if token_data is None:
         raise credentials_exception
-    
+
     user = await user_service.get_user_by_id(session, token_data.user_id)
     if user is None:
         raise credentials_exception

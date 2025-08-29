@@ -8,5 +8,5 @@ class ErrorResponse(BaseModel):
     Attributes:
         detail (str): Human-readable description of the error.
     """
-    
+
     detail: str
