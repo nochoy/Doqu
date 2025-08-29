@@ -32,7 +32,7 @@ async def register(
     is not registered, it creates a new user.
 
     Args:
-        `user_create` (`UserCreate`): User creation data (email and password)
+        `user_create` (`UserCreate`): User creation data (email and password OR google_id)
         `session` (AsyncSession): Async database session for executing queries.
 
     Returns:
