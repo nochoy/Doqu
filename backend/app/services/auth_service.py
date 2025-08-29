@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from passlib.exc import UnknownHashError, MissingBackendError
+from passlib.exc import MissingBackendError, UnknownHashError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
