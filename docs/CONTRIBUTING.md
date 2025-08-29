@@ -132,7 +132,7 @@ If you prefer not to use Dev Containers and instead develop locally:
 
 3.  **Environment Configuration:**
     ```bash
-    # From the root directory
+    # Back to the repository root (from frontend)
     cd ..
     
     # Backend environment
