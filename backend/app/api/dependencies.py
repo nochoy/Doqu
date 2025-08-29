@@ -42,10 +42,8 @@ async def get_current_user(
     token = http_credentials.credentials
     if not token:
         raise credentials_exception
-    try:
-        token_data = auth_service.get_data_from_token(token)
-    except Exception:
-        raise credentials_exception
+
+    token_data = auth_service.get_data_from_token(token)
     if token_data is None:
         raise credentials_exception
 
