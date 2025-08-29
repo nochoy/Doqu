@@ -22,7 +22,7 @@ async def get_current_user(
 
     Args:
         `session`: Async database session for executing queries.
-        `token`: The OAuth2 (JWT) token extracted from the Authorization header.
+        `http_credentials`: The Bearer credentials extracted from the Authorization header.
 
     Returns:
         The authenticated User object.
@@ -55,7 +55,7 @@ async def get_current_user(
 
 
 # Wrapper dependency for readability
-async def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
+async def get_current_active_user(current_user: Annotated[User, Depends(get_current_user)]) -> User:
     """
     FastAPI dependency to ensure the current user is active.
 
