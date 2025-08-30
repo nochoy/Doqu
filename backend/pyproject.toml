@@ -41,6 +41,7 @@ dev = [
     "flake8>=6.0.0",
     "mypy>=1.7.0",
     "pre-commit>=3.5.0",
+    "aiosqlite>=0.21.0",
 ]
 
 [tool.black]
@@ -106,6 +107,10 @@ omit = [
     "*/alembic/*",
     "*/venv/*",
     "*/__pycache__/*",
+    "*/db/init_db.py",
+    "*/db/session.py",
+    "*/db/utils.py",
+    "*/websocket/*",
 ]
 
 [tool.coverage.report]

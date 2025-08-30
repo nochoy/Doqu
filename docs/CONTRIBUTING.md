@@ -132,7 +132,8 @@ If you prefer not to use Dev Containers and instead develop locally:
 
 3.  **Environment Configuration:**
     ```bash
-    cd backend
+    # Back to the repository root (from frontend)
+    cd ..
     
     # Backend environment
     cp backend/.env.example backend/.env
@@ -155,6 +156,9 @@ If you prefer not to use Dev Containers and instead develop locally:
     # Activate venv
     source venv/bin/activate    # Linux/MacOS
     venv/Scripts/activate       # Windows
+
+    # Apply migrations
+    alembic upgrade head
     ```
 
 5.  **Start Services:**
@@ -187,8 +191,8 @@ cd backend
 source venv/bin/activate    # Linux/MacOS
 venv/Scripts/activate       # Windows
 
-# Create initial migration
-alembic revision --autogenerate -m "Initial tables"
+# Create new migration after DB table change
+alembic revision --autogenerate -m "[DESCRIPTION]"
 
 # Apply migrations
 alembic upgrade head

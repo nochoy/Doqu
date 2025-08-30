@@ -45,7 +45,7 @@ This is the FastAPI backend for Doqu, a real-time quiz platform built with Pytho
 1. **Build and start the database container:**
    ```bash
    # Build and start the DB container
-   docker compose up db --build
+   docker compose up --build db
 
    # Or start the existing DB container:
    docker compose up db
