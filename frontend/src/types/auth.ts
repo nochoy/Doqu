@@ -1,18 +1,20 @@
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  picture?: string;
-  created_at?: string;
-  updated_at?: string;
+import * as z from "zod";
+
+// Zod schema for login/signup form
+export const AuthFormSchema = z.object({
+  email: z.string().email({ message: "Invalid email address." }),
+  username: z.string().min(1, { message: "Username cannot be blank." }),
+  password: z.string().min(1, { message: "Password cannot be blank." })
+});
+
+// Extract the inferred type
+export type AuthFormInput = z.infer<typeof AuthFormSchema>;
+
+export interface Token {
+  access_token: string,
+  token_type: string,
 }
 
-export interface AuthContextType {
-  user: User | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  loginWithGoogle: () => Promise<boolean>;
-  logout: () => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<boolean>;
+export interface GoogleLoginInput {
+  google_id_token: string;
 }
