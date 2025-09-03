@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from typing import List, Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 from pydantic import field_validator
 from sqlalchemy import Column, DateTime
@@ -45,21 +45,22 @@ class QuizBase(SQLModel):
     difficulty: Optional[int] = Field(default=None, ge=1, le=5)
     is_public: Optional[bool] = None
 
+    @field_validator("title", mode="before")
+    @classmethod
+    def normalize_title(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return v
+        vs = v.strip()
+        if not vs:
+            raise ValueError("Title must not be empty or blank")
+        return vs
+
+
 
 class QuizCreate(QuizBase):
     """Model for creating new quiz, requires title"""
 
     title: str = Field(min_length=1, max_length=50)
-
-    @field_validator("title")
-    @classmethod
-    def validate_title(cls, value: str) -> str:
-        """
-        Ensure the title is not empty or just whitespace.
-        """
-        if not value or not value.strip():
-            raise ValueError("Title must not be empty or blank")
-        return value.strip()
 
 
 class QuizUpdate(QuizBase):
@@ -74,9 +75,11 @@ class QuizRead(QuizBase):
     id: int
     owner_id: uuid.UUID
     created_at: datetime
+    title: str
+    is_public: bool
 
 
 class QuizReadWithQuestions(QuizRead):
     """Model for reading all questions in a quiz"""
 
-    questions: List["QuestionRead"] = Field(default_factory=list)
+    questions: list["QuestionRead"] = Field(default_factory=list)
