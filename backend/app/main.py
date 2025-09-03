@@ -6,9 +6,11 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import OperationalError
 
-from app.api import auth, user
+
+from app.api import auth, user, quiz
 from app.core.config import settings
 from app.db import check_db_connection, init_db
+
 
 
 @asynccontextmanager
@@ -55,8 +57,21 @@ app.add_middleware(
 )
 
 # Include routers
+
 app.include_router(auth.router, prefix="/api")
 app.include_router(user.router, prefix="/api")
+app.include_router(quiz.router, prefix="/api/quizzes", tags=["quizzes"])
+
+@app.on_event("startup")
+async def startup_event() -> None:
+    try:
+        await init_db()
+    except (OperationalError, asyncpg.exceptions.ConnectionDoesNotExistError, OSError) as e:
+        print(
+            "\n🛑 ERROR: COULD NOT CONNECT TO THE DATABASE. Is your Postgres container running?\n"
+        )
+        print(f"Error details: {e}\n")
+
 
 
 @app.get("/")
