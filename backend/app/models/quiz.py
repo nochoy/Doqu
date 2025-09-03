@@ -1,12 +1,13 @@
 import uuid
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 from pydantic import field_validator
 from sqlalchemy import Column, DateTime
 from sqlmodel import Field, SQLModel
 
-from .question import QuestionRead
+if TYPE_CHECKING:
+    from .question import QuestionRead
 
 # SQLModel Table
 
@@ -40,7 +41,7 @@ class QuizBase(SQLModel):
 
     title: Optional[str] = Field(default=None, min_length=1, max_length=50)
     description: Optional[str] = Field(default=None, max_length=250)
-    category: Optional[str] = None
+    category: Optional[str] = Field(default=None, max_length=50)
     difficulty: Optional[int] = Field(default=None, ge=1, le=5)
     is_public: Optional[bool] = None
 
@@ -67,7 +68,7 @@ class QuizUpdate(QuizBase):
     pass
 
 
-class QuizRead(QuizCreate):
+class QuizRead(QuizBase):
     """Model for reading quiz data"""
 
     id: int

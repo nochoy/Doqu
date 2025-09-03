@@ -1,4 +1,4 @@
-# ruff: S101, S106
+# ruff: noqa: S101, S106
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.exc import SQLAlchemyError
