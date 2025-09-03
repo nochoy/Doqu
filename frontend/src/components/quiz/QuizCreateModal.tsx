@@ -2,6 +2,7 @@
 
 import { useState, FormEvent, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { z } from 'zod';
 
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -47,6 +48,25 @@ const difficultyOptions = [
   { value: 5, label: '5 (Hardest)' },
 ];
 
+const validCategories = categoryOptions.map(c => c.value);
+
+const QuizSchema = z.object({
+  title: z.string().min(1, 'Title is required.').max(50, 'Title must be 50 characters or less.'),
+  description: z.string().max(250, 'Description must be 250 characters or less.').optional(),
+  category: z
+    .string()
+    .refine(val => val === '' || validCategories.includes(val), {
+      message: 'Please select a valid category.',
+    })
+    .optional(),
+  difficulty: z.coerce
+    .number({ message: 'Please select a valid difficulty.' })
+    .min(1)
+    .max(5, { message: 'Please select a valid difficulty.' })
+    .nullable(),
+  is_public: z.boolean(),
+});
+
 export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
   const router = useRouter();
   const [formData, setFormData] = useState<QuizModalData>({
@@ -56,6 +76,7 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
     difficulty: null,
     is_public: true,
   });
+  const [validationErrors, setValidationErrors] = useState<Record<string, string | undefined>>({});
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -68,6 +89,10 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
     let inputValue: string | boolean | number | null = isCheckbox
       ? (e.target as HTMLInputElement).checked
       : value;
+
+    if (validationErrors[name]) {
+      setValidationErrors(prev => ({ ...prev, [name]: undefined }));
+    }
 
     if (name === 'difficulty') {
       inputValue = value === '' ? null : Number(value);
@@ -85,6 +110,25 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    setValidationErrors({});
+
+    const validationResult = QuizSchema.safeParse(formData);
+
+    if (!validationResult.success) {
+      const formattedErrors: Record<string, string | undefined> = {};
+      for (const issue of validationResult.error.issues) {
+        if (issue.path.length > 0) {
+          const fieldName = issue.path[0] as string;
+          if (!formattedErrors[fieldName]) {
+            formattedErrors[fieldName] = issue.message;
+          }
+        }
+      }
+
+      setValidationErrors(formattedErrors);
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? '';
@@ -94,7 +138,7 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(validationResult.data),
       });
 
       if (!response.ok) {
@@ -157,6 +201,9 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
               className="mt-2"
               maxLength={TITLE_MAX_LENGTH}
             />
+            {validationErrors.title && (
+              <p className="text-sm text-red-500 mt-1">{validationErrors.title}</p>
+            )}
             <p
               className={`text-xs text-right mt-1 ${formData.title.length > TITLE_MAX_LENGTH ? 'text-red-500' : 'text-gray-500'}`}
             >
@@ -178,6 +225,9 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
               className="mt-2 h-32"
               maxLength={DESC_MAX_LENGTH}
             />
+            {validationErrors.description && (
+              <p className="text-sm text-red-500 mt-1">{validationErrors.description}</p>
+            )}
             <p
               className={`text-xs text-right mt-1 ${formData.description.length > DESC_MAX_LENGTH ? 'text-red-500' : 'text-gray-500'}`}
             >
@@ -206,6 +256,9 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
                   ))}
                 </SelectContent>
               </Select>
+              {validationErrors.category && (
+                <p className="text-sm text-red-500 mt-1">{validationErrors.category}</p>
+              )}
             </div>
 
             {/* Difficulty Select */}
@@ -227,6 +280,9 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
                   ))}
                 </SelectContent>
               </Select>
+              {validationErrors.difficulty && (
+                <p className="text-sm text-red-500 mt-1">{validationErrors.difficulty}</p>
+              )}
             </div>
           </div>
 

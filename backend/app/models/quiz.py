@@ -15,6 +15,8 @@ if TYPE_CHECKING:
 class Quiz(SQLModel, table=True):
     """Represents a quiz in the database."""
 
+    __tablename__ = "quizzes"
+
     id: Optional[int] = Field(default=None, primary_key=True)
 
     owner_id: uuid.UUID = Field(foreign_key="users.id", index=True, nullable=False)
