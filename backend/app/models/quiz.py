@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from pydantic import field_validator
 from sqlalchemy import Column, DateTime
@@ -58,7 +58,6 @@ class QuizBase(SQLModel):
         return vs
 
 
-
 class QuizCreate(QuizBase):
     """Model for creating new quiz, requires title"""
 
@@ -85,3 +84,8 @@ class QuizReadWithQuestions(QuizRead):
     """Model for reading all questions in a quiz"""
 
     questions: list["QuestionRead"] = Field(default_factory=list)
+
+# Resolve forward refs at runtime for Pydantic schema generation
+if not TYPE_CHECKING:
+    from .question import QuestionRead  # runtime import
+    QuizReadWithQuestions.model_rebuild()

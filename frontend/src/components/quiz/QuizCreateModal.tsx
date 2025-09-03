@@ -8,10 +8,9 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
-import { Select } from '../ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import OptionToggle from '../ui/OptionToggle';
 import { XIcon } from '@phosphor-icons/react';
-import { SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface QuizCreateModalProps {
   onClose: () => void;
@@ -61,7 +60,7 @@ const QuizSchema = z.object({
     .optional(),
   difficulty: z.coerce
     .number({ message: 'Please select a valid difficulty.' })
-    .min(1)
+    .min(1, { message: 'Please select a valid difficulty.' })
     .max(5, { message: 'Please select a valid difficulty.' })
     .nullable(),
   is_public: z.boolean(),
@@ -102,8 +101,13 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
   };
 
   const handleSelectChange = (name: keyof QuizModalData) => (value: string) => {
-    const event = { target: { name, value } } as ChangeEvent<HTMLInputElement>;
-    handleChange(event);
+    if (validationErrors[name as string]) {
+      setValidationErrors(prev => ({ ...prev, [name as string]: undefined }));
+    }
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === 'difficulty' ? (value === '' ? null : Number(value)) : value,
+    }));
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -133,16 +137,28 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? '';
       const endpoint = `${baseUrl}/api/quizzes/`;
+      const raw = validationResult.data;
+      const payload: Partial<typeof raw> = {
+        ...raw,
+        category: raw.category === '' ? undefined : raw.category,
+        description: raw.description === '' ? undefined : raw.description,
+      };
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(validationResult.data),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create quiz. Please try again');
+        let msg = 'Failed to create quiz. Please try again.';
+        try {
+          const err = await response.json();
+          if (typeof err?.detail === 'string') msg = err.detail;
+          else if (Array.isArray(err?.detail) && typeof err.detail[0]?.msg === 'string') msg = err.detail[0].msg;
+        } catch {}
+        throw new Error(msg);
       }
 
       type CreateQuizResponse = { id: number };
@@ -170,15 +186,20 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="quiz-settings-title"
-      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50"
+      className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={onClose}
     >
-      <div className="bg-card p-6 rounded-lg shadow-2xl w-full max-w-2xl relative sm:p-8">
+      <div
+        className="bg-card p-6 rounded-lg shadow-2xl w-full max-w-2xl relative sm:p-8 max-h-[85vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}
+      >
         {/* X Button */}
         <Button
           type="button"
           onClick={onClose}
           variant="ghost"
-          className="absolute top-4 right-4" // Position the button
+          className="absolute top-4 right-4"
+          aria-label="Close modal"
         >
           <XIcon size={24} className="text-muted-foreground" />
         </Button>
@@ -194,6 +215,7 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
             <Input
               name="title"
               id="title"
+              autoFocus
               value={formData.title}
               onChange={handleChange}
               required
@@ -202,10 +224,10 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
               maxLength={TITLE_MAX_LENGTH}
             />
             {validationErrors.title && (
-              <p className="text-sm text-red-500 mt-1">{validationErrors.title}</p>
+              <p className="text-sm text-destructive mt-1">{validationErrors.title}</p>
             )}
             <p
-              className={`text-xs text-right mt-1 ${formData.title.length > TITLE_MAX_LENGTH ? 'text-red-500' : 'text-gray-500'}`}
+              className={`text-xs text-right mt-1 ${formData.title.length > TITLE_MAX_LENGTH ? 'text-destructive' : 'text-muted-foreground'}`}
             >
               {formData.title.length}/{TITLE_MAX_LENGTH}
             </p>
@@ -226,10 +248,10 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
               maxLength={DESC_MAX_LENGTH}
             />
             {validationErrors.description && (
-              <p className="text-sm text-red-500 mt-1">{validationErrors.description}</p>
+              <p className="text-sm text-destructive mt-1">{validationErrors.description}</p>
             )}
             <p
-              className={`text-xs text-right mt-1 ${formData.description.length > DESC_MAX_LENGTH ? 'text-red-500' : 'text-gray-500'}`}
+              className={`text-xs text-right mt-1 ${formData.description.length > DESC_MAX_LENGTH ? 'text-destructive' : 'text-muted-foreground'}`}
             >
               {formData.description.length}/{DESC_MAX_LENGTH}
             </p>
@@ -257,7 +279,7 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
                 </SelectContent>
               </Select>
               {validationErrors.category && (
-                <p className="text-sm text-red-500 mt-1">{validationErrors.category}</p>
+                <p className="text-sm text-destructive mt-1">{validationErrors.category}</p>
               )}
             </div>
 
@@ -281,7 +303,7 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
                 </SelectContent>
               </Select>
               {validationErrors.difficulty && (
-                <p className="text-sm text-red-500 mt-1">{validationErrors.difficulty}</p>
+                <p className="text-sm text-destructive mt-1">{validationErrors.difficulty}</p>
               )}
             </div>
           </div>
