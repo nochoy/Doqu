@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import GoogleLoginButton from "./google-login"
+import { Button } from "../ui/button"
 
 export default function SignupForm({
   className,
@@ -57,6 +58,9 @@ export default function SignupForm({
                 </div>
                 <Input id="confirm-password" type="password" required />
               </div>
+              <Button type="submit" className="w-full">
+                Register
+              </Button>
               <GoogleLoginButton/>
             </div>
             <div className="mt-4 text-center text-sm">
