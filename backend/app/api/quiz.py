@@ -147,4 +147,3 @@ async def delete_quiz(
         raise HTTPException(status_code=404, detail="Quiz not found") from None
     except QuizPermissionException:
         raise HTTPException(status_code=403, detail="Not authorized to delete this quiz") from None
-    return

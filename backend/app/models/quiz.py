@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import List, Optional
 
+from pydantic import field_validator
 from sqlalchemy import Column, DateTime
 from sqlmodel import Field, SQLModel
 
@@ -15,11 +16,11 @@ class Quiz(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
 
-    owner_id: uuid.UUID = Field(foreign_key="users.id", max_length=36, index=True, nullable=False)
+    owner_id: uuid.UUID = Field(foreign_key="users.id", index=True, nullable=False)
 
-    title: str = Field(max_length=50, nullable=False)
+    title: str = Field(min_length=1, max_length=50, nullable=False)
     description: Optional[str] = Field(default=None, max_length=250, nullable=True)
-    category: Optional[str] = Field(default=None, index=True, nullable=True)
+    category: Optional[str] = Field(default=None, max_length=50, index=True, nullable=True)
     difficulty: Optional[int] = Field(default=None, ge=1, le=5, nullable=True)
     is_public: bool = Field(default=True, nullable=False)
     created_at: datetime = Field(
@@ -37,7 +38,7 @@ class Quiz(SQLModel, table=True):
 class QuizBase(SQLModel):
     """Base model for quiz data, all optional fields"""
 
-    title: Optional[str] = Field(default=None, max_length=50)
+    title: Optional[str] = Field(default=None, min_length=1, max_length=50)
     description: Optional[str] = Field(default=None, max_length=250)
     category: Optional[str] = None
     difficulty: Optional[int] = Field(default=None, ge=1, le=5)
@@ -47,7 +48,17 @@ class QuizBase(SQLModel):
 class QuizCreate(QuizBase):
     """Model for creating new quiz, requires title"""
 
-    title: str = Field(max_length=50)
+    title: str = Field(min_length=1, max_length=50)
+
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, value: str) -> str:
+        """
+        Ensure the title is not empty or just whitespace.
+        """
+        if not value or not value.strip():
+            raise ValueError("Title must not be empty or blank")
+        return value.strip()
 
 
 class QuizUpdate(QuizBase):

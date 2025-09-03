@@ -1,3 +1,4 @@
+# ruff: S101, S106
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.exc import SQLAlchemyError
@@ -8,6 +9,7 @@ from app.main import app
 from app.models.quiz import QuizCreate, QuizUpdate
 from app.models.user import User, UserCreate
 from app.services import quiz_service, user_service
+# Added import for custom service exceptions
 from app.services.quiz_service import QuizNotFoundException, QuizPermissionException
 
 # --- Helper Functions to Replace Fixtures ---
@@ -292,6 +294,15 @@ async def test_create_quiz_missing_title(async_client: AsyncClient, session: Asy
         "/api/quizzes/", json={"description": "Desc"}
     )
     assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("title", ["", "   "])
+async def test_create_quiz_blank_title(async_client: AsyncClient, session: AsyncSession, title: str):
+    """Creating a quiz with empty/blank title should fail with 422."""
+    authenticated_client = await get_authenticated_client(async_client, session)
+    response = await authenticated_client.post("/api/quizzes/", json={"title": title})
+    assert response.status_code == 422
     
     
 # --- NEW: Router-Level Exception Handling Tests ---
@@ -299,7 +310,7 @@ async def test_create_quiz_missing_title(async_client: AsyncClient, session: Asy
 
 @pytest.mark.asyncio
 async def test_read_quiz_service_not_found_exception(
-    async_client: AsyncClient, session: AsyncSession, mocker
+    async_client: AsyncClient, mocker
 ):
     """Tests that the router correctly handles QuizNotFoundException from the service."""
     mocker.patch(
