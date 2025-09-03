@@ -1,11 +1,12 @@
-import uuid
 from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.dependencies import get_current_active_user
 from app.db.session import get_db
 from app.models.quiz import QuizCreate, QuizRead, QuizUpdate
+from app.models.user import User
 from app.services import quiz_service
 from app.services.quiz_service import QuizNotFoundException, QuizPermissionException
 from app.utils.responses import get_responses
@@ -13,17 +14,11 @@ from app.utils.responses import get_responses
 router = APIRouter()
 
 
-async def get_current_user_id() -> uuid.UUID:
-    # TODO: Use /api/auth.py's get_current_user()
-    return uuid.UUID("00000000-0000-0000-0000-000000000000")
-
-
-# TODO: Move checking logic to quiz service
 @router.post("/", response_model=QuizRead, status_code=201)
 async def create_quiz(
     session: Annotated[AsyncSession, Depends(get_db)],
     quiz_in: QuizCreate,
-    current_user_id: Annotated[uuid.UUID, Depends(get_current_user_id)],
+    current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> QuizRead:
     """
     Creates a new quiz.
@@ -35,10 +30,9 @@ async def create_quiz(
     Returns:
         QuizRead: The publicly accessible data for the newly created quiz
     """
-    # TODO: Implement ID tied to User table
 
     created_quiz = await quiz_service.create_quiz(
-        session=session, quiz_in=quiz_in, owner_id=current_user_id
+        session=session, quiz_in=quiz_in, owner_id=current_user.id
     )
     return QuizRead.model_validate(created_quiz)
 
@@ -94,7 +88,7 @@ async def update_quiz(
     session: Annotated[AsyncSession, Depends(get_db)],
     quiz_id: Annotated[int, Path(ge=1)],
     quiz_in: QuizUpdate,
-    user_id: Annotated[uuid.UUID, Depends(get_current_user_id)],
+    current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> QuizRead:
     """
     Update an existing quiz.
@@ -111,11 +105,9 @@ async def update_quiz(
     Returns:
         QuizRead: Publicly accessible data for the updated quiz
     """
-    # TODO: check if owner once users are set up
-
     try:
         updated_quiz = await quiz_service.update_quiz(
-            session=session, quiz_id=quiz_id, quiz_in=quiz_in, user_id=user_id
+            session=session, quiz_id=quiz_id, quiz_in=quiz_in, user_id=current_user.id
         )
     except QuizNotFoundException:
         raise HTTPException(status_code=404, detail="Quiz not found") from None
@@ -132,7 +124,7 @@ async def update_quiz(
 async def delete_quiz(
     session: Annotated[AsyncSession, Depends(get_db)],
     quiz_id: Annotated[int, Path(ge=1)],
-    user_id: Annotated[uuid.UUID, Depends(get_current_user_id)],
+    current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> None:
     """
     Delete a quiz by its ID.
@@ -150,7 +142,7 @@ async def delete_quiz(
     """
 
     try:
-        await quiz_service.remove_quiz(session=session, quiz_id=quiz_id, user_id=user_id)
+        await quiz_service.remove_quiz(session=session, quiz_id=quiz_id, user_id=current_user.id)
     except QuizNotFoundException:
         raise HTTPException(status_code=404, detail="Quiz not found") from None
     except QuizPermissionException:

@@ -28,7 +28,7 @@ export default function OptionToggle({
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       e.preventDefault();
       const nextIsOptionOne = !isOptionOneSelected;
-      onChange(isOptionOneSelected ? optionOne : optionTwo);
+      onChange(nextIsOptionOne ? optionOne : optionTwo);
       (nextIsOptionOne ? btn1Ref : btn2Ref).current?.focus();
     }
   };

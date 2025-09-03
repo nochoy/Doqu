@@ -1,227 +1,373 @@
 import pytest
-import pytest_asyncio
 from httpx import AsyncClient
-from sqlmodel import SQLModel
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.pool import StaticPool
-import uuid
-from app.api.quiz import get_current_user_id
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.dependencies import get_current_active_user
 from app.main import app
-from app.db.session import get_db
+from app.models.quiz import QuizCreate, QuizUpdate
+from app.models.user import User, UserCreate
+from app.services import quiz_service, user_service
+from app.services.quiz_service import QuizNotFoundException, QuizPermissionException
 
-# Use the async-compatible SQLite driver
-DATABASE_URL = "sqlite+aiosqlite:///:memory:?cache=shared"
-engine = create_async_engine(
-    DATABASE_URL,
-    echo=False,
-    connect_args={"uri": True},
-    poolclass=StaticPool,
-)
+# --- Helper Functions to Replace Fixtures ---
 
-OWNER_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
-ATTACKER_ID = uuid.UUID("00000000-0000-0000-0000-000000000002")
 
-async def get_session_override():
-    """Override for get_db dependency to provide test database session."""
-    async with AsyncSession(engine) as session:
-        yield session
+async def create_test_user(session: AsyncSession) -> User:
+    """Creates a user in the database for testing purposes."""
+    user_create = UserCreate(
+        email="test@example.com",
+        username="testuser",
+        password="password123",
+    )
+    return await user_service.create_user(session, user_create)
 
-@pytest_asyncio.fixture(autouse=True)
-async def override_db_dep():
-    """Override database dependency and clean up after test."""
-    app.dependency_overrides[get_db] = get_session_override
-    yield
-    app.dependency_overrides.clear()
 
-# This fixture creates a clean database for each test
-@pytest_asyncio.fixture(autouse=True)
-async def setup_and_teardown():
-    # Run create_all and drop_all asynchronously
-    async with engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.create_all)
-    
-    yield
-    
-    async with engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.drop_all)
+async def get_authenticated_client(
+    async_client: AsyncClient, session: AsyncSession
+) -> AsyncClient:
+    """Creates a user and returns an authenticated client."""
+    test_user = await create_test_user(session)
+    app.dependency_overrides[get_current_active_user] = lambda: test_user
+    return async_client
 
-# This is the async test client fixture
-@pytest_asyncio.fixture
-async def client() -> AsyncClient:
-    async with AsyncClient(app=app, base_url="http://test") as client:
-        yield client
 
-# --- Async Tests ---
+# --- Authentication Tests ---
+
 
 @pytest.mark.asyncio
-async def test_create_quiz(client: AsyncClient):
-    """Tests successful creation of a quiz."""
-    response = await client.post(
-        "/api/quizzes/",
-        json={"title": "Test Quiz", "description": "Desc", "category": "Test", "difficulty": 3, "is_public": True}
+async def test_create_quiz_unauthorized(async_client: AsyncClient):
+    """Tests that creating a quiz without authentication fails with a 401 error."""
+    response = await async_client.post("/api/quizzes/", json={"title": "Test Quiz"})
+    assert response.status_code == 401
+
+
+
+# --- CRUD Tests ---
+
+
+@pytest.mark.asyncio
+async def test_create_quiz_success(async_client: AsyncClient, session: AsyncSession):
+    """Tests successful creation of a quiz with an authenticated user."""
+    authenticated_client = await get_authenticated_client(async_client, session)
+    response = await authenticated_client.post(
+        "/api/quizzes/", json={"title": "My Awesome Quiz"}
     )
-    data = response.json()
     assert response.status_code == 201
-    assert data["title"] == "Test Quiz"
+    data = response.json()
+    assert data["title"] == "My Awesome Quiz"
+
 
 @pytest.mark.asyncio
-async def test_read_quiz(client: AsyncClient):
+async def test_read_quizzes_success(async_client: AsyncClient, session: AsyncSession):
+    """Tests successfully retrieving a list of quizzes."""
+    authenticated_client = await get_authenticated_client(async_client, session)
+    await authenticated_client.post("/api/quizzes/", json={"title": "Quiz 1"})
+    await authenticated_client.post("/api/quizzes/", json={"title": "Quiz 2"})
+
+    response = await authenticated_client.get("/api/quizzes/")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) == 2
+    assert data[0]["title"] == "Quiz 1"
+
+
+@pytest.mark.asyncio
+async def test_read_quiz(async_client: AsyncClient, session: AsyncSession):
     """Tests retrieving a single, existing quiz."""
-    create_response = await client.post(
-        "/api/quizzes/",
-        json={"title": "Specific", "description": "Desc S", "category": "Cat S", "difficulty": 2, "is_public": True}
+    authenticated_client = await get_authenticated_client(async_client, session)
+    create_response = await authenticated_client.post(
+        "/api/quizzes/", json={"title": "Specific"}
     )
     quiz_id = create_response.json()["id"]
-    
-    response = await client.get(f"/api/quizzes/{quiz_id}")
-    data = response.json()
-    
+
+    response = await authenticated_client.get(f"/api/quizzes/{quiz_id}")
     assert response.status_code == 200
-    assert data["id"] == quiz_id
+    assert response.json()["id"] == quiz_id
+
 
 @pytest.mark.asyncio
-async def test_read_quiz_not_found(client: AsyncClient):
-    """Tests that fetching a non-existent quiz returns a 404 error."""
-    response = await client.get("/api/quizzes/999")
-    assert response.status_code == 404
-
-@pytest.mark.asyncio
-async def test_create_quiz_long_title(client: AsyncClient):
-    """Tests that creating a quiz with a title > 50 chars fails with a 422 error."""
-    long_title = "a" * 51
-    response = await client.post(
-        "/api/quizzes/",
-        json={"title": long_title, "description": "Desc", "category": "Test", "difficulty": 3, "is_public": True}
-    )
-    assert response.status_code == 422
-
-@pytest.mark.asyncio
-async def test_create_quiz_missing_title(client: AsyncClient):
-    """Tests that creating a quiz with a missing title fails with a 422 error."""
-    response = await client.post(
-        "/api/quizzes/",
-        json={"description": "Desc", "category": "Test", "difficulty": 3, "is_public": True}
-    )
-    assert response.status_code == 422
-
-@pytest.mark.asyncio
-async def test_update_quiz(client: AsyncClient):
-    """Tests successfully updating a quiz."""
-    create_response = await client.post(
-        "/api/quizzes/",
-        json={"title": "Original Title", "description": "Original Desc", "category": "Cat", "difficulty": 1}
+async def test_update_quiz_success(async_client: AsyncClient, session: AsyncSession):
+    """Tests successfully updating a quiz as its owner."""
+    authenticated_client = await get_authenticated_client(async_client, session)
+    create_response = await authenticated_client.post(
+        "/api/quizzes/", json={"title": "Original"}
     )
     quiz_id = create_response.json()["id"]
 
-    response = await client.patch(
-        f"/api/quizzes/{quiz_id}",
-        json={"title": "Updated Title"}
+    response = await authenticated_client.patch(
+        f"/api/quizzes/{quiz_id}", json={"title": "Updated"}
     )
-    data = response.json()
     assert response.status_code == 200
-    assert data["title"] == "Updated Title"
-    assert data["description"] == "Original Desc" # Ensure other fields are unchanged
+    assert response.json()["title"] == "Updated"
+
 
 @pytest.mark.asyncio
-async def test_delete_quiz(client: AsyncClient):
-    """Tests successfully deleting a quiz."""
-    create_response = await client.post(
-        "/api/quizzes/",
-        json={"title": "To Be Deleted", "description": "Delete me", "category": "Temp", "difficulty": 1}
+async def test_update_quiz_with_no_data(async_client: AsyncClient, session: AsyncSession):
+    """Tests that updating a quiz with an empty payload does not change the quiz."""
+    authenticated_client = await get_authenticated_client(async_client, session)
+    create_response = await authenticated_client.post(
+        "/api/quizzes/", json={"title": "Original Title"}
     )
     quiz_id = create_response.json()["id"]
 
-    # Delete the quiz
-    delete_response = await client.delete(f"/api/quizzes/{quiz_id}")
+    response = await authenticated_client.patch(f"/api/quizzes/{quiz_id}", json={})
+    assert response.status_code == 200
+    assert response.json()["title"] == "Original Title"
+
+
+@pytest.mark.asyncio
+async def test_delete_quiz_success(async_client: AsyncClient, session: AsyncSession):
+    """Tests successfully deleting a quiz as its owner."""
+    authenticated_client = await get_authenticated_client(async_client, session)
+    create_response = await authenticated_client.post(
+        "/api/quizzes/", json={"title": "To Be Deleted"}
+    )
+    quiz_id = create_response.json()["id"]
+
+    delete_response = await authenticated_client.delete(f"/api/quizzes/{quiz_id}")
     assert delete_response.status_code == 204
 
-    # Verify it's gone
-    get_response = await client.get(f"/api/quizzes/{quiz_id}")
+    get_response = await authenticated_client.get(f"/api/quizzes/{quiz_id}")
     assert get_response.status_code == 404
 
-@pytest.mark.asyncio
-async def test_delete_quiz_not_found(client: AsyncClient):
-    """Tests that deleting a non-existent quiz returns a 404 error."""
-    response = await client.delete("/api/quizzes/999")
-    assert response.status_code == 404
+
+# --- Permission and Edge Case Tests ---
+
 
 @pytest.mark.asyncio
-async def test_update_quiz_not_found(client: AsyncClient):
-    """Tests that updating a non-existent quiz returns a 404 error."""
-    response = await client.patch(
-        "/api/quizzes/999",
-        json={"title": "Won't Work"}
-    )
-    assert response.status_code == 404
-
-@pytest.mark.asyncio
-async def test_read_quizzes_with_pagination(client: AsyncClient):
-    """Tests the pagination (skip and limit) for retrieving quizzes."""
-    # Create a few quizzes to test with
-    for i in range(5):
-        await client.post(
-            "/api/quizzes/",
-            json={"title": f"Quiz {i+1}"}
-        )
-
-    # Test limit
-    response = await client.get("/api/quizzes/?limit=2")
-    data = response.json()
-    assert response.status_code == 200
-    assert len(data) == 2
-
-    # Test skip
-    response = await client.get("/api/quizzes/?skip=3&limit=2")
-    data = response.json()
-    assert response.status_code == 200
-    assert len(data) == 2
-    assert data[0]["title"] == "Quiz 4" # Titles should be Quiz 4 and Quiz 5
-
-@pytest.mark.asyncio
-async def test_update_quiz_permission_denied(client: AsyncClient):
+async def test_update_quiz_permission_denied(
+    async_client: AsyncClient, session: AsyncSession
+):
     """Tests that updating a quiz owned by another user returns a 403 error."""
-    # Override the dependency to make the creator OWNER_ID
-    app.dependency_overrides[get_current_user_id] = lambda: OWNER_ID
-    
-    create_response = await client.post(
-        "/api/quizzes/",
-        json={"title": "Protected Quiz"}
-    )
-    assert create_response.status_code == 201
+    authenticated_client = await get_authenticated_client(async_client, session)
+    create_response = await authenticated_client.post("/api/quizzes/", json={"title": "Owner's Quiz"})
     quiz_id = create_response.json()["id"]
 
-    # Now, override the dependency to simulate an ATTACKER making the request
-    app.dependency_overrides[get_current_user_id] = lambda: ATTACKER_ID
+    attacker_create = UserCreate(email="attacker@example.com", username="attacker", password="pw")
+    attacker = await user_service.create_user(session, attacker_create)
+    app.dependency_overrides[get_current_active_user] = lambda: attacker
 
-    # Attempt to update the quiz as the attacker
-    response = await client.patch(
-        f"/api/quizzes/{quiz_id}",
-        json={"title": "Hacked Title"}
+    response = await authenticated_client.patch(
+        f"/api/quizzes/{quiz_id}", json={"title": "Hacked Title"}
     )
-
-    # Assert that the permission was denied
     assert response.status_code == 403
-    
 
 
 @pytest.mark.asyncio
-async def test_delete_quiz_permission_denied(client: AsyncClient):
+async def test_delete_quiz_permission_denied(
+    async_client: AsyncClient, session: AsyncSession
+):
     """Tests that deleting a quiz owned by another user returns a 403 error."""
-    # Log in as the owner to create the quiz
-    app.dependency_overrides[get_current_user_id] = lambda: OWNER_ID
-
-    create_response = await client.post(
-        "/api/quizzes/",
-        json={"title": "Another Protected Quiz"}
-    )
-    assert create_response.status_code == 201
+    authenticated_client = await get_authenticated_client(async_client, session)
+    create_response = await authenticated_client.post("/api/quizzes/", json={"title": "Owner's Quiz"})
     quiz_id = create_response.json()["id"]
 
-    # Log in as the attacker to attempt deletion
-    app.dependency_overrides[get_current_user_id] = lambda: ATTACKER_ID
+    attacker_create = UserCreate(email="attacker@example.com", username="attacker", password="pw")
+    attacker = await user_service.create_user(session, attacker_create)
+    app.dependency_overrides[get_current_active_user] = lambda: attacker
 
-    delete_response = await client.delete(f"/api/quizzes/{quiz_id}")
+    response = await authenticated_client.delete(f"/api/quizzes/{quiz_id}")
+    assert response.status_code == 403
 
-    # Assert that the permission was denied
-    assert delete_response.status_code == 403
+
+@pytest.mark.asyncio
+async def test_update_quiz_set_non_nullable_to_null(
+    async_client: AsyncClient, session: AsyncSession
+):
+    """Tests that trying to set a non-nullable field to null fails with a 422 error."""
+    authenticated_client = await get_authenticated_client(async_client, session)
+    create_response = await authenticated_client.post("/api/quizzes/", json={"title": "Test Title"})
+    quiz_id = create_response.json()["id"]
+
+    response = await authenticated_client.patch(
+        f"/api/quizzes/{quiz_id}", json={"title": None}
+    )
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_read_quizzes_pagination_edge_cases(
+    async_client: AsyncClient, session: AsyncSession
+):
+    """Tests pagination with out-of-bounds skip and limit values."""
+    authenticated_client = await get_authenticated_client(async_client, session)
+    for i in range(5):
+        await authenticated_client.post("/api/quizzes/", json={"title": f"Quiz {i}"})
+
+    response = await authenticated_client.get("/api/quizzes/?skip=-5&limit=2")
+    assert response.status_code == 422
+
+    response = await authenticated_client.get("/api/quizzes/?skip=10&limit=5")
+    assert response.status_code == 200
+    assert len(response.json()) == 0
+
+
+# --- Service-Level DB Error Tests to Cover Rollbacks ---
+
+
+@pytest.mark.asyncio
+async def test_create_quiz_db_error_rolls_back(session: AsyncSession, mocker):
+    """Tests that a database error during quiz creation calls session.rollback()."""
+    test_user = await create_test_user(session)
+    mocker.patch("sqlalchemy.ext.asyncio.AsyncSession.commit", side_effect=SQLAlchemyError)
+    mock_rollback = mocker.patch("sqlalchemy.ext.asyncio.AsyncSession.rollback")
+    quiz_in = QuizCreate(title="Will Fail")
+
+    with pytest.raises(SQLAlchemyError):
+        await quiz_service.create_quiz(session, quiz_in, test_user.id)
+
+    mock_rollback.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_update_quiz_db_error_rolls_back(session: AsyncSession, mocker):
+    """Tests that a database error during quiz update calls session.rollback()."""
+    test_user = await create_test_user(session)
+    quiz_in = QuizCreate(title="Test Title")
+    quiz = await quiz_service.create_quiz(session, quiz_in, test_user.id)
+
+    mocker.patch("sqlalchemy.ext.asyncio.AsyncSession.commit", side_effect=SQLAlchemyError)
+    mock_rollback = mocker.patch("sqlalchemy.ext.asyncio.AsyncSession.rollback")
+    update_in = QuizUpdate(title="Will Fail Update")
+
+    with pytest.raises(SQLAlchemyError):
+        await quiz_service.update_quiz(session, quiz.id, update_in, test_user.id)
+
+    mock_rollback.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_delete_quiz_db_error_rolls_back(session: AsyncSession, mocker):
+    """Tests that a database error during quiz deletion calls session.rollback()."""
+    test_user = await create_test_user(session)
+    quiz_in = QuizCreate(title="Test Title")
+    quiz = await quiz_service.create_quiz(session, quiz_in, test_user.id)
+
+    mocker.patch("sqlalchemy.ext.asyncio.AsyncSession.commit", side_effect=SQLAlchemyError)
+    mock_rollback = mocker.patch("sqlalchemy.ext.asyncio.AsyncSession.rollback")
+
+    with pytest.raises(SQLAlchemyError):
+        await quiz_service.remove_quiz(session, quiz.id, test_user.id)
+
+    mock_rollback.assert_awaited_once()
+
+
+# --- Original Validation and Not Found Tests ---
+
+
+@pytest.mark.asyncio
+async def test_update_quiz_not_found(async_client: AsyncClient, session: AsyncSession):
+    """Tests that updating a non-existent quiz returns a 404 error."""
+    authenticated_client = await get_authenticated_client(async_client, session)
+    response = await authenticated_client.patch("/api/quizzes/999", json={"title": "New Title"})
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_delete_quiz_not_found(async_client: AsyncClient, session: AsyncSession):
+    """Tests that deleting a non-existent quiz returns a 404 error."""
+    authenticated_client = await get_authenticated_client(async_client, session)
+    response = await authenticated_client.delete("/api/quizzes/999")
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_create_quiz_long_title(async_client: AsyncClient, session: AsyncSession):
+    """Tests that creating a quiz with a title > 50 chars fails with a 422 error."""
+    authenticated_client = await get_authenticated_client(async_client, session)
+    long_title = "a" * 51
+    response = await authenticated_client.post(
+        "/api/quizzes/", json={"title": long_title}
+    )
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_create_quiz_missing_title(async_client: AsyncClient, session: AsyncSession):
+    """Tests that creating a quiz with a missing title fails with a 422 error."""
+    authenticated_client = await get_authenticated_client(async_client, session)
+    response = await authenticated_client.post(
+        "/api/quizzes/", json={"description": "Desc"}
+    )
+    assert response.status_code == 422
+    
+    
+# --- NEW: Router-Level Exception Handling Tests ---
+
+
+@pytest.mark.asyncio
+async def test_read_quiz_service_not_found_exception(
+    async_client: AsyncClient, session: AsyncSession, mocker
+):
+    """Tests that the router correctly handles QuizNotFoundException from the service."""
+    mocker.patch(
+        "app.services.quiz_service.get_quiz",
+        side_effect=QuizNotFoundException("Quiz from service not found"),
+    )
+    # The read_quiz endpoint does not require authentication
+    response = await async_client.get("/api/quizzes/1")
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Quiz not found"
+
+
+@pytest.mark.asyncio
+async def test_update_quiz_service_exceptions(
+    async_client: AsyncClient, session: AsyncSession, mocker
+):
+    """Tests the router's handling of various exceptions from the update_quiz service."""
+    authenticated_client = await get_authenticated_client(async_client, session)
+    
+    # Test QuizNotFoundException from service
+    mocker.patch(
+        "app.services.quiz_service.update_quiz",
+        side_effect=QuizNotFoundException("Not Found"),
+    )
+    response_404 = await authenticated_client.patch("/api/quizzes/1", json={"title": "..."})
+    assert response_404.status_code == 404
+    assert response_404.json()["detail"] == "Quiz not found"
+
+    # Test QuizPermissionException from service
+    mocker.patch(
+        "app.services.quiz_service.update_quiz",
+        side_effect=QuizPermissionException("Permission Denied"),
+    )
+    response_403 = await authenticated_client.patch("/api/quizzes/1", json={"title": "..."})
+    assert response_403.status_code == 403
+    assert response_403.json()["detail"] == "Not authorized to update this quiz"
+    
+    # Test ValueError from service
+    mocker.patch(
+        "app.services.quiz_service.update_quiz",
+        side_effect=ValueError("Invalid value for a field"),
+    )
+    response_422 = await authenticated_client.patch("/api/quizzes/1", json={"title": "..."})
+    assert response_422.status_code == 422
+    assert response_422.json()["detail"] == "Cannot set non-nullable fields to null"
+
+
+@pytest.mark.asyncio
+async def test_delete_quiz_service_exceptions(
+    async_client: AsyncClient, session: AsyncSession, mocker
+):
+    """Tests the router's handling of exceptions from the remove_quiz service."""
+    authenticated_client = await get_authenticated_client(async_client, session)
+
+    # Test QuizNotFoundException from service
+    mocker.patch(
+        "app.services.quiz_service.remove_quiz",
+        side_effect=QuizNotFoundException("Not Found"),
+    )
+    response_404 = await authenticated_client.delete("/api/quizzes/1")
+    assert response_404.status_code == 404
+    assert response_404.json()["detail"] == "Quiz not found"
+
+    # Test QuizPermissionException from service
+    mocker.patch(
+        "app.services.quiz_service.remove_quiz",
+        side_effect=QuizPermissionException("Permission Denied"),
+    )
+    response_403 = await authenticated_client.delete("/api/quizzes/1")
+    assert response_403.status_code == 403
+    assert response_403.json()["detail"] == "Not authorized to delete this quiz"

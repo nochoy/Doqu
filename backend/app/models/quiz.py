@@ -15,8 +15,7 @@ class Quiz(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
 
-    # TODO: Implement Field(foreign_key="users.id") for when User table is created (incl imports)
-    owner_id: uuid.UUID = Field(max_length=36, index=True, nullable=False)
+    owner_id: uuid.UUID = Field(foreign_key="users.id", max_length=36, index=True, nullable=False)
 
     title: str = Field(max_length=50, nullable=False)
     description: Optional[str] = Field(default=None, max_length=250, nullable=True)
