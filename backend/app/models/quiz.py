@@ -6,8 +6,6 @@ from pydantic import field_validator
 from sqlalchemy import Column, DateTime
 from sqlmodel import Field, SQLModel
 
-if TYPE_CHECKING:
-    from .question import QuestionRead
 
 # SQLModel Table
 
@@ -56,12 +54,21 @@ class QuizBase(SQLModel):
         if not vs:
             raise ValueError("Title must not be empty or blank")
         return vs
+    
+    @field_validator("description", "category", mode="before")
+    @classmethod
+    def normalize_optional_str(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return v
+        vs = v.strip()
+        return vs or None
 
 
 class QuizCreate(QuizBase):
     """Model for creating new quiz, requires title"""
 
     title: str = Field(min_length=1, max_length=50)
+    is_public: bool = Field(default=True)
 
 
 class QuizUpdate(QuizBase):
