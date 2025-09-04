@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.db.session import get_db
-from app.models.user import Token, UserCreate, UserLogin, UserRead
+from app.models.user import Token, UserCreate, UserLogin, UserRegisterResponse
 from app.services import auth_service, user_service
 from app.utils.responses import get_responses
 
@@ -16,14 +16,14 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 
 @router.post(
     "/register",
-    response_model=UserRead,
+    response_model=UserRegisterResponse,
     status_code=status.HTTP_201_CREATED,
     responses=get_responses(409),
 )
 async def register(
     user_create: UserCreate,
     session: Annotated[AsyncSession, Depends(get_db)],
-) -> UserRead:
+) -> UserRegisterResponse:
     """
     Register a new user.
 
@@ -37,13 +37,31 @@ async def register(
 
     Returns:
         UserRead: The newly created user.
-    """
 
+    Raises:
+        HTTPException: 409 Conflict if email is already registered.
+    """
     try:
         user = await user_service.create_user(session, user_create)
+        access_token = auth_service.create_access_token(
+            data={"sub": str(user.id), "email": user.email}
+        )
+        
+        return UserRegisterResponse.model_validate({
+            "email": user.email,
+            "username": user.username,
+            "id": user.id,
+            "is_active": user.is_active,
+            "created_at": user.created_at,
+            "access_token": access_token,
+            "token_type": "bearer"
+        })
+        
     except IntegrityError:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
-    return UserRead.model_validate(user)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Email already registered"
+        )
 
 
 @router.post("/login", response_model=Token, responses=get_responses(401))

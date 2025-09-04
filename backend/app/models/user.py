@@ -70,6 +70,16 @@ class UserRead(BaseModel):
     is_active: bool
     created_at: datetime
 
+class UserRegisterResponse(UserRead):
+    """
+    Pydantic model for the response returned after a user registers.
+
+    Inherits from UserRead and includes additional fields for authentication tokens.
+    """
+
+    access_token: str
+    token_type: str = "bearer"
+
 
 class UserLogin(BaseModel):
     """
