@@ -83,7 +83,7 @@ export default function LoginForm({
                   disabled={isSubmitting}
                 />
                 {errors.email && (
-                  <p className="text-sm text-destructive -mt-5 ml-3">{errors.email.message}</p>
+                  <p className="text-sm text-destructive -mt-2 ml-3">{errors.email.message}</p>
                 )}
               </div>
               {/* Password Input */}
@@ -106,7 +106,7 @@ export default function LoginForm({
                   disabled={isSubmitting}
                 />
                 {errors.password && (
-                  <p className="text-sm text-destructive -mt-5 ml-3">{errors.password.message}</p>
+                  <p className="text-sm text-destructive -mt-2 ml-3">{errors.password.message}</p>
                 )}
               </div>
 
