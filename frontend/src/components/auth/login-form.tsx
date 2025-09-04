@@ -32,8 +32,6 @@ export default function LoginForm({
   });
 
   const onSubmit = async (data: LoginFormInput) => {
-    console.log('here');
-    
     setError(null);
 
     try {
@@ -53,7 +51,6 @@ export default function LoginForm({
 
       localStorage.setItem("access_token", result.access_token);
       router.push("/");
-      
     } catch (err) {
       console.log('error: ', err);
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -75,7 +72,7 @@ export default function LoginForm({
             <div className="flex flex-col gap-6">
               {/* Email Input */}
               <div className="grid gap-3">
-                <Label htmlFor="email">
+                <Label htmlFor="email" >
                   Email <span className="text-sm text-destructive">*</span>
                 </Label>
                 <Input
@@ -86,7 +83,7 @@ export default function LoginForm({
                   disabled={isSubmitting}
                 />
                 {errors.email && (
-                  <p className="text-sm text-destructive">{errors.email.message}</p>
+                  <p className="text-sm text-destructive mt-[-20] ml-3">{errors.email.message}</p>
                 )}
               </div>
               {/* Password Input */}
@@ -109,9 +106,11 @@ export default function LoginForm({
                   disabled={isSubmitting}
                 />
                 {errors.password && (
-                  <p className="text-sm text-destructive">{errors.password.message}</p>
+                  <p className="text-sm text-destructive mt-[-20] ml-3">{errors.password.message}</p>
                 )}
               </div>
+
+              {/* Backend Errors */}
               {error && (
                 <div className="text-sm text-destructive">
                   {error}
@@ -123,7 +122,7 @@ export default function LoginForm({
                 {isSubmitting ? "Loading..." : "Login"}
               </Button>
               {/* Google Login Button */}
-              <GoogleLoginButton disabled={isSubmitting} type="button"/>
+              <GoogleLoginButton disabled={isSubmitting}/>
             </div>
             {/* Switch to sign up page */}
             <div className="mt-4 text-center text-sm">

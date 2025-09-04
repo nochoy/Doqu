@@ -85,7 +85,7 @@ export default function SignupForm({
                 />
               </div>
                 {errors.email && (
-                  <p className="text-sm text-destructive">{errors.email.message}</p>
+                  <p className="text-sm text-destructive mt-[-20] ml-3">{errors.email.message}</p>
                 )}
 
               {/* Username Input */}
@@ -96,11 +96,12 @@ export default function SignupForm({
                 <Input
                   id="username"
                   placeholder="Molly"
+                  maxLength={20}
                   {...register("username")}
                 />
               </div>
               {errors.username && (
-                <p className="text-sm text-destructive">{errors.username.message}</p>
+                <p className="text-sm text-destructive mt-[-20] ml-3">{errors.username.message}</p>
               )}
 
               {/* Password Input */}
@@ -129,7 +130,7 @@ export default function SignupForm({
                 </div>
               </div>
                 {errors.password && (
-                  <p className="text-sm text-destructive">{errors.password.message}</p>
+                  <p className="text-sm text-destructive mt-[-20] ml-3">{errors.password.message}</p>
                 )}
 
               {/* Backend Errors */}
