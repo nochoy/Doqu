@@ -49,14 +49,14 @@ export default function SignupForm({
       const result = await response.json();
 
       if(!response.ok) {
-        throw new Error(result.detail || "An error occured");
+        throw new Error(result.detail || "An error occurred");
       }
 
       localStorage.setItem("access_token", result.access_token)
       router.push("/");
     } catch (err) {
       console.log('error: ', err);
-      setError(err instanceof Error ? err.message : "An error occured");
+      setError(err instanceof Error ? err.message : "An error occurred");
     }
   }
 
@@ -85,7 +85,7 @@ export default function SignupForm({
                 />
               </div>
                 {errors.email && (
-                  <p className="text-sm text-destructive mt-[-20] ml-3">{errors.email.message}</p>
+                  <p className="text-sm text-destructive -mt-5 ml-3">{errors.email.message}</p>
                 )}
 
               {/* Username Input */}
@@ -101,7 +101,7 @@ export default function SignupForm({
                 />
               </div>
               {errors.username && (
-                <p className="text-sm text-destructive mt-[-20] ml-3">{errors.username.message}</p>
+                <p className="text-sm text-destructive -mt-5 ml-3">{errors.username.message}</p>
               )}
 
               {/* Password Input */}
@@ -121,16 +121,17 @@ export default function SignupForm({
 
                   {/* Show Password Button */}
                   <button 
+                    type="button"
                     onClick={() => setShowPassword(!showPassword)} 
                     aria-label={showPassword ? "Hide password" : "Show password"}
                     className="absolute inset-y-0 right-0 pr-3"
-                    >
+                  >
                     {showPassword ? <EyeSlashIcon weight='light'/> : <EyeIcon weight='light'/>}
                   </button>
                 </div>
               </div>
                 {errors.password && (
-                  <p className="text-sm text-destructive mt-[-20] ml-3">{errors.password.message}</p>
+                  <p className="text-sm text-destructive -mt-5 ml-3">{errors.password.message}</p>
                 )}
 
               {/* Backend Errors */}
