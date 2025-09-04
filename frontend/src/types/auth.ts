@@ -7,8 +7,8 @@ import * as z from "zod";
  * @property {string} password - User's password.
  */
 export const LoginFormSchema = z.object({
-  email: z.email("Invalid email address."),
-  password: z.string().min(1, "Password cannot be blank.")
+  email: z.email("Invalid email address.").transform((val) => val.toLowerCase().trim()),
+  password: z.string().min(1, "Password cannot be blank.").transform((val) => val.trim()),
 });
 
 // Extract the inferred type
@@ -18,17 +18,22 @@ export type LoginFormInput = z.infer<typeof LoginFormSchema>;
  * Zod schema for signup form
  *
  * @property {string} email - User's unique email address.
- * @property {string} username - User's username.
+ * @property {string} username - User's username that cannot have more than 20 characters or contain invalid characters.
  * @property {string} password - User's password.
  */
 export const SignupFormSchema = z.object({
   email: z.email("Invalid email address."),
-  username: z.string().min(1, { error: "Username cannot be blank." }),
-  password: z.string().min(1, "Password cannot be blank.")
+  username: z
+    .string()
+    .min(1, { error: "Username cannot be blank." })
+    .max(20, { error: "Username cannot be greater than 20 characters" })
+    .regex(/^[a-zA-Z0-9_\-.]+$/, "Username cannot contain invalid characters")
+    .transform((val) => val.toLowerCase().trim()
+  ),
+  password: z.string().min(1, "Password cannot be blank.").transform((val => val.trim())),
 });
 
 export type SignupFormInput = z.infer<typeof SignupFormSchema>;
-
 
 /**
  * Represents an authentication token.
