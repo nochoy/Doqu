@@ -52,7 +52,7 @@ export default function SignupForm({
         throw new Error(result.detail || "An error occured");
       }
 
-      // TODO: auto login
+      localStorage.setItem("access_token", result.access_token)
       router.push("/");
     } catch (err) {
       console.log('error: ', err);
