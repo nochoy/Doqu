@@ -1,14 +1,34 @@
 import * as z from "zod";
 
-// Zod schema for login/signup form
-export const AuthFormSchema = z.object({
-  email: z.email({ error: "Invalid email address." }),
-  username: z.string().min(1, { error: "Username cannot be blank." }),
-  password: z.string().min(1, { error: "Password cannot be blank." })
+/** 
+ * Zod schema for login form
+ *
+ * @property {string} email - User's unique email address.
+ * @property {string} password - User's password.
+ */
+export const LoginFormSchema = z.object({
+  email: z.email("Invalid email address."),
+  password: z.string().min(1, "Password cannot be blank.")
 });
 
 // Extract the inferred type
-export type AuthFormInput = z.infer<typeof AuthFormSchema>;
+export type LoginFormInput = z.infer<typeof LoginFormSchema>;
+
+/** 
+ * Zod schema for signup form
+ *
+ * @property {string} email - User's unique email address.
+ * @property {string} username - User's username.
+ * @property {string} password - User's password.
+ */
+export const SignupFormSchema = z.object({
+  email: z.email("Invalid email address."),
+  username: z.string().min(1, { error: "Username cannot be blank." }),
+  password: z.string().min(1, "Password cannot be blank.")
+});
+
+export type SignupFormInput = z.infer<typeof SignupFormSchema>;
+
 
 /**
  * Represents an authentication token.
