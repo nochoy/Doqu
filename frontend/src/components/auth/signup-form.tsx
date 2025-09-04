@@ -19,12 +19,14 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { SignupFormInput, SignupFormSchema } from "@/types/auth"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { EyeIcon, EyeSlashIcon } from "@phosphor-icons/react"
 
 export default function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
 
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -80,7 +82,7 @@ export default function SignupForm({
                   {...register("email")}
                 />
               </div>
-                {errors.password && (
+                {errors.email && (
                   <p className="text-sm text-destructive">{errors.email.message}</p>
                 )}
 
@@ -93,7 +95,7 @@ export default function SignupForm({
                   {...register("username")}
                 />
               </div>
-              {errors.password && (
+              {errors.username && (
                 <p className="text-sm text-destructive">{errors.username.message}</p>
               )}
 
@@ -102,23 +104,27 @@ export default function SignupForm({
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
                 </div>
-                <Input 
-                  id="password" 
-                  type="password"  
-                  {...register("password")}
-                />
+                <div className="relative">
+                  <Input 
+                    id="password" 
+                    type={showPassword ? "text" : "password"}
+                    {...register("password")}
+                    className="pr-10"
+                    />
+
+                  {/* Show Password Button */}
+                  <button 
+                    onClick={() => setShowPassword(!showPassword)} 
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="absolute inset-y-0 right-0 pr-3"
+                    >
+                    {showPassword ? <EyeSlashIcon weight='light'/> : <EyeIcon weight='light'/>}
+                  </button>
+                </div>
               </div>
                 {errors.password && (
                   <p className="text-sm text-destructive">{errors.password.message}</p>
                 )}
-
-              {/* Confirm Password Input */}
-              <div className="grid gap-3">
-                <div className="flex items-center">
-                  <Label htmlFor="confirm-password">Confirm Password</Label>
-                </div>
-                <Input id="confirm-password" type="password" required />
-              </div>
 
               {/* Backend Errors */}
               {error && (
@@ -135,6 +141,7 @@ export default function SignupForm({
               <GoogleLoginButton disabled={isSubmitting}/>
             </div>
 
+            {/* Switch to Login page */}
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
               <Link href="login" className="underline underline-offset-4">
