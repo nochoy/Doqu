@@ -22,7 +22,7 @@ export type LoginFormInput = z.infer<typeof LoginFormSchema>;
  * @property {string} password - User's password.
  */
 export const SignupFormSchema = z.object({
-  email: z.email("Invalid email address."),
+  email: z.email("Invalid email address.").transform((val) => val.toLowerCase().trim()),
   username: z
     .string()
     .min(1, { error: "Username cannot be blank." })
