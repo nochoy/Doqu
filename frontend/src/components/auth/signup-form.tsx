@@ -46,7 +46,7 @@ export default function SignupForm({
 
       const result = await response.json();
 
-      if(!result.ok) {
+      if(!response.ok) {
         throw new Error(result.detail || "An error occured");
       }
 
