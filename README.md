@@ -87,9 +87,8 @@ Doqu/
 │   │   │   └── simple.test.tsx  # Basic test example
 │   │   ├── 📁 app/              # Next.js 15 app directory
 │   │   │   ├── api/             # Next.js API routes (proxy)
-│   │   │   │   └── auth.ts      # Authentication API routes
-│   │   │   ├── login/           # Authentication pages
-│   │   │   │   └── page.tsx     # Login page component
+│   │   │   ├── login/           # Login page
+│   │   │   ├── signup/          # Signup page
 │   │   │   ├── globals.css      # Global styles & Tailwind
 │   │   │   ├── layout.tsx       # Root layout component
 │   │   │   └── page.tsx         # Home page component
