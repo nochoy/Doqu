@@ -74,7 +74,9 @@ export default function SignupForm({
             <div className="flex flex-col gap-6">
               {/* Email Input */}
               <div className="grid gap-3">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">
+                  Email<span className="text-sm text-destructive">*</span>
+                </Label>
                 <Input
                   id="email"
                   type="email"
@@ -88,7 +90,9 @@ export default function SignupForm({
 
               {/* Username Input */}
               <div className="grid gap-3">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username">
+                  Username<span className="text-sm text-destructive">*</span>
+                </Label>
                 <Input
                   id="username"
                   placeholder="Molly"
@@ -102,7 +106,9 @@ export default function SignupForm({
               {/* Password Input */}
               <div className="grid gap-3">
                 <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">
+                    Password<span className="text-sm text-destructive">*</span>
+                  </Label>
                 </div>
                 <div className="relative">
                   <Input 
