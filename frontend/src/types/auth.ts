@@ -7,12 +7,21 @@ import * as z from "zod";
  * @property {string} password - User's password.
  */
 export const LoginFormSchema = z.object({
-  email: z.email("Invalid email address.").transform((val) => val.toLowerCase().trim()),
-  password: z.string().min(1, "Password cannot be blank.").transform((val) => val.trim()),
+  email: z.preprocess(
+    (val) => typeof val === "string" ? val.toLowerCase().trim() : val,
+    z.email("Invalid email address.")
+  ),
+  password: z.preprocess(
+    (val) => typeof val === "string" ? val.trim() : val,
+    z.string().min(1, "Password cannot be blank.")
+  )
 });
 
 // Extract the inferred type
-export type LoginFormInput = z.infer<typeof LoginFormSchema>;
+export type LoginFormInput = {
+  email: unknown;     // zodResolver can't infer type
+  password: unknown;
+};
 
 /** 
  * Zod schema for signup form
@@ -22,19 +31,28 @@ export type LoginFormInput = z.infer<typeof LoginFormSchema>;
  * @property {string} password - User's password.
  */
 export const SignupFormSchema = z.object({
-  email: z.email("Invalid email address.").transform((val) => val.toLowerCase().trim()),
-  username: z
-    .string()
+  email: z.preprocess(
+    (val) => typeof val === "string" ? val.toLowerCase().trim() : val,
+    z.email("Invalid email address.")
+  ),
+  username: z.preprocess(
+    (val) => typeof val === "string" ? val.toLowerCase().trim() : val,
+    z.string()
     .min(1, { error: "Username cannot be blank." })
     .max(20, { error: "Username cannot be greater than 20 characters." })
     .regex(/^[a-zA-Z0-9_\-.]+$/, "Username cannot contain invalid characters.")
-    .transform((val) => val.toLowerCase().trim()
   ),
-  password: z.string().min(1, "Password cannot be blank.").transform((val => val.trim())),
+  password: z.preprocess(
+    (val) => typeof val === "string" ? val.trim() : val,
+    z.string().min(1, "Password cannot be blank.")
+  )
 });
 
-export type SignupFormInput = z.infer<typeof SignupFormSchema>;
-
+export type SignupFormInput = {
+  email: unknown;     // zodResolver can't infer type
+  username: unknown;
+  password: unknown;
+};
 /**
  * Represents an authentication token.
  *
