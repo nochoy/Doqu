@@ -33,7 +33,7 @@ class Question(SQLModel, table=True):
     Relationships:
         quiz (Quiz): A relationship with the Quiz model indicating that each question belongs to one quiz.
     """
-
+    __tablename__ = "questions"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, nullable=False)
     # quiz_id: uuid.UUID = Field(foreign_key="quiz.id")
     question_text: str = Field(max_length=250)
@@ -59,9 +59,8 @@ class QuestionCreate(SQLModel):
     type: QuestionType
     time_limit: int = 30
     explanation: Optional[str] = None
-    correct_answer: Dict
-    possible_answers: Dict
-    created_at: datetime
+    correct_answer: Dict[str, Any]
+    possible_answers: Dict[str, Any]
 
 
 class QuestionUpdate(SQLModel):
@@ -75,7 +74,6 @@ class QuestionUpdate(SQLModel):
     explanation: Optional[str] = None
     correct_answer: Optional[dict] = None
     possible_answers: Optional[dict] = None
-    created_at: datetime = None
 
 class QuestionRead(QuestionCreate):
     """
