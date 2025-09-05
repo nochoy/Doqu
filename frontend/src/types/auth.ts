@@ -39,8 +39,8 @@ export const SignupFormSchema = z.object({
     val => (typeof val === 'string' ? val.toLowerCase().trim() : val),
     z
       .string()
-      .min(1, { error: 'Username cannot be blank.' })
-      .max(20, { error: 'Username cannot be greater than 20 characters.' })
+      .min(1, 'Username cannot be blank.')
+      .max(20, 'Username cannot be greater than 20 characters.')
       .regex(/^[a-zA-Z0-9_\-.]+$/, 'Username cannot contain invalid characters.')
   ),
   password: z.preprocess(
