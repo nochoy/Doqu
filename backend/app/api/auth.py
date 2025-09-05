@@ -46,22 +46,21 @@ async def register(
         access_token = auth_service.create_access_token(
             data={"sub": str(user.id), "email": user.email}
         )
-        
-        return UserRegisterResponse.model_validate({
-            "email": user.email,
-            "username": user.username,
-            "id": user.id,
-            "is_active": user.is_active,
-            "created_at": user.created_at,
-            "access_token": access_token,
-            "token_type": "bearer"
-        })
-        
-    except IntegrityError:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Email already registered"
+
+        return UserRegisterResponse.model_validate(
+            {
+                "email": user.email,
+                "username": user.username,
+                "id": user.id,
+                "is_active": user.is_active,
+                "created_at": user.created_at,
+                "access_token": access_token,
+                "token_type": "bearer",
+            }
         )
+
+    except IntegrityError:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
 
 
 @router.post("/login", response_model=Token, responses=get_responses(401))

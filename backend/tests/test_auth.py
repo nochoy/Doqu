@@ -24,6 +24,7 @@ async def register_and_login_user(client: AsyncClient, email: str, username: str
     token = Token(**login_response.json())
     return token.access_token, user_id
 
+
 @pytest.mark.asyncio
 async def test_register_user_success_email_password(
     async_client: AsyncClient, session: AsyncSession

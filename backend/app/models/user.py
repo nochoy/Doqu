@@ -70,6 +70,7 @@ class UserRead(BaseModel):
     is_active: bool
     created_at: datetime
 
+
 class UserRegisterResponse(UserRead):
     """
     Pydantic model for the response returned after a user registers.

@@ -5,9 +5,9 @@ import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
-from sqlalchemy.pool import StaticPool
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 from sqlmodel import SQLModel
 
 from app.db.session import get_db
@@ -28,6 +28,7 @@ TestingSessionLocal = sessionmaker(
     class_=AsyncSession,
     bind=engine,
 )
+
 
 @pytest.fixture(scope="session")
 def event_loop():
