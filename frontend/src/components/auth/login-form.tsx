@@ -1,33 +1,28 @@
-"use client"
+'use client';
 
-import Link from "next/link"
+import Link from 'next/link';
 
-import { cn } from "@/lib/utils"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import GoogleLoginButton from "./google-login"
-import { Button } from "../ui/button"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
-import { LoginFormInput, LoginFormSchema } from "@/types/auth"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { cn } from '@/lib/utils';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import GoogleLoginButton from './google-login';
+import { Button } from '../ui/button';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { LoginFormInput, LoginFormSchema } from '@/types/auth';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-export default function LoginForm({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+export default function LoginForm({ className, ...props }: React.ComponentProps<'div'>) {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormInput>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormInput>({
     resolver: zodResolver(LoginFormSchema),
   });
 
@@ -36,50 +31,47 @@ export default function LoginForm({
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       });
 
       const result = await response.json();
 
-      if(!response.ok) {
-        throw new Error(result.detail || "An error occured");
+      if (!response.ok) {
+        throw new Error(result.detail || 'An error occured');
       }
 
-      localStorage.setItem("access_token", result.access_token);
-      router.push("/");
+      localStorage.setItem('access_token', result.access_token);
+      router.push('/');
     } catch (err) {
       console.log('error: ', err);
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(err instanceof Error ? err.message : 'An error occurred');
     }
-  }
-  
+  };
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader className="text-center">
           <CardTitle>Welcome back!</CardTitle>
-          <CardDescription>
-            Login to your Doqu account
-          </CardDescription>
+          <CardDescription>Login to your Doqu account</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <div className="flex flex-col gap-6">
               {/* Email Input */}
               <div className="grid gap-3">
-                <Label htmlFor="email" >
+                <Label htmlFor="email">
                   Email <span className="text-sm text-destructive">*</span>
                 </Label>
                 <Input
                   id="email"
                   type="email"
                   placeholder="molly@doqu.com"
-                  {...register("email")}
+                  {...register('email')}
                   disabled={isSubmitting}
                 />
                 {errors.email && (
@@ -99,10 +91,10 @@ export default function LoginForm({
                     Forgot your password?
                   </Link> */}
                 </div>
-                <Input 
-                  id="password" 
-                  type="password" 
-                  {...register("password")}
+                <Input
+                  id="password"
+                  type="password"
+                  {...register('password')}
                   disabled={isSubmitting}
                 />
                 {errors.password && (
@@ -111,22 +103,18 @@ export default function LoginForm({
               </div>
 
               {/* Backend Errors */}
-              {error && (
-                <div className="text-sm text-destructive">
-                  {error}
-                </div>
-              )}
+              {error && <div className="text-sm text-destructive">{error}</div>}
 
               {/* Submit Button */}
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Loading..." : "Login"}
+                {isSubmitting ? 'Loading...' : 'Login'}
               </Button>
               {/* Google Login Button */}
-              <GoogleLoginButton disabled={isSubmitting}/>
+              <GoogleLoginButton disabled={isSubmitting} />
             </div>
             {/* Switch to sign up page */}
             <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
+              Don&apos;t have an account?{' '}
               <Link href="signup" className="underline underline-offset-4">
                 Sign up
               </Link>
@@ -135,5 +123,5 @@ export default function LoginForm({
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

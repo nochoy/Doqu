@@ -17,13 +17,12 @@ describe('Home', () => {
 
 describe('Login Page', () => {
   it('renders the login page', () => {
+    render(<LoginPage />);
 
-    render(<LoginPage/>);
-    
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const passwordInput = screen.getByLabelText(/Password/);
     const submitButton = screen.getByRole('button', { name: 'Login' });
-    
+
     expect(emailInput).toBeInTheDocument();
     expect(passwordInput).toBeInTheDocument();
     expect(submitButton).toBeInTheDocument();
@@ -32,9 +31,8 @@ describe('Login Page', () => {
 
 describe('Signup Page', () => {
   it('renders the signup page', () => {
+    render(<SignupPage />);
 
-    render(<SignupPage/>);
-    
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const usernameInput = screen.getByPlaceholderText('Molly');
     const passwordInput = screen.getByLabelText(/Password/);

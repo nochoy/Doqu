@@ -171,7 +171,9 @@ describe('SignupForm', () => {
         access_token: 'mock-token-123',
       }),
     };
-    (fetch as jest.Mock).mockImplementation(() => new Promise(resolve => setTimeout(() => resolve(mockResponse), 100)));
+    (fetch as jest.Mock).mockImplementation(
+      () => new Promise(resolve => setTimeout(() => resolve(mockResponse), 100))
+    );
 
     render(<SignupForm />);
 
@@ -240,11 +242,15 @@ describe('SignupForm', () => {
     const usernameInput = screen.getByPlaceholderText('Molly');
     const submitButton = screen.getByRole('button', { name: 'Register' });
 
-    fireEvent.change(usernameInput, { target: { value: 'thisusernameistoolongandexceedstwentycharacters' } });
+    fireEvent.change(usernameInput, {
+      target: { value: 'thisusernameistoolongandexceedstwentycharacters' },
+    });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText('Username cannot be greater than 20 characters.')).toBeInTheDocument();
+      expect(
+        screen.getByText('Username cannot be greater than 20 characters.')
+      ).toBeInTheDocument();
     });
   });
 });

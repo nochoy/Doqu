@@ -93,7 +93,9 @@ describe('LoginForm', () => {
         access_token: 'mock-token-123',
       }),
     };
-    (fetch as jest.Mock).mockImplementation(() => new Promise(resolve => setTimeout(() => resolve(mockResponse), 100)));
+    (fetch as jest.Mock).mockImplementation(
+      () => new Promise(resolve => setTimeout(() => resolve(mockResponse), 100))
+    );
 
     render(<LoginForm />);
 

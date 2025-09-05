@@ -1,11 +1,12 @@
-import React from "react"
+import React from 'react';
 
-import { Button } from "../ui/button"
-import { cn } from "@/lib/utils"
+import { Button } from '../ui/button';
+import { cn } from '@/lib/utils';
 
-
-export default function GoogleLoginButton ({ className, ...props }: React.ComponentProps<typeof Button>) {
-
+export default function GoogleLoginButton({
+  className,
+  ...props
+}: React.ComponentProps<typeof Button>) {
   return (
     <Button variant="outline" type="button" className={cn(`w-full ${className}`)} {...props}>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -16,5 +17,5 @@ export default function GoogleLoginButton ({ className, ...props }: React.Compon
       </svg>
       Login with Google
     </Button>
-  )
+  );
 }
