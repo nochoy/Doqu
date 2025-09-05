@@ -87,21 +87,19 @@ Doqu/
 │   │   │   └── simple.test.tsx  # Basic test example
 │   │   ├── 📁 app/              # Next.js 15 app directory
 │   │   │   ├── api/             # Next.js API routes (proxy)
-│   │   │   │   └── auth.ts      # Authentication API routes
-│   │   │   ├── login/           # Authentication pages
-│   │   │   │   └── page.tsx     # Login page component
+│   │   │   ├── login/           # Login page
+│   │   │   ├── signup/          # Signup page
 │   │   │   ├── globals.css      # Global styles & Tailwind
 │   │   │   ├── layout.tsx       # Root layout component
 │   │   │   └── page.tsx         # Home page component
 │   │   ├── 📁 components/       # Reusable React components
-│   │   │   ├── login/           # Login-specific components
+│   │   │   ├── auth/            # Auth-specific components
 │   │   │   ├── ui/              # Shadcn/ui primitive components
 │   │   │   └── shared/           # Shared application components
 │   │   ├── 📁 contexts/         # React context providers
 │   │   ├── 📁 lib/              # Utility libraries
 │   │   │   ├── socket.ts        # WebSocket client configuration
-│   │   │   ├── utils.ts         # Helper functions
-│   │   │   └── api.ts           # API client configuration
+│   │   │   └── utils.ts         # Helper functions
 │   │   └── 📁 types/            # TypeScript type definitions
 │   │       └── auth.ts          # Authentication-related types
 │   ├── 📁 public/               # Static assets

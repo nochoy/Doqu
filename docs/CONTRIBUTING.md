@@ -117,7 +117,7 @@ If you prefer not to use Dev Containers and instead develop locally:
    python -m venv venv
 
    source venv/bin/activate   # Linux/Mac
-   venv\Scripts\activate      # Windows
+   venv/Scripts/activate      # Windows
    ```
 
 2.  **Install Dependencies:**
@@ -147,13 +147,11 @@ If you prefer not to use Dev Containers and instead develop locally:
     cd backend
 
     # Build and start the DB container
-    docker compose up db --build
+    docker compose up --build db
     # Or start the existing DB container:
     docker compose up db
     # Or start the existing DB container w/o terminal logs:
-    docker compose up db -d
-
-    # Activate venv
+    docker compose up -d db    # Activate venv
     source venv/bin/activate    # Linux/MacOS
     venv/Scripts/activate       # Windows
 

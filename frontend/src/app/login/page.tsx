@@ -1,15 +1,17 @@
-'use client';
+import LoginForm from '@/components/auth/login-form';
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Welcome to Doqu</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Sign in to your account to start creating and playing quizzes
-          </p>
-        </div>
+    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-accent p-6 md:p-10">
+      <div className="flex w-full max-w-sm flex-col gap-6">
+        {/* Logo */}
+        {/* <a href="#" className="flex items-center gap-2 self-center font-medium">
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <GalleryVerticalEnd className="size-4" />
+          </div>
+          Acme Inc.
+        </a> */}
+        <LoginForm />
       </div>
     </div>
   );
