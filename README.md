@@ -93,14 +93,13 @@ Doqu/
 │   │   │   ├── layout.tsx       # Root layout component
 │   │   │   └── page.tsx         # Home page component
 │   │   ├── 📁 components/       # Reusable React components
-│   │   │   ├── login/           # Login-specific components
+│   │   │   ├── auth/            # Auth-specific components
 │   │   │   ├── ui/              # Shadcn/ui primitive components
 │   │   │   └── shared/           # Shared application components
 │   │   ├── 📁 contexts/         # React context providers
 │   │   ├── 📁 lib/              # Utility libraries
 │   │   │   ├── socket.ts        # WebSocket client configuration
-│   │   │   ├── utils.ts         # Helper functions
-│   │   │   └── api.ts           # API client configuration
+│   │   │   └── utils.ts         # Helper functions
 │   │   └── 📁 types/            # TypeScript type definitions
 │   │       └── auth.ts          # Authentication-related types
 │   ├── 📁 public/               # Static assets
