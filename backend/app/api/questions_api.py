@@ -100,3 +100,17 @@ async def delete_question(question_id: uuid.UUID, db: AsyncSession = Depends(get
     await questions_services.remove_question(session=db, question_id=question_id)
     return None
 
+
+@router.get("/all", response_model=list[QuestionRead])
+async def read_all_questions(db: AsyncSession = Depends(get_db)):
+    """
+    FastAPI endpoint to retrieve all questions.
+
+    Args:
+        db (AsyncSession): Database session provided by FastAPI's dependency injection system.
+
+    Returns:
+        list[QuestionRead]: A list of all questions.
+    """
+    questions = await questions_services.get_all_questions(session=db)
+    return questions

@@ -18,22 +18,34 @@ import { FormData } from '@/types/validators';
 const QUESTION_TEXT_MAX_LENGTH = 250;
 const EXPLANATION_MAX_LENGTH = 250;
 
+interface Question {
+    id: string;
+    question_text: string;
+    type: "MC" | "TF" | "SM";
+    time_limit: number;
+    explanation: string;
+    correct_answer: Record<string, any>;
+    possible_answers: Record<string, any>;
+}
+
 /**
  * Props:
+ *    - question: The question object to be updated
  *    - onClose: Function that closes the modal
  */
-interface QuestionsCreateFormProps {
+interface QuestionsUpdateFormProps {
+    question: Question;
     onClose: () => void;
 }
 
 /**
- * @description This component renders a form for creating a question.
+ * @description This component renders a form for updating a question.
  * It uses react-hook-form and zod to validate the input fields.
- * The form data is sent to the server using a POST request when submitted.
- * @param {QuestionsCreateFormProps} props - An object containing the onClose function.
+ * The form data is sent to the server using a PUT request when submitted.
+ * @param {QuestionsUpdateFormProps} props - An object containing the question and onClose function.
  * @returns {JSX.Element} A JSX element representing the form.
  */
-export default function QuestionsCreateForm({ onClose }: QuestionsCreateFormProps) {
+export default function QuestionsUpdateForm({ question, onClose }: QuestionsUpdateFormProps) {
     const router = useRouter();
     const {
         register,
@@ -45,32 +57,22 @@ export default function QuestionsCreateForm({ onClose }: QuestionsCreateFormProp
     } = useForm<FormData>({
         resolver: zodResolver(questionSchema),
         defaultValues: {
-            question_text: '',
-            type: 'MC',
-            time_limit: 30,
-            explanation: '',
-            correct_answer: {},
-            possible_answers: {},
+            question_text: question.question_text,
+            type: question.type,
+            time_limit: question.time_limit,
+            explanation: question.explanation,
+            correct_answer: question.correct_answer,
+            possible_answers: question.possible_answers,
         },
     });
 
     const questionType = watch('type');
 
-    // Sets the initial state of the possible answers based on the selected question type.
-    useEffect(() => {
-        if (questionType === 'MC' || questionType === 'SM') {
-            setValue('possible_answers', { a: '', b: '', c: '', d: '' });
-        }
-        if (questionType === 'TF') {
-            setValue('possible_answers', { a: 'True', b: 'False' });
-        }
-    }, [questionType, setValue]);
-
     // Handles the submission of the questions builder form.
     const onSubmit = async (data: FormData) => {
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/questions/create`, {
-                method: 'POST',
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/questions/update/${question.id}`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -78,7 +80,7 @@ export default function QuestionsCreateForm({ onClose }: QuestionsCreateFormProp
             });
 
             if (!response.ok) {
-                throw new Error('Failed to create question. Please try again');
+                throw new Error('Failed to update question. Please try again');
             }
 
             await response.json();
@@ -89,13 +91,11 @@ export default function QuestionsCreateForm({ onClose }: QuestionsCreateFormProp
         }
     };
 
-    /**
-     * Renders the form for creating a question.
-     */
+    // Renders the form for updating question.
     return (
         <div className="fixed inset-0 flex items-center justify-center">
             <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-2xl relative">
-            <h2 className="text-xl font-semibold mb-6">Question Builder</h2>
+            <h2 className="text-xl font-semibold mb-6">Update Question</h2>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {/* Question Text */}
                 <div>
@@ -114,6 +114,7 @@ export default function QuestionsCreateForm({ onClose }: QuestionsCreateFormProp
                     <div>
                         <Label htmlFor="type">Type</Label>
                         <Select
+                            value={questionType}
                             onValueChange={(value) => setValue('type', value as "MC" | "TF" | "SM")}
                         >
                             <SelectTrigger>
@@ -169,6 +170,7 @@ export default function QuestionsCreateForm({ onClose }: QuestionsCreateFormProp
                     <div>
                         <Label htmlFor="correct_answer">Correct Answer</Label>
                         <Select
+                            value={watch('correct_answer.answer')}
                             onValueChange={(value) => setValue('correct_answer.answer', value)}
                         >
                             <SelectTrigger>
@@ -190,6 +192,7 @@ export default function QuestionsCreateForm({ onClose }: QuestionsCreateFormProp
                     <div>
                         <Label htmlFor="correct_answer">Correct Answer</Label>
                         <Select
+                            value={watch('correct_answer.answer')}
                             onValueChange={(value) => setValue('correct_answer.answer', value)}
                         >
                             <SelectTrigger>
@@ -210,9 +213,11 @@ export default function QuestionsCreateForm({ onClose }: QuestionsCreateFormProp
                         <Label>Correct Answer</Label>
                         <div className="space-y-2">
                             <div className="flex items-center space-x-2">
-                                <Checkbox id="a" onCheckedChange={(checked) => {
+                                <Checkbox id="a"
+                                checked={watch('correct_answer.answers')?.includes('a')}
+                                onCheckedChange={(checked) => {
                                     const currentAnswers = watch('correct_answer.answers') || [];
-                                    if (checked) {
+                                    if (checked && !currentAnswers.includes('a')) {
                                         setValue('correct_answer.answers', [...currentAnswers, 'a']);
                                     } else {
                                         setValue('correct_answer.answers', currentAnswers.filter((ans) => ans !== 'a'));
@@ -221,9 +226,11 @@ export default function QuestionsCreateForm({ onClose }: QuestionsCreateFormProp
                                 <Label htmlFor="a">Answer A</Label>
                             </div>
                             <div className="flex items-center space-x-2">
-                                <Checkbox id="b" onCheckedChange={(checked) => {
+                                <Checkbox id="b"
+                                checked={watch('correct_answer.answers')?.includes('b')}
+                                onCheckedChange={(checked) => {
                                     const currentAnswers = watch('correct_answer.answers') || [];
-                                    if (checked) {
+                                    if (checked && !currentAnswers.includes('b')) {
                                         setValue('correct_answer.answers', [...currentAnswers, 'b']);
                                     } else {
                                         setValue('correct_answer.answers', currentAnswers.filter((ans) => ans !== 'b'));
@@ -232,9 +239,11 @@ export default function QuestionsCreateForm({ onClose }: QuestionsCreateFormProp
                                 <Label htmlFor="b">Answer B</Label>
                             </div>
                             <div className="flex items-center space-x-2">
-                                <Checkbox id="c" onCheckedChange={(checked) => {
+                                <Checkbox id="c"
+                                checked={watch('correct_answer.answers')?.includes('c')}
+                                onCheckedChange={(checked) => {
                                     const currentAnswers = watch('correct_answer.answers') || [];
-                                    if (checked) {
+                                    if (checked && !currentAnswers.includes('c')) {
                                         setValue('correct_answer.answers', [...currentAnswers, 'c']);
                                     } else {
                                         setValue('correct_answer.answers', currentAnswers.filter((ans) => ans !== 'c'));
@@ -243,9 +252,11 @@ export default function QuestionsCreateForm({ onClose }: QuestionsCreateFormProp
                                 <Label htmlFor="c">Answer C</Label>
                             </div>
                             <div className="flex items-center space-x-2">
-                                <Checkbox id="d" onCheckedChange={(checked) => {
+                                <Checkbox id="d"
+                                checked={watch('correct_answer.answers')?.includes('d')}
+                                onCheckedChange={(checked) => {
                                     const currentAnswers = watch('correct_answer.answers') || [];
-                                    if (checked) {
+                                    if (checked && !currentAnswers.includes('d')) {
                                         setValue('correct_answer.answers', [...currentAnswers, 'd']);
                                     } else {
                                         setValue('correct_answer.answers', currentAnswers.filter((ans) => ans !== 'd'));
@@ -272,7 +283,7 @@ export default function QuestionsCreateForm({ onClose }: QuestionsCreateFormProp
                     <Button
                         type="submit"
                     >
-                        Create
+                        Update
                     </Button>
                 </div>
             </form>

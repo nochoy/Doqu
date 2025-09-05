@@ -14,7 +14,7 @@ import { z } from 'zod';
  * Multiple Choice Schema
  */
 const mcSchema = z.object({
-  question_text: z.string().optional(),
+  question_text: z.string().min(1, 'Question title is required.'),
   type: z.literal('MC'),
   time_limit: z.number().min(1, 'Time limit must be at least 1.'),
   explanation: z.string().optional(),
@@ -33,7 +33,7 @@ const mcSchema = z.object({
  * True False Schema
  */
 const tfSchema = z.object({
-    question_text: z.string().optional(),
+    question_text: z.string().min(1, 'Question title is required.'),
     type: z.literal('TF'),
     time_limit: z.number().min(1, 'Time limit must be at least 1.'),
     explanation: z.string().optional(),
@@ -50,7 +50,7 @@ const tfSchema = z.object({
  * Select Multiple Schema
  */
 const smSchema = z.object({
-  question_text: z.string().optional(),
+  question_text: z.string().min(1, 'Question title is required.'),
   type: z.literal('SM'),
   time_limit: z.number().min(1, 'Time limit must be at least 1.'),
   explanation: z.string().optional(),
@@ -73,3 +73,9 @@ export const questionSchema = z.discriminatedUnion('type', [
     tfSchema,
     smSchema,
 ]);
+
+/**
+ * Creating a Typescript type for the questions schema.
+ * Matches the zod schema defined in the validators.ts file.
+ */
+export type FormData = z.infer<typeof questionSchema>;
