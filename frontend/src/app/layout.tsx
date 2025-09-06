@@ -26,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${poppins.variable} ${merriweather.variable}`}>
+      <body className={`${inter.variable} ${poppins.variable} ${merriweather.variable} font-sans`}>
         {children}
       </body>
     </html>
