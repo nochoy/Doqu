@@ -93,11 +93,21 @@ class UserLogin(BaseModel):
 
 class GoogleLogin(BaseModel):
     """
-    Pydantic model for Google user login with `google_id_token`.
+    Pydantic model for Google user login with `code`.
     """
 
-    google_id_token: str
+    code: str
 
+class GoogleUserData(BaseModel):
+    """
+    Pydantic model for storing Google user data.
+
+    This model includes fields for the user's Google ID, email, and name.
+    """
+
+    google_id: str
+    email: str
+    name: str
 
 class Token(BaseModel):
     """
