@@ -1,18 +1,30 @@
+"use client"
+
 import React from 'react';
 
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
+import { useGoogleLogin } from '@react-oauth/google';
 
 export default function GoogleLoginButton({
   className,
   ...props
 }: React.ComponentProps<typeof Button>) {
+
+  const login = useGoogleLogin({
+    onSuccess: (response) => {
+      console.log('Google login successful', response);
+    },
+    flow: 'auth-code'
+  });
+
   return (
     <Button 
       variant="outline" 
       type="button" 
       className={cn(`w-full ${className}`)} 
       aria-label="Login with Google"
+      onClick={() => login()}
       {...props}
     >
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
