@@ -5,15 +5,37 @@ import React from 'react';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
 import { useGoogleLogin } from '@react-oauth/google';
+import { useRouter } from 'next/navigation';
 
 export default function GoogleLoginButton({
   className,
   ...props
 }: React.ComponentProps<typeof Button>) {
 
+  const router = useRouter();
+
   const login = useGoogleLogin({
-    onSuccess: (response) => {
-      console.log('Google login successful', response);
+    onSuccess: async (googleResponse) => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/google`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ code: googleResponse.code }),
+        });
+
+        const result = await response.json();
+
+        if(!response.ok || !result.access_token) {
+          throw new Error(result.detail || 'Google login failed');
+        }
+
+        localStorage.setItem('access_token', result.access_token);
+        router.push('/');
+      } catch (error) {
+        console.error('Error occurred during Google login: ', error);
+      }
     },
     flow: 'auth-code'
   });
