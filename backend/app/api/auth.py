@@ -4,10 +4,12 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from google.auth.exceptions import GoogleAuthError
+
 
 from app.core.config import settings
 from app.db.session import get_db
-from app.models.user import Token, UserCreate, UserLogin, UserRegisterResponse
+from app.models.user import Token, UserCreate, UserLogin, UserRegisterResponse, GoogleLogin
 from app.services import auth_service, user_service
 from app.utils.responses import get_responses
 
@@ -43,8 +45,9 @@ async def register(
     """
     try:
         user = await user_service.create_user(session, user_create)
+
         access_token = auth_service.create_access_token(
-            data={"sub": str(user.id), "email": user.email}
+            data={"sub": str(user.id), "email": user.email},
         )
 
         return UserRegisterResponse.model_validate(
@@ -90,10 +93,37 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token_expires = timedelta(days=settings.ACCESS_TOKEN_EXPIRE_DAYS)
     access_token = auth_service.create_access_token(
         data={"sub": str(user.id), "email": user.email},
-        expires_delta=access_token_expires,
     )
 
     return Token.model_validate({"access_token": access_token, "token_type": "bearer"})
+
+@router.post("/google", response_model=Token, responses=get_responses(401))
+async def googleLogin(
+    request: GoogleLogin,
+    session: Annotated[AsyncSession, Depends(get_db)]
+) -> Token:
+    try:
+        google_user_data = auth_service.verify_google_token(request)
+
+        if not google_user_data.google_id or not google_user_data.email or not google_user_data.name:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email, Name, or Google ID not found in token",
+            )
+
+        user = await auth_service.link_google_to_user(session, google_user_data)
+
+        access_token = auth_service.create_access_token(
+            data={"sub": str(user.id), "email": user.email},
+        )
+
+        return Token.model_validate({"access_token": access_token, "token_type": "Bearer"})
+
+    except (ValueError, GoogleAuthError) as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Google token",
+        )
+        
