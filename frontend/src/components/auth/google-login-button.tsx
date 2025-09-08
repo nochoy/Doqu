@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import React from 'react';
 
@@ -11,11 +11,10 @@ export default function GoogleLoginButton({
   className,
   ...props
 }: React.ComponentProps<typeof Button>) {
-
   const router = useRouter();
 
   const login = useGoogleLogin({
-    onSuccess: async (googleResponse) => {
+    onSuccess: async googleResponse => {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/google`, {
           method: 'POST',
@@ -27,7 +26,7 @@ export default function GoogleLoginButton({
 
         const result = await response.json();
 
-        if(!response.ok || !result.access_token) {
+        if (!response.ok || !result.access_token) {
           throw new Error(result.detail || 'Google login failed');
         }
 
@@ -37,14 +36,14 @@ export default function GoogleLoginButton({
         console.error('Error occurred during Google login: ', error);
       }
     },
-    flow: 'auth-code'
+    flow: 'auth-code',
   });
 
   return (
-    <Button 
-      variant="outline" 
-      type="button" 
-      className={cn(`w-full ${className}`)} 
+    <Button
+      variant="outline"
+      type="button"
+      className={cn(`w-full ${className}`)}
       aria-label="Login with Google"
       onClick={() => login()}
       {...props}

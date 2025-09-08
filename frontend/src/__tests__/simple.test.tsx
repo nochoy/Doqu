@@ -24,7 +24,6 @@ describe('Login Page', () => {
       </Providers>
     );
 
-
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const passwordInput = screen.getByLabelText(/Password/);
     const submitButton = screen.getByRole('button', { name: 'Login' });

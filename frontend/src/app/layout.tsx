@@ -14,7 +14,7 @@ const merriweather = Merriweather({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700', '800', '900'],
   variable: '--font-serif',
-  fallback: ['ui-serif', 'serif']
+  fallback: ['ui-serif', 'serif'],
 });
 
 export const metadata: Metadata = {
@@ -33,9 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${poppins.variable} ${merriweather.variable} font-sans`}>
-        <Providers>
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
