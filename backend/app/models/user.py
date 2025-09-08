@@ -107,7 +107,7 @@ class GoogleUserData(BaseModel):
     """
 
     google_id: str
-    email: str
+    email: EmailStr
     name: str
 
 
