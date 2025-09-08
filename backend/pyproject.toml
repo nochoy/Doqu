@@ -111,6 +111,7 @@ omit = [
     "*/db/init_db.py",
     "*/db/session.py",
     "*/db/utils.py",
+    "*/db/base.py",
     "*/websocket/*",
 ]
 
