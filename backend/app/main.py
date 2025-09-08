@@ -9,6 +9,8 @@ from sqlalchemy.exc import OperationalError
 from app.api import auth, user
 from app.core.config import settings
 from app.db import check_db_connection, init_db
+from app.models.quiz import Quiz
+from app.services.quiz_service import create_quiz
 
 
 @asynccontextmanager
@@ -70,3 +72,8 @@ async def health_check() -> dict[str, str]:
         return {"status": "ok", "database_connection": "successful"}
     else:
         raise HTTPException(status_code=503, detail="Database connection failed")
+
+
+@app.post("/quiz")
+async def create_quiz(quiz: Quiz):
+    return await create_quiz(quiz)
