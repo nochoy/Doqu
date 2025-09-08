@@ -44,7 +44,7 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
 
       const result = await response.json();
 
-      if (!response.ok) {
+      if (!response.ok || !result?.access_token) {
         throw new Error(result.detail || 'An error occured');
       }
 
