@@ -28,6 +28,10 @@ export default function SignupForm({ className, ...props }: React.ComponentProps
     resolver: zodResolver(SignupFormSchema),
   });
 
+  const handleGoogleError = (errorMessage: string) => {
+    setError(errorMessage);
+  }
+
   const onSubmit = async (data: SignupFormInput) => {
     setError(null);
 
@@ -129,7 +133,7 @@ export default function SignupForm({ className, ...props }: React.ComponentProps
                 {isSubmitting ? 'Loading...' : 'Register'}
               </Button>
               {/* Google Login Button */}
-              <GoogleLoginButton disabled={isSubmitting} />
+              <GoogleLoginButton disabled={isSubmitting} onError={handleGoogleError}/>
             </div>
 
             {/* Switch to Login page */}

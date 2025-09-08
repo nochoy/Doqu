@@ -7,13 +7,18 @@ import { cn } from '@/lib/utils';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useRouter } from 'next/navigation';
 
+interface GoogleLoginButtonProps extends Omit<React.ComponentProps<typeof Button>, "onError"> {
+  onError?: (error: string) => void;
+}
+
 export default function GoogleLoginButton({
   className,
+  onError,  
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: GoogleLoginButtonProps) {
   const router = useRouter();
 
-  const login = useGoogleLogin({
+  const handleLogin = useGoogleLogin({
     onSuccess: async googleResponse => {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/google`, {
@@ -34,6 +39,7 @@ export default function GoogleLoginButton({
         router.push('/');
       } catch (error) {
         console.error('Error occurred during Google login: ', error);
+        onError?.(error instanceof Error ? error.message : 'An error occurred during Google login');
       }
     },
     flow: 'auth-code',
@@ -45,7 +51,7 @@ export default function GoogleLoginButton({
       type="button"
       className={cn(`w-full ${className}`)}
       aria-label="Login with Google"
-      onClick={() => login()}
+      onClick={() => handleLogin()}
       {...props}
     >
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
