@@ -5,6 +5,7 @@ from typing import List
 from sqlalchemy import Column, DateTime
 from sqlmodel import Field, Relationship, SQLModel
 
+
 class Question(SQLModel, table=True):
     """
     Represents a question in the database.
