@@ -1,6 +1,5 @@
 import pytest
 from httpx import AsyncClient
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_active_user
@@ -334,8 +333,6 @@ async def test_delete_quiz_service_exceptions(
 
     # --- Additional service-layer tests to increase coverage --------------------
 
-import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
 
 # create_quiz: persists & sets owner
 @pytest.mark.asyncio

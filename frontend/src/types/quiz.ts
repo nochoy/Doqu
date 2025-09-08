@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { TITLE_MAX_LENGTH, DESC_MAX_LENGTH } from '@/lib/constants';
 
 export const categoryOptions = [
   'Arts',
@@ -26,8 +27,14 @@ export interface QuizModalData {
 }
 
 export const QuizSchema = z.object({
-  title: z.string().min(1, 'Title is required.').max(50, 'Title must be 50 characters or less.'),
-  description: z.string().max(250, 'Description must be 250 characters or less.').optional(),
+  title: z
+    .string()
+    .min(1, 'Title is required.')
+    .max(TITLE_MAX_LENGTH, `Title must be ${TITLE_MAX_LENGTH} characters or less.`),
+  description: z
+    .string()
+    .max(DESC_MAX_LENGTH, `Description must be ${DESC_MAX_LENGTH} characters or less.`)
+    .optional(),
   category: z
     .string()
     .refine(val => val === '' || validCategories.includes(val), {
