@@ -83,6 +83,7 @@ module = [
     "google.*",
     "passlib.*",
     "jose.*",
+    "google_auth_oauthlib.*",
 ]
 ignore_missing_imports = true
 

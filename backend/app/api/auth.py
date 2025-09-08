@@ -1,15 +1,12 @@
-from datetime import timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from google.auth.exceptions import GoogleAuthError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from google.auth.exceptions import GoogleAuthError
 
-
-from app.core.config import settings
 from app.db.session import get_db
-from app.models.user import Token, UserCreate, UserLogin, UserRegisterResponse, GoogleLogin
+from app.models.user import GoogleLogin, Token, UserCreate, UserLogin, UserRegisterResponse
 from app.services import auth_service, user_service
 from app.utils.responses import get_responses
 
@@ -99,15 +96,19 @@ async def login(
 
     return Token.model_validate({"access_token": access_token, "token_type": "bearer"})
 
+
 @router.post("/google", response_model=Token, responses=get_responses(401))
 async def googleLogin(
-    request: GoogleLogin,
-    session: Annotated[AsyncSession, Depends(get_db)]
+    request: GoogleLogin, session: Annotated[AsyncSession, Depends(get_db)]
 ) -> Token:
     try:
         google_user_data = auth_service.verify_google_token(request)
 
-        if not google_user_data.google_id or not google_user_data.email or not google_user_data.name:
+        if (
+            not google_user_data.google_id
+            or not google_user_data.email
+            or not google_user_data.name
+        ):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email, Name, or Google ID not found in token",
@@ -121,9 +122,8 @@ async def googleLogin(
 
         return Token.model_validate({"access_token": access_token, "token_type": "Bearer"})
 
-    except (ValueError, GoogleAuthError) as e:
+    except (ValueError, GoogleAuthError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Google token",
         )
-        

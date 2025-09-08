@@ -1,13 +1,13 @@
 import uuid
 from datetime import datetime, timedelta, timezone
 
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token
+from google_auth_oauthlib.flow import Flow
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from passlib.exc import MissingBackendError, UnknownHashError
 from sqlalchemy.ext.asyncio import AsyncSession
-from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
-from google_auth_oauthlib.flow import Flow
 
 from app.core.config import settings
 from app.models.user import GoogleLogin, GoogleUserData, TokenData, User, UserCreate
@@ -28,9 +28,10 @@ client_config = {
         "token_uri": "https://oauth2.googleapis.com/token",
         "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
         "redirect_uris": [redirect_uri],
-        "javascript_origins": [redirect_uri]
+        "javascript_origins": [redirect_uri],
     }
 }
+
 
 # --- Helper Functions --- #
 def hash_password(password: str) -> str:
@@ -113,6 +114,7 @@ def get_data_from_token(token: str) -> TokenData | None:
         return None
     return token_data
 
+
 def verify_google_token(request: GoogleLogin) -> GoogleUserData:
     """
     Exchanges a Google OAuth2 authorization code for an ID token and extracts user information.
@@ -121,13 +123,18 @@ def verify_google_token(request: GoogleLogin) -> GoogleUserData:
         request: A GoogleLogin object containing the OAuth2 authorization code.
 
     Returns:
-        A GoogleUserData object containing the Google ID, user email, and user name if the token is valid.
+        A GoogleUserData object containing the Google ID, user email, \
+            and user name if the token is valid.
     """
 
     flow = Flow.from_client_config(
         client_config,
-        scopes=['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile'],
-        redirect_uri=redirect_uri
+        scopes=[
+            "openid",
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile",
+        ],
+        redirect_uri=redirect_uri,
     )
 
     #  Exchange authorization code for credentials
@@ -140,9 +147,9 @@ def verify_google_token(request: GoogleLogin) -> GoogleUserData:
         settings.GOOGLE_CLIENT_ID,
     )
 
-    google_id = decoded_token.get("sub") or ''
-    email = decoded_token.get("email") or ''
-    name = decoded_token.get("name") or ''
+    google_id = decoded_token.get("sub") or ""
+    email = decoded_token.get("email") or ""
+    name = decoded_token.get("name") or ""
 
     return GoogleUserData(google_id=google_id, email=email, name=name)
 
@@ -171,6 +178,7 @@ async def authenticate_user(session: AsyncSession, email: str, password: str) ->
         return None
     return user
 
+
 async def link_google_to_user(session: AsyncSession, google_user_data: GoogleUserData) -> User:
     """
     Link a Google account to an existing user or create a new user account.
@@ -190,14 +198,18 @@ async def link_google_to_user(session: AsyncSession, google_user_data: GoogleUse
         # Check if user made an account w/ email + password -> link w/ Google ID
         user = await user_service.get_user_by_email(session, google_user_data.email)
 
-        if user:    # Link existing email account w/ Google ID
+        if user:  # Link existing email account w/ Google ID
             user.google_id = google_user_data.google_id
             session.add(user)
             await session.commit()
             await session.refresh(user)
-        else:       # First time logging in, create a new account
+        else:  # First time logging in, create a new account
             username = google_user_data.name or google_user_data.email.split("@")[0]
-            new_user = UserCreate(email=google_user_data.email, username=username, google_id=google_user_data.google_id)
+            new_user = UserCreate(
+                email=google_user_data.email,
+                username=username,
+                google_id=google_user_data.google_id,
+            )
             user = await user_service.create_user(session, new_user)
-    
+
     return user

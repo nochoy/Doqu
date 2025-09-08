@@ -98,6 +98,7 @@ class GoogleLogin(BaseModel):
 
     code: str
 
+
 class GoogleUserData(BaseModel):
     """
     Pydantic model for storing Google user data.
@@ -108,6 +109,7 @@ class GoogleUserData(BaseModel):
     google_id: str
     email: str
     name: str
+
 
 class Token(BaseModel):
     """
