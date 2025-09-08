@@ -12,7 +12,7 @@ const poppins = Poppins({
 });
 const merriweather = Merriweather({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  weight: ['300', '400', '700', '900'],
   variable: '--font-serif',
   fallback: ['ui-serif', 'serif'],
 });
