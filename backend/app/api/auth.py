@@ -126,14 +126,10 @@ async def googleLogin(
     try:
         google_user_data = auth_service.verify_google_token(request)
 
-        if (
-            not google_user_data.google_id
-            or not google_user_data.email
-            or not google_user_data.name
-        ):
+        if (not google_user_data.google_id) or (not google_user_data.email):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email, Name, or Google ID not found in token",
+                detail="Email or Google ID not found in token",
             )
 
         user = await auth_service.link_google_to_user(session, google_user_data)
@@ -142,7 +138,9 @@ async def googleLogin(
             data={"sub": str(user.id), "email": user.email},
         )
 
-        return Token.model_validate({"access_token": access_token, "token_type": "Bearer"})
+        return Token.model_validate({"access_token": access_token, "token_type": "bearer"})
+        # Or simply:
+        # return Token.model_validate({"access_token": access_token})
 
     except (ValueError, GoogleAuthError):
         raise HTTPException(
