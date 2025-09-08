@@ -33,7 +33,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         print("Database initialized and tables created!")
     except (OperationalError, asyncpg.exceptions.ConnectionDoesNotExistError, OSError) as e:
         print(
-            "\n🛑 ERROR: COULD NOT CONNECT TO THE DATABASE. Is your Postgres container running?\n"
+            "\nERROR: COULD NOT CONNECT TO THE DATABASE. Is your Postgres container running?\n"
         )
         print(f"Error details: {e}\n")
     yield
