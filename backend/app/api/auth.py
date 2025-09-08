@@ -81,6 +81,9 @@ async def login(
 
     Returns:
         Token: Access token and token type
+
+    Raises:
+        HTTPException: 401 Unauthorized if the credentials are invalid.
     """
     user = await auth_service.authenticate_user(session, form_data.email, form_data.password)
     if not user:
@@ -101,6 +104,25 @@ async def login(
 async def googleLogin(
     request: GoogleLogin, session: Annotated[AsyncSession, Depends(get_db)]
 ) -> Token:
+    """
+    Authenticate a user using Google OAuth and return a JWT access token.
+
+    This endpoint allows a user to log in using their Google account. It verifies the
+    Google token, extracts user information, and links the Google account to an existing
+    user or creates a new user if necessary. If the Google token is invalid, an HTTP 401
+    error is raised.
+
+    Args:
+        `request` (GoogleLogin): Google login data containing the token.
+        `session` (AsyncSession): Async database session for executing queries.
+
+    Returns:
+        Token: Access token and token type.
+
+    Raises:
+        HTTPException: 400 Bad Request if required Google user data is missing.
+        HTTPException: 401 Unauthorized if the Google token is invalid.
+    """
     try:
         google_user_data = auth_service.verify_google_token(request)
 
