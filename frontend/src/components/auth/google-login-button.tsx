@@ -7,13 +7,13 @@ import { cn } from '@/lib/utils';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useRouter } from 'next/navigation';
 
-interface GoogleLoginButtonProps extends Omit<React.ComponentProps<typeof Button>, "onError"> {
+interface GoogleLoginButtonProps extends Omit<React.ComponentProps<typeof Button>, 'onError'> {
   onError?: (error: string) => void;
 }
 
 export default function GoogleLoginButton({
   className,
-  onError,  
+  onError,
   ...props
 }: GoogleLoginButtonProps) {
   const router = useRouter();
