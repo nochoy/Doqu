@@ -126,14 +126,10 @@ async def googleLogin(
     try:
         google_user_data = auth_service.verify_google_token(request)
 
-        if (
-            not google_user_data.google_id
-            or not google_user_data.email
-            or not google_user_data.name
-        ):
+        if (not google_user_data.google_id) or (not google_user_data.email):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email, Name, or Google ID not found in token",
+                detail="Email or Google ID not found in token",
             )
 
         user = await auth_service.link_google_to_user(session, google_user_data)
