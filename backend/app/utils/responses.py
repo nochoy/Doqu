@@ -18,11 +18,12 @@ def get_responses(*codes: int) -> Dict[int | str, Dict[str, Any]]:
         ValueError: If any provided status code is not supported.
     """
     base = {
-        400: {"model": ErrorResponse, "description": "Error: Bad Request"},
-        401: {"model": ErrorResponse, "description": "Error: Unauthorized"},
-        403: {"model": ErrorResponse, "description": "Error: Forbidden"},
-        404: {"model": ErrorResponse, "description": "Error: Not Found"},
-        409: {"model": ErrorResponse, "description": "Error: Conflict"},
+        400: {"model": ErrorResponse, "status_code": 400, "description": "Error: Bad Request"},
+        401: {"model": ErrorResponse, "status_code": 401, "description": "Error: Unauthorized"},
+        403: {"model": ErrorResponse, "status_code": 403, "description": "Error: Forbidden"},
+        404: {"model": ErrorResponse, "status_code": 404, "description": "Error: Not Found"},
+        409: {"model": ErrorResponse, "status_code": 409, "description": "Error: Conflict"},
+        500: {"model": ErrorResponse, "status_code": 500, "description": "Error: Internal Server Error"},
     }
 
     unknown = [c for c in codes if c not in base]
