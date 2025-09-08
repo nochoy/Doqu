@@ -43,3 +43,12 @@ global.IntersectionObserver = class IntersectionObserver {
   observe() {}
   unobserve() {}
 };
+
+// Mock Next.js public env vars for tests
+Object.defineProperty(process, 'env', {
+  value: {
+    ...process.env,
+    NEXT_PUBLIC_GOOGLE_CLIENT_ID: 'your-google-client-id',
+  },
+  writable: true,
+});
