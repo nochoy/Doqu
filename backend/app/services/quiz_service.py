@@ -1,7 +1,6 @@
 import uuid
 from typing import Any, List, cast
 
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
@@ -37,11 +36,7 @@ async def create_quiz(session: AsyncSession, quiz_in: QuizCreate, owner_id: uuid
     db_quiz = Quiz(**quiz_data, owner_id=owner_id)
 
     session.add(db_quiz)
-    try:
-        await session.commit()
-    except SQLAlchemyError:
-        await session.rollback()
-        raise
+    await session.commit()
     await session.refresh(db_quiz)
     return db_quiz
 
@@ -120,11 +115,8 @@ async def update_quiz(
         raise ValueError(f"Cannot set non-nullable fields to null: {', '.join(invalid_nulls)}")
     if raw_update_data:
         db_quiz.sqlmodel_update(raw_update_data)
-    try:
-        await session.commit()
-    except SQLAlchemyError:
-        await session.rollback()
-        raise
+
+    await session.commit()
     await session.refresh(db_quiz)
     return db_quiz
 
@@ -144,10 +136,6 @@ async def remove_quiz(session: AsyncSession, quiz_id: int, user_id: uuid.UUID) -
     db_quiz = await get_quiz(session=session, quiz_id=quiz_id)
     if db_quiz.owner_id != user_id:
         raise QuizPermissionException("User does not have permission to delete this quiz.")
-    try:
-        await session.delete(db_quiz)
-        await session.commit()
-    except SQLAlchemyError:
-        await session.rollback()
-        raise
+    await session.delete(db_quiz)
+    await session.commit()
     return

@@ -2,42 +2,26 @@
 
 import { useState, FormEvent, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { z } from 'zod';
 
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import OptionToggle from '../ui/OptionToggle';
 import { XIcon } from '@phosphor-icons/react';
+import { TITLE_MAX_LENGTH, DESC_MAX_LENGTH } from '../../lib/constants';
+import { QuizModalData, QuizSchema, CreateQuizResponse, categoryOptions } from '@/types/quiz';
 
 interface QuizCreateModalProps {
   onClose: () => void;
 }
-
-interface QuizModalData {
-  title: string;
-  description: string;
-  category: string;
-  difficulty: number | null;
-  is_public: boolean;
-}
-
-const categoryOptions = [
-  'Arts',
-  'Biology',
-  'Chemistry',
-  'Computers',
-  'English',
-  'Fun',
-  'Geography',
-  'History',
-  'Mathematics',
-  'Physics',
-  'Science',
-  'Social Studies',
-].map(c => ({ value: c, label: c }));
 
 const difficultyOptions = [
   { value: 1, label: '1 (Easiest)' },
@@ -46,25 +30,6 @@ const difficultyOptions = [
   { value: 4, label: '4' },
   { value: 5, label: '5 (Hardest)' },
 ];
-
-const validCategories = categoryOptions.map(c => c.value);
-
-const QuizSchema = z.object({
-  title: z.string().min(1, 'Title is required.').max(50, 'Title must be 50 characters or less.'),
-  description: z.string().max(250, 'Description must be 250 characters or less.').optional(),
-  category: z
-    .string()
-    .refine(val => val === '' || validCategories.includes(val), {
-      message: 'Please select a valid category.',
-    })
-    .optional(),
-  difficulty: z.coerce
-    .number({ message: 'Please select a valid difficulty.' })
-    .min(1, { message: 'Please select a valid difficulty.' })
-    .max(5, { message: 'Please select a valid difficulty.' })
-    .nullable(),
-  is_public: z.boolean(),
-});
 
 export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
   const router = useRouter();
@@ -135,7 +100,7 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
     }
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? '';
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       const endpoint = `${baseUrl}/api/quizzes/`;
       const raw = validationResult.data;
       const payload: Partial<typeof raw> = {
@@ -153,15 +118,20 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
 
       if (!response.ok) {
         let msg = 'Failed to create quiz. Please try again.';
-        try {
+        const contentType = response.headers.get('content-type');
+
+        if (contentType && contentType.includes('application/json')) {
           const err = await response.json();
-          if (typeof err?.detail === 'string') msg = err.detail;
-          else if (Array.isArray(err?.detail) && typeof err.detail[0]?.msg === 'string') msg = err.detail[0].msg;
-        } catch {}
+          if (typeof err?.detail === 'string') {
+            msg = err.detail;
+          } else if (Array.isArray(err?.detail) && typeof err.detail[0]?.msg === 'string') {
+            msg = err.detail[0].msg;
+          }
+        }
+
         throw new Error(msg);
       }
 
-      type CreateQuizResponse = { id: number };
       const newQuiz = (await response.json()) as CreateQuizResponse;
       if (newQuiz?.id != null) {
         router.push(`/quiz/${newQuiz.id}/edit`);
@@ -178,8 +148,6 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
       setIsLoading(false);
     }
   };
-  const TITLE_MAX_LENGTH = 50;
-  const DESC_MAX_LENGTH = 250;
 
   return (
     <div
@@ -261,13 +229,22 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Category Select */}
             <div>
-              <Label htmlFor="category">Category</Label>
+              <Label id="category-label" htmlFor="category-trigger">
+                Category
+              </Label>
               <Select
                 name="category"
                 value={formData.category}
                 onValueChange={handleSelectChange('category')}
               >
-                <SelectTrigger id="category" className="w-full mt-2">
+                <SelectTrigger
+                  id="category-trigger"
+                  role="combobox"
+                  aria-expanded={false}
+                  aria-haspopup="listbox"
+                  aria-labelledby="category-label"
+                  className="w-full mt-2"
+                >
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -285,13 +262,22 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
 
             {/* Difficulty Select */}
             <div>
-              <Label htmlFor="difficulty">Difficulty</Label>
+              <Label id="difficulty-label" htmlFor="difficulty-label">
+                Difficulty
+              </Label>
               <Select
                 name="difficulty"
                 value={String(formData.difficulty ?? '')}
                 onValueChange={handleSelectChange('difficulty')}
               >
-                <SelectTrigger id="difficulty" className="w-full mt-2">
+                <SelectTrigger
+                  id="difficulty-trigger"
+                  role="combobox"
+                  aria-expanded={false}
+                  aria-haspopup="listbox"
+                  aria-labelledby="difficulty-label"
+                  className="w-full mt-2"
+                >
                   <SelectValue placeholder="Select a difficulty" />
                 </SelectTrigger>
                 <SelectContent>
@@ -319,7 +305,7 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
             }}
           />
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
 
           {/* Form Actions */}
           <div className="flex justify-end pt-4 space-x-3">

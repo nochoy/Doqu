@@ -6,8 +6,9 @@ from pydantic import field_validator
 from sqlalchemy import Column, DateTime
 from sqlmodel import Field, SQLModel
 
+from .question import QuestionRead
 
-# SQLModel Table
+# --- SQLModel Table --- #
 
 
 class Quiz(SQLModel, table=True):
@@ -33,7 +34,7 @@ class Quiz(SQLModel, table=True):
     # when Question table is created (incl imports)
 
 
-# Request Models
+# --- Request Models --- #
 
 
 class QuizBase(SQLModel):
@@ -47,21 +48,21 @@ class QuizBase(SQLModel):
 
     @field_validator("title", mode="before")
     @classmethod
-    def normalize_title(cls, v: Optional[str]) -> Optional[str]:
-        if v is None:
-            return v
-        vs = v.strip()
-        if not vs:
+    def normalize_title(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return value
+        stripped_value = value.strip()
+        if not stripped_value:
             raise ValueError("Title must not be empty or blank")
-        return vs
-    
+        return stripped_value
+
     @field_validator("description", "category", mode="before")
     @classmethod
-    def normalize_optional_str(cls, v: Optional[str]) -> Optional[str]:
-        if v is None:
-            return v
-        vs = v.strip()
-        return vs or None
+    def normalize_optional_str(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return value
+        stripped_value = value.strip()
+        return stripped_value or None
 
 
 class QuizCreate(QuizBase):
@@ -90,9 +91,11 @@ class QuizRead(QuizBase):
 class QuizReadWithQuestions(QuizRead):
     """Model for reading all questions in a quiz"""
 
-    questions: list["QuestionRead"] = Field(default_factory=list)
+    questions: list[QuestionRead] = Field(default_factory=list)
+
 
 # Resolve forward refs at runtime for Pydantic schema generation
 if not TYPE_CHECKING:
     from .question import QuestionRead  # runtime import
+
     QuizReadWithQuestions.model_rebuild()

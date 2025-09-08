@@ -1,4 +1,3 @@
-# ruff: noqa: S101, S106
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.exc import SQLAlchemyError
@@ -206,56 +205,6 @@ async def test_read_quizzes_pagination_edge_cases(
     assert len(response.json()) == 0
 
 
-# --- Service-Level DB Error Tests to Cover Rollbacks ---
-
-
-@pytest.mark.asyncio
-async def test_create_quiz_db_error_rolls_back(session: AsyncSession, mocker):
-    """Tests that a database error during quiz creation calls session.rollback()."""
-    test_user = await create_test_user(session)
-    mocker.patch("sqlalchemy.ext.asyncio.AsyncSession.commit", side_effect=SQLAlchemyError)
-    mock_rollback = mocker.patch("sqlalchemy.ext.asyncio.AsyncSession.rollback")
-    quiz_in = QuizCreate(title="Will Fail")
-
-    with pytest.raises(SQLAlchemyError):
-        await quiz_service.create_quiz(session, quiz_in, test_user.id)
-
-    mock_rollback.assert_awaited_once()
-
-
-@pytest.mark.asyncio
-async def test_update_quiz_db_error_rolls_back(session: AsyncSession, mocker):
-    """Tests that a database error during quiz update calls session.rollback()."""
-    test_user = await create_test_user(session)
-    quiz_in = QuizCreate(title="Test Title")
-    quiz = await quiz_service.create_quiz(session, quiz_in, test_user.id)
-
-    mocker.patch("sqlalchemy.ext.asyncio.AsyncSession.commit", side_effect=SQLAlchemyError)
-    mock_rollback = mocker.patch("sqlalchemy.ext.asyncio.AsyncSession.rollback")
-    update_in = QuizUpdate(title="Will Fail Update")
-
-    with pytest.raises(SQLAlchemyError):
-        await quiz_service.update_quiz(session, quiz.id, update_in, test_user.id)
-
-    mock_rollback.assert_awaited_once()
-
-
-@pytest.mark.asyncio
-async def test_delete_quiz_db_error_rolls_back(session: AsyncSession, mocker):
-    """Tests that a database error during quiz deletion calls session.rollback()."""
-    test_user = await create_test_user(session)
-    quiz_in = QuizCreate(title="Test Title")
-    quiz = await quiz_service.create_quiz(session, quiz_in, test_user.id)
-
-    mocker.patch("sqlalchemy.ext.asyncio.AsyncSession.commit", side_effect=SQLAlchemyError)
-    mock_rollback = mocker.patch("sqlalchemy.ext.asyncio.AsyncSession.rollback")
-
-    with pytest.raises(SQLAlchemyError):
-        await quiz_service.remove_quiz(session, quiz.id, test_user.id)
-
-    mock_rollback.assert_awaited_once()
-
-
 # --- Original Validation and Not Found Tests ---
 
 
@@ -382,3 +331,129 @@ async def test_delete_quiz_service_exceptions(
     response_403 = await authenticated_client.delete("/api/quizzes/1")
     assert response_403.status_code == 403
     assert response_403.json()["detail"] == "Not authorized to delete this quiz"
+
+    # --- Additional service-layer tests to increase coverage --------------------
+
+import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
+
+# create_quiz: persists & sets owner
+@pytest.mark.asyncio
+async def test_service_create_quiz_sets_owner_and_persists(session: AsyncSession):
+    owner = await create_test_user(session)
+    q = await quiz_service.create_quiz(session, QuizCreate(title="Svc Quiz"), owner.id)
+    assert q.id is not None
+    assert q.owner_id == owner.id
+    assert q.title == "Svc Quiz"
+
+
+# get_quiz: not found branch
+@pytest.mark.asyncio
+async def test_service_get_quiz_not_found_raises(session: AsyncSession):
+    with pytest.raises(QuizNotFoundException):
+        await quiz_service.get_quiz(session, quiz_id=999999)
+
+
+# get_quizzes: ordering + clamp behavior
+@pytest.mark.asyncio
+async def test_service_get_quizzes_ordering_and_clamp(session: AsyncSession):
+    owner = await create_test_user(session)
+    q1 = await quiz_service.create_quiz(session, QuizCreate(title="Q1"), owner.id)
+    q2 = await quiz_service.create_quiz(session, QuizCreate(title="Q2"), owner.id)
+    q3 = await quiz_service.create_quiz(session, QuizCreate(title="Q3"), owner.id)
+
+    # negative skip should clamp to 0; huge limit should clamp to <= 100
+    rows = await quiz_service.get_quizzes(session, skip=-10, limit=10_000)
+    assert [r.id for r in rows][-3:] == [q1.id, q2.id, q3.id]
+
+    # nominal pagination
+    rows2 = await quiz_service.get_quizzes(session, skip=1, limit=2)
+    assert [r.id for r in rows2] == [q2.id, q3.id]
+
+    # limit=0 -> empty
+    rows3 = await quiz_service.get_quizzes(session, skip=0, limit=0)
+    assert rows3 == []
+
+
+# update_quiz: permission denied
+@pytest.mark.asyncio
+async def test_service_update_quiz_permission_denied(session: AsyncSession):
+    owner = await create_test_user(session)
+    attacker = await user_service.create_user(
+        session,
+        UserCreate(email="attacker@example.com", username="attacker", password="pw"),
+    )
+    q = await quiz_service.create_quiz(session, QuizCreate(title="Original"), owner.id)
+
+    with pytest.raises(QuizPermissionException):
+        await quiz_service.update_quiz(
+            session=session,
+            quiz_id=q.id,
+            quiz_in=QuizUpdate(title="Hacked"),
+            user_id=attacker.id,
+        )
+
+
+# update_quiz: setting non-nullable to None -> ValueError branch
+@pytest.mark.asyncio
+async def test_service_update_quiz_non_nullable_to_none_raises(session: AsyncSession):
+    owner = await create_test_user(session)
+    q = await quiz_service.create_quiz(session, QuizCreate(title="Keep"), owner.id)
+
+    with pytest.raises(ValueError):
+        await quiz_service.update_quiz(
+            session=session,
+            quiz_id=q.id,
+            quiz_in=QuizUpdate(title=None),  # title non-nullable
+            user_id=owner.id,
+        )
+
+
+# update_quiz: no-op payload should commit/refresh and leave record unchanged
+@pytest.mark.asyncio
+async def test_service_update_quiz_noop_payload_keeps_values(session: AsyncSession):
+    owner = await create_test_user(session)
+    q = await quiz_service.create_quiz(session, QuizCreate(title="Same"), owner.id)
+
+    updated = await quiz_service.update_quiz(
+        session=session,
+        quiz_id=q.id,
+        quiz_in=QuizUpdate(),  # no fields provided
+        user_id=owner.id,
+    )
+    assert updated.id == q.id
+    assert updated.title == "Same"
+
+
+# remove_quiz: permission denied branch
+@pytest.mark.asyncio
+async def test_service_remove_quiz_permission_denied(session: AsyncSession):
+    owner = await create_test_user(session)
+    other = await user_service.create_user(
+        session,
+        UserCreate(email="other@example.com", username="other", password="pw"),
+    )
+    q = await quiz_service.create_quiz(session, QuizCreate(title="Delete Me"), owner.id)
+
+    with pytest.raises(QuizPermissionException):
+        await quiz_service.remove_quiz(session=session, quiz_id=q.id, user_id=other.id)
+
+
+# remove_quiz: success then subsequent get -> not found
+@pytest.mark.asyncio
+async def test_service_remove_quiz_success_then_not_found(session: AsyncSession):
+    owner = await create_test_user(session)
+    q = await quiz_service.create_quiz(session, QuizCreate(title="Gone"), owner.id)
+
+    await quiz_service.remove_quiz(session=session, quiz_id=q.id, user_id=owner.id)
+
+    with pytest.raises(QuizNotFoundException):
+        await quiz_service.get_quiz(session, quiz_id=q.id)
+
+
+# remove_quiz: not found branch
+@pytest.mark.asyncio
+async def test_service_remove_quiz_not_found_raises(session: AsyncSession):
+    owner = await create_test_user(session)
+    with pytest.raises(QuizNotFoundException):
+        await quiz_service.remove_quiz(session=session, quiz_id=424242, user_id=owner.id)

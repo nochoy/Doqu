@@ -1,6 +1,7 @@
 from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_active_user
@@ -11,10 +12,10 @@ from app.services import quiz_service
 from app.services.quiz_service import QuizNotFoundException, QuizPermissionException
 from app.utils.responses import get_responses
 
-router = APIRouter()
+router = APIRouter(prefix="/quizzes", tags=["quizzes"])
 
 
-@router.post("/", response_model=QuizRead, status_code=201)
+@router.post("/", response_model=QuizRead, status_code=201, responses=get_responses(401, 403))
 async def create_quiz(
     session: Annotated[AsyncSession, Depends(get_db)],
     quiz_in: QuizCreate,
@@ -27,13 +28,19 @@ async def create_quiz(
         session (AsyncSession): The DB session injected by dependency
         quiz_in (QuizCreate): The quiz data from request body
 
+    Raises:
+        HTTPException: 403 error if user token is invalid or user is inactive
+        HTTPException: 401 error if not logged in
+
     Returns:
         QuizRead: The publicly accessible data for the newly created quiz
     """
-
-    created_quiz = await quiz_service.create_quiz(
-        session=session, quiz_in=quiz_in, owner_id=current_user.id
-    )
+    try:
+        created_quiz = await quiz_service.create_quiz(
+            session=session, quiz_in=quiz_in, owner_id=current_user.id
+        )
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Unexpected database error has occurred.")
     return QuizRead.model_validate(created_quiz)
 
 
@@ -83,7 +90,7 @@ async def read_quiz(
     return QuizRead.model_validate(db_quiz)
 
 
-@router.patch("/{quiz_id}", response_model=QuizRead, responses=get_responses(404, 403))
+@router.patch("/{quiz_id}", response_model=QuizRead, responses=get_responses(404, 403, 401))
 async def update_quiz(
     session: Annotated[AsyncSession, Depends(get_db)],
     quiz_id: Annotated[int, Path(ge=1)],
@@ -101,6 +108,7 @@ async def update_quiz(
     Raises:
         HTTPException: 404 error if the quiz with the given ID is not found
         HTTPException: 403 error if user ID does not match quiz owner ID
+        HTTPException: 401 error if not logged in
 
     Returns:
         QuizRead: Publicly accessible data for the updated quiz
@@ -120,7 +128,7 @@ async def update_quiz(
     return QuizRead.model_validate(updated_quiz)
 
 
-@router.delete("/{quiz_id}", status_code=204, responses=get_responses(404, 403))
+@router.delete("/{quiz_id}", status_code=204, responses=get_responses(404, 403, 401))
 async def delete_quiz(
     session: Annotated[AsyncSession, Depends(get_db)],
     quiz_id: Annotated[int, Path(ge=1)],
@@ -136,6 +144,7 @@ async def delete_quiz(
     Raises:
         HTTPException: 404 error if the quiz with the given ID is not found
         HTTPException: 403 error if user ID does not match quiz owner ID
+        HTTPException: 401 error if not logged in
 
     Returns:
         Status code 204 No Content Successful
