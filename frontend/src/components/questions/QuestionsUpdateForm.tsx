@@ -117,8 +117,8 @@ export default function QuestionsUpdateForm({ question, onClose }: QuestionsUpda
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 sm:p-6 md:p-8">
       <Card className="w-full max-w-2xl">
         <CardHeader className="pb-0">
-          <CardTitle>Update Question</CardTitle>
-          <CardDescription>Update the details of the question.</CardDescription>
+          <CardTitle>Question Updater</CardTitle>
+          <CardDescription>Update the details of an existing question.</CardDescription>
           <Button variant="ghost" size="icon" className="absolute top-4 right-4" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
