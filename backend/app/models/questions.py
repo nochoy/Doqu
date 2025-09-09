@@ -10,10 +10,12 @@ from typing import Dict, Any
 # if TYPE_CHECKING:
 #     from app.models.quiz import Quiz
 
+
 class QuestionType(str, Enum):
     MULTIPLE_CHOICE = "MC"
     TRUE_OR_FALSE = "TF"
     SELECT_MULTIPLE = "SM"
+
 
 class Question(SQLModel, table=True):
     """
@@ -33,6 +35,7 @@ class Question(SQLModel, table=True):
     Relationships:
         quiz (Quiz): A relationship with the Quiz model indicating that each question belongs to one quiz.
     """
+
     __tablename__ = "questions"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, nullable=False)
     # quiz_id: uuid.UUID = Field(foreign_key="quiz.id")
@@ -47,6 +50,7 @@ class Question(SQLModel, table=True):
         default_factory=lambda: datetime.now(timezone.utc),
     )
 
+
 class QuestionCreate(SQLModel):
     """
     Represents data required to create a new question.
@@ -54,6 +58,7 @@ class QuestionCreate(SQLModel):
     Notes:
         Explanation is optional but must be no longer than 250 characters.
     """
+
     # quiz_id: uuid.UUID
     question_text: str
     type: QuestionType
@@ -67,6 +72,7 @@ class QuestionUpdate(SQLModel):
     """
     Represents fields that can be updated for an existing question.
     """
+
     # quiz_id: Optional[uuid.UUID] = None
     question_text: Optional[str] = None
     type: Optional[QuestionType] = None
@@ -75,9 +81,11 @@ class QuestionUpdate(SQLModel):
     correct_answer: Optional[dict] = None
     possible_answers: Optional[dict] = None
 
+
 class QuestionRead(QuestionCreate):
     """
     Represents data returned when reading or retrieving questions.
     """
+
     id: uuid.UUID
     # quiz_id: uuid.UUID

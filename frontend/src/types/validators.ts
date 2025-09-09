@@ -33,17 +33,17 @@ const mcSchema = z.object({
  * True False Schema
  */
 const tfSchema = z.object({
-    question_text: z.string().min(1, 'Question title is required.'),
-    type: z.literal('TF'),
-    time_limit: z.number().min(1, 'Time limit must be at least 1.'),
-    explanation: z.string().optional(),
-    correct_answer: z.object({
-        answer: z.string().optional(),
-    }),
-    possible_answers: z.object({
-      a: z.string(),
-      b: z.string(),
-    }),
+  question_text: z.string().min(1, 'Question title is required.'),
+  type: z.literal('TF'),
+  time_limit: z.number().min(1, 'Time limit must be at least 1.'),
+  explanation: z.string().optional(),
+  correct_answer: z.object({
+    answer: z.string().optional(),
+  }),
+  possible_answers: z.object({
+    a: z.string(),
+    b: z.string(),
+  }),
 });
 
 /**
@@ -68,11 +68,7 @@ const smSchema = z.object({
 /**
  * Export the discriminated union of all question types.
  */
-export const questionSchema = z.discriminatedUnion('type', [
-    mcSchema,
-    tfSchema,
-    smSchema,
-]);
+export const questionSchema = z.discriminatedUnion('type', [mcSchema, tfSchema, smSchema]);
 
 /**
  * Creating a Typescript type for the questions schema.

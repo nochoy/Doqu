@@ -12,10 +12,7 @@ router = APIRouter(prefix="/questions", tags=["questions"])
 
 
 @router.post("/create", response_model=QuestionRead, status_code=201)
-async def create_question(
-    question_in: QuestionCreate, 
-    db: AsyncSession = Depends(get_db)
-):
+async def create_question(question_in: QuestionCreate, db: AsyncSession = Depends(get_db)):
     """
     FastAPI endpoint to create a new question.
 
@@ -41,7 +38,7 @@ async def read_question(question_id: uuid.UUID, db: AsyncSession = Depends(get_d
 
     Returns:
         QuestionRead: The retrieved question.
-    
+
     Raises:
         HTTPException: If the specified question does not exist.
     """
@@ -53,9 +50,7 @@ async def read_question(question_id: uuid.UUID, db: AsyncSession = Depends(get_d
 
 @router.put("/update/{question_id}", response_model=QuestionRead)
 async def update_question(
-    question_id: uuid.UUID, 
-    question_in: QuestionUpdate, 
-    db: AsyncSession = Depends(get_db)
+    question_id: uuid.UUID, question_in: QuestionUpdate, db: AsyncSession = Depends(get_db)
 ):
     """
     FastAPI endpoint to update an existing question.

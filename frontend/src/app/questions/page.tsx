@@ -4,16 +4,40 @@ import { useState, useEffect } from 'react';
 import QuestionsCreateForm from '@/components/questions/QuestionsCreateForm';
 import QuestionsUpdateForm from '@/components/questions/QuestionsUpdateForm';
 
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { MoreHorizontal, Edit, Trash } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Separator } from '@/components/ui/separator';
+
 interface Question {
   id: string;
   question_text: string;
-  type: "MC" | "TF" | "SM";
+  type: 'MC' | 'TF' | 'SM';
   time_limit: number;
   explanation: string;
-  correct_answer: Record<string, any>;
-  possible_answers: Record<string, any>;
+  correct_answer: { answer?: string; answers?: string[] };
+  possible_answers: Record<string, string>;
 }
 
+/**
+ * @description This page displays a list of all the questions in the database.
+ * It also provides buttons to create, update, and delete questions.
+ * @returns A React component that renders a list of questions.
+ * constants variables:
+ * - `isCreateFormOpen`: boolean state variable indicating whether the create form is open or not.
+ * - `isUpdateFormOpen`: boolean state variable indicating whether the update form is open or not.
+ * - `selectedQuestion`: object representing the currently selected question for updating.
+ * - `questions`: array of objects representing all the questions fetched from the API.
+ * - `error`: string state variable containing any errors encountered during fetching questions.
+ */
 export default function CreateQuestionsPage() {
   const [isCreateFormOpen, setisCreateFormOpen] = useState(false);
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
@@ -61,9 +85,12 @@ export default function CreateQuestionsPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/questions/remove/${id}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/questions/remove/${id}`,
+        {
+          method: 'DELETE',
+        }
+      );
       if (!response.ok) {
         throw new Error('Failed to delete question');
       }
@@ -77,54 +104,66 @@ export default function CreateQuestionsPage() {
     }
   };
 
+  // Render the UI for question manager.
   return (
-    <main className="container mx-auto p-8">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold mb-6">Manage Questions</h1>
-        <button
-            onClick={() => setisCreateFormOpen(true)}
-            className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-3 px-6 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 cursor-pointer"
-        >
-            Create New Question
-        </button>
+    <div className="container mx-auto p-4 sm:p-6 md:p-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 className="text-2xl font-bold">Question Manager</h1>
+        <Button onClick={() => setisCreateFormOpen(true)}>Create Question</Button>
       </div>
+      <Separator className="my-4" />
 
-      {isCreateFormOpen && (
-          <QuestionsCreateForm onClose={handleCreateFormClose} />
-      )}
+      <div>{isCreateFormOpen && <QuestionsCreateForm onClose={handleCreateFormClose} />}</div>
 
       {isUpdateFormOpen && selectedQuestion && (
-        <QuestionsUpdateForm 
-          question={selectedQuestion}
-          onClose={handleUpdateFormClose} 
-        />
+        <QuestionsUpdateForm question={selectedQuestion} onClose={handleUpdateFormClose} />
       )}
 
-      <div className="mt-12">
-        <h2 className="text-2xl font-bold mb-4">Questions List</h2>
-        {error && <p className="text-red-500">{error}</p>}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {questions.map((question) => (
-            <div key={question.id} className="p-4 border rounded-lg shadow-sm">
-              <h3 className="text-xl font-semibold mb-2">{question.question_text}</h3>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handleUpdate(question)}
-                  className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
-                >
-                  Update
-                </button>
-                <button
-                  onClick={() => handleDelete(question.id)}
-                  className="inline-flex justify-center rounded-md border border-transparent bg-red-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-700"
-                >
-                  Delete
-                </button>
+      {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+
+      <div className="flex flex-col gap-4 mt-4">
+        <TooltipProvider>
+          {questions.map(question => (
+            <div
+              key={question.id}
+              className="flex w-full flex-col items-start justify-between gap-4 rounded-md border p-4 sm:flex-row sm:items-center"
+            >
+              <div className="flex items-center gap-4">
+                <Tooltip>
+                  <TooltipTrigger>
+                    <p className="text-sm font-medium leading-none">{question.question_text}</p>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{question.explanation}</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Badge variant="outline">{question.type}</Badge>
               </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <MoreHorizontal />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[200px]">
+                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => handleUpdate(question)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Update
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleDelete(question.id)}
+                    className="text-destructive"
+                  >
+                    <Trash className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           ))}
-        </div>
+        </TooltipProvider>
       </div>
-    </main>
+    </div>
   );
 }

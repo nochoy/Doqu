@@ -3,6 +3,7 @@ from app.models.questions import Question, QuestionCreate, QuestionUpdate
 from sqlmodel import select
 import uuid
 
+
 async def create_question(*, session: AsyncSession, question_in: QuestionCreate) -> Question:
     """
     Creates a new question in the database.
@@ -50,7 +51,10 @@ async def get_all_questions(*, session: AsyncSession) -> list[Question]:
     result = await session.execute(select(Question))
     return result.scalars().all()
 
-async def update_question(*, session: AsyncSession, db_question: Question, question_in: QuestionUpdate) -> Question:
+
+async def update_question(
+    *, session: AsyncSession, db_question: Question, question_in: QuestionUpdate
+) -> Question:
     """
     Updates an existing question in the database.
 
