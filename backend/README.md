@@ -30,6 +30,14 @@ This is the FastAPI backend for Doqu, a real-time quiz platform built with Pytho
    pip install -r requirements-dev.txt
    ```
 
+4. **Common errors in setup:**
+
+   ```bash
+   psycopg2-binary may fail while building wheels
+
+   Mac: run `brew install postgresql` then run `pip install -r requirements-dev.txt`
+   ```
+
 ### Running the Development Server
 
 1. **Start the server:**
