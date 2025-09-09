@@ -151,7 +151,8 @@ If you prefer not to use Dev Containers and instead develop locally:
     # Or start the existing DB container:
     docker compose up db
     # Or start the existing DB container w/o terminal logs:
-    docker compose up -d db    # Activate venv
+    docker compose up -d db    
+    # Activate venv
     source venv/bin/activate    # Linux/MacOS
     venv/Scripts/activate       # Windows
 
