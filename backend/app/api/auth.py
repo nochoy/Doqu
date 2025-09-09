@@ -35,7 +35,7 @@ async def register(
         `session` (AsyncSession): Async database session for executing queries.
 
     Returns:
-        UserRead: The newly created user.
+        UserRegisterResponse: The newly created user + access token.
 
     Raises:
         HTTPException: 409 Conflict if email is already registered.
@@ -100,8 +100,13 @@ async def login(
     return Token.model_validate({"access_token": access_token, "token_type": "bearer"})
 
 
-@router.post("/google", response_model=Token, responses=get_responses(401))
-async def googleLogin(
+@router.post(
+    "/google",
+    response_model=Token,
+    summary="Login a Google account user",
+    responses=get_responses(401, 400),
+)
+async def google_login(
     request: GoogleLogin, session: Annotated[AsyncSession, Depends(get_db)]
 ) -> Token:
     """
@@ -113,7 +118,7 @@ async def googleLogin(
     error is raised.
 
     Args:
-        `request` (GoogleLogin): Google login data containing the token.
+        `request` (GoogleLogin): Google login data containing the authorization code.
         `session` (AsyncSession): Async database session for executing queries.
 
     Returns:
@@ -140,8 +145,8 @@ async def googleLogin(
 
         return Token.model_validate({"access_token": access_token, "token_type": "bearer"})
 
-    except (ValueError, GoogleAuthError):
+    except (ValueError, GoogleAuthError) as err:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Google token",
-        )
+        ) from err
