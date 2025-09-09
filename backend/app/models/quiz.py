@@ -49,5 +49,6 @@ class Quiz(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), nullable=False),
         onupdate=datetime.now(timezone.utc),
     )
+    owner_id: uuid.UUID = Field(foreign_key="users.id", nullable=False)
 
     questions: List[Question] = Relationship(back_populates="quiz")
