@@ -51,7 +51,7 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
       localStorage.setItem('access_token', result.access_token);
       router.push('/');
     } catch (err) {
-      console.log('error: ', err);
+      console.error('Login error: ', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     }
   };
@@ -75,6 +75,7 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
                   id="email"
                   type="email"
                   placeholder="molly@doqu.com"
+                  autoComplete="email"
                   {...register('email')}
                   disabled={isSubmitting}
                 />
@@ -98,6 +99,7 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
                 <Input
                   id="password"
                   type="password"
+                  autoComplete="current-password"
                   {...register('password')}
                   disabled={isSubmitting}
                 />
@@ -107,7 +109,10 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
               </div>
 
               {/* Backend Errors */}
-              {error && <div className="text-sm text-destructive">{error}</div>}
+              {error && (
+                <div className="text-sm text-destructive" role="alert" aria-live="polite">{error}</div>
+              )}
+
 
               {/* Submit Button */}
               <Button type="submit" className="w-full" disabled={isSubmitting}>
