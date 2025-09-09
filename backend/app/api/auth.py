@@ -139,8 +139,6 @@ async def googleLogin(
         )
 
         return Token.model_validate({"access_token": access_token, "token_type": "bearer"})
-        # Or simply:
-        # return Token.model_validate({"access_token": access_token})
 
     except (ValueError, GoogleAuthError):
         raise HTTPException(
