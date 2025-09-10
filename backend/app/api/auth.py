@@ -85,7 +85,10 @@ async def login(
     Raises:
         HTTPException: 401 Unauthorized if the credentials are invalid.
     """
-    user = await auth_service.authenticate_user(session, form_data.email, form_data.password)
+
+    normalized_email = form_data.email.strip().lower()
+
+    user = await auth_service.authenticate_user(session, normalized_email, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

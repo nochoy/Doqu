@@ -66,7 +66,7 @@ async def create_user(session: AsyncSession, user_in: UserCreate) -> User:
     """
 
     normalized_email = user_in.email.strip().lower()
-    normalized_username = user_in.username.strip()
+    normalized_username = user_in.username.strip().lower()
     normalized_password = user_in.password.strip() if user_in.password else None
     hashed_password = (
         auth_service.hash_password(normalized_password) if normalized_password else None
