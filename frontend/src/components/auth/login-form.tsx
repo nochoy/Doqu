@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import GoogleLoginButton from './google-login';
+import GoogleLoginButton from './google-login-button';
 import { Button } from '../ui/button';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -26,6 +26,10 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
     resolver: zodResolver(LoginFormSchema),
   });
 
+  const handleGoogleError = (errorMessage: string) => {
+    setError(errorMessage);
+  };
+
   const onSubmit = async (data: LoginFormInput) => {
     setError(null);
 
@@ -40,14 +44,14 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
 
       const result = await response.json();
 
-      if (!response.ok) {
+      if (!response.ok || !result?.access_token) {
         throw new Error(result.detail || 'An error occured');
       }
 
       localStorage.setItem('access_token', result.access_token);
       router.push('/');
     } catch (err) {
-      console.log('error: ', err);
+      console.error('Login error: ', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     }
   };
@@ -71,6 +75,7 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
                   id="email"
                   type="email"
                   placeholder="molly@doqu.com"
+                  autoComplete="email"
                   {...register('email')}
                   disabled={isSubmitting}
                 />
@@ -94,6 +99,7 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
                 <Input
                   id="password"
                   type="password"
+                  autoComplete="current-password"
                   {...register('password')}
                   disabled={isSubmitting}
                 />
@@ -103,14 +109,17 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
               </div>
 
               {/* Backend Errors */}
-              {error && <div className="text-sm text-destructive">{error}</div>}
+              {error && (
+                <div className="text-sm text-destructive" role="alert" aria-live="polite">{error}</div>
+              )}
+
 
               {/* Submit Button */}
               <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? 'Loading...' : 'Login'}
               </Button>
               {/* Google Login Button */}
-              <GoogleLoginButton disabled={isSubmitting} />
+              <GoogleLoginButton disabled={isSubmitting} onError={handleGoogleError} />
             </div>
             {/* Switch to sign up page */}
             <div className="mt-4 text-center text-sm">

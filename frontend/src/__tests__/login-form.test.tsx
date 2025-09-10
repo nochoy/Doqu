@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import LoginForm from '@/components/auth/login-form';
+import Providers from '@/components/providers';
 
 // Mock Next.js router
 const mockPush = jest.fn();
@@ -42,7 +43,11 @@ describe('LoginForm', () => {
     };
     (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
-    render(<LoginForm />);
+    render(
+      <Providers>
+        <LoginForm />
+      </Providers>
+    );
 
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const passwordInput = screen.getByLabelText(/Password/);
@@ -70,8 +75,11 @@ describe('LoginForm', () => {
   });
 
   test('test_form_validation_displays_error_messages', async () => {
-    render(<LoginForm />);
-
+    render(
+      <Providers>
+        <LoginForm />
+      </Providers>
+    );
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const passwordInput = screen.getByLabelText(/Password/);
     const submitButton = screen.getByRole('button', { name: 'Login' });
@@ -97,7 +105,11 @@ describe('LoginForm', () => {
       () => new Promise(resolve => setTimeout(() => resolve(mockResponse), 100))
     );
 
-    render(<LoginForm />);
+    render(
+      <Providers>
+        <LoginForm />
+      </Providers>
+    );
 
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const passwordInput = screen.getByLabelText(/Password/);
@@ -126,7 +138,11 @@ describe('LoginForm', () => {
     };
     (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
-    render(<LoginForm />);
+    render(
+      <Providers>
+        <LoginForm />
+      </Providers>
+    );
 
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const passwordInput = screen.getByLabelText(/Password/);
@@ -147,7 +163,11 @@ describe('LoginForm', () => {
   test('test_network_failure_during_login_request', async () => {
     (fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
 
-    render(<LoginForm />);
+    render(
+      <Providers>
+        <LoginForm />
+      </Providers>
+    );
 
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const passwordInput = screen.getByLabelText(/Password/);
@@ -175,7 +195,11 @@ describe('LoginForm', () => {
     };
     (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
-    render(<LoginForm />);
+    render(
+      <Providers>
+        <LoginForm />
+      </Providers>
+    );
 
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const passwordInput = screen.getByLabelText(/Password/);

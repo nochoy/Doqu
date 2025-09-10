@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import SignupForm from '@/components/auth/signup-form';
+import Providers from '@/components/providers';
 
 // Mock Next.js router
 const mockPush = jest.fn();
@@ -42,7 +43,11 @@ describe('SignupForm', () => {
     };
     (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
-    render(<SignupForm />);
+    render(
+      <Providers>
+        <SignupForm />
+      </Providers>
+    );
 
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const usernameInput = screen.getByPlaceholderText('Molly');
@@ -73,7 +78,11 @@ describe('SignupForm', () => {
   });
 
   test('test_password_visibility_toggle', () => {
-    render(<SignupForm />);
+    render(
+      <Providers>
+        <SignupForm />
+      </Providers>
+    );
 
     const passwordInput = screen.getByLabelText(/Password/) as HTMLInputElement;
     const toggleButton = screen.getByLabelText('Show password');
@@ -100,7 +109,11 @@ describe('SignupForm', () => {
     };
     (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
-    render(<SignupForm />);
+    render(
+      <Providers>
+        <SignupForm />
+      </Providers>
+    );
 
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const usernameInput = screen.getByPlaceholderText('Molly');
@@ -118,7 +131,11 @@ describe('SignupForm', () => {
   });
 
   test('test_invalid_email_validation_error', async () => {
-    render(<SignupForm />);
+    render(
+      <Providers>
+        <SignupForm />
+      </Providers>
+    );
 
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const usernameInput = screen.getByPlaceholderText('Molly');
@@ -144,7 +161,11 @@ describe('SignupForm', () => {
     };
     (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
-    render(<SignupForm />);
+    render(
+      <Providers>
+        <SignupForm />
+      </Providers>
+    );
 
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const usernameInput = screen.getByPlaceholderText('Molly');
@@ -175,7 +196,11 @@ describe('SignupForm', () => {
       () => new Promise(resolve => setTimeout(() => resolve(mockResponse), 100))
     );
 
-    render(<SignupForm />);
+    render(
+      <Providers>
+        <SignupForm />
+      </Providers>
+    );
 
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const usernameInput = screen.getByPlaceholderText('Molly');
@@ -206,7 +231,11 @@ describe('SignupForm', () => {
     };
     (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
-    render(<SignupForm />);
+    render(
+      <Providers>
+        <SignupForm />
+      </Providers>
+    );
 
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const usernameInput = screen.getByPlaceholderText('Molly');
@@ -237,7 +266,11 @@ describe('SignupForm', () => {
   });
 
   test('test_username_max_length_validation_error', async () => {
-    render(<SignupForm />);
+    render(
+      <Providers>
+        <SignupForm />
+      </Providers>
+    );
 
     const usernameInput = screen.getByPlaceholderText('Molly');
     const submitButton = screen.getByRole('button', { name: 'Register' });

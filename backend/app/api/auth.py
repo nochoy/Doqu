@@ -1,13 +1,12 @@
-from datetime import timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from google.auth.exceptions import GoogleAuthError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
 from app.db.session import get_db
-from app.models.user import Token, UserCreate, UserLogin, UserRegisterResponse
+from app.models.user import GoogleLogin, Token, UserCreate, UserLogin, UserRegisterResponse
 from app.services import auth_service, user_service
 from app.utils.responses import get_responses
 
@@ -36,15 +35,16 @@ async def register(
         `session` (AsyncSession): Async database session for executing queries.
 
     Returns:
-        UserRead: The newly created user.
+        UserRegisterResponse: The newly created user + access token.
 
     Raises:
         HTTPException: 409 Conflict if email is already registered.
     """
     try:
         user = await user_service.create_user(session, user_create)
+
         access_token = auth_service.create_access_token(
-            data={"sub": str(user.id), "email": user.email}
+            data={"sub": str(user.id), "email": user.email},
         )
 
         return UserRegisterResponse.model_validate(
@@ -81,8 +81,14 @@ async def login(
 
     Returns:
         Token: Access token and token type
+
+    Raises:
+        HTTPException: 401 Unauthorized if the credentials are invalid.
     """
-    user = await auth_service.authenticate_user(session, form_data.email, form_data.password)
+
+    normalized_email = form_data.email.strip().lower()
+
+    user = await auth_service.authenticate_user(session, normalized_email, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -90,10 +96,60 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token_expires = timedelta(days=settings.ACCESS_TOKEN_EXPIRE_DAYS)
     access_token = auth_service.create_access_token(
         data={"sub": str(user.id), "email": user.email},
-        expires_delta=access_token_expires,
     )
 
     return Token.model_validate({"access_token": access_token, "token_type": "bearer"})
+
+
+@router.post(
+    "/google",
+    response_model=Token,
+    summary="Login a Google account user",
+    responses=get_responses(401, 400),
+)
+async def google_login(
+    request: GoogleLogin, session: Annotated[AsyncSession, Depends(get_db)]
+) -> Token:
+    """
+    Authenticate a user using Google OAuth and return a JWT access token.
+
+    This endpoint allows a user to log in using their Google account. It verifies the
+    Google token, extracts user information, and links the Google account to an existing
+    user or creates a new user if necessary. If the Google token is invalid, an HTTP 401
+    error is raised.
+
+    Args:
+        `request` (GoogleLogin): Google login data containing the authorization code.
+        `session` (AsyncSession): Async database session for executing queries.
+
+    Returns:
+        Token: Access token and token type.
+
+    Raises:
+        HTTPException: 400 Bad Request if required Google user data is missing.
+        HTTPException: 401 Unauthorized if the Google token is invalid.
+    """
+    try:
+        google_user_data = auth_service.verify_google_token(request)
+
+        if (not google_user_data.google_id) or (not google_user_data.email):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email or Google ID not found in token",
+            )
+
+        user = await auth_service.link_google_to_user(session, google_user_data)
+
+        access_token = auth_service.create_access_token(
+            data={"sub": str(user.id), "email": user.email},
+        )
+
+        return Token.model_validate({"access_token": access_token, "token_type": "bearer"})
+
+    except (ValueError, GoogleAuthError) as err:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Google token",
+        ) from err

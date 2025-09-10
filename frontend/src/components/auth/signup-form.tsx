@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import GoogleLoginButton from './google-login';
+import GoogleLoginButton from './google-login-button';
 import { Button } from '../ui/button';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -28,6 +28,10 @@ export default function SignupForm({ className, ...props }: React.ComponentProps
     resolver: zodResolver(SignupFormSchema),
   });
 
+  const handleGoogleError = (errorMessage: string) => {
+    setError(errorMessage);
+  };
+
   const onSubmit = async (data: SignupFormInput) => {
     setError(null);
 
@@ -42,14 +46,14 @@ export default function SignupForm({ className, ...props }: React.ComponentProps
 
       const result = await response.json();
 
-      if (!response.ok) {
+      if (!response.ok || !result?.access_token) {
         throw new Error(result.detail || 'An error occurred');
       }
 
       localStorage.setItem('access_token', result.access_token);
       router.push('/');
     } catch (err) {
-      console.log('error: ', err);
+      console.error('Signup error: ', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     }
   };
@@ -73,7 +77,9 @@ export default function SignupForm({ className, ...props }: React.ComponentProps
                   id="email"
                   type="email"
                   placeholder="molly@doqu.com"
+                  autoComplete="email"
                   {...register('email')}
+                  disabled={isSubmitting}
                 />
               </div>
               {errors.email && (
@@ -85,7 +91,13 @@ export default function SignupForm({ className, ...props }: React.ComponentProps
                 <Label htmlFor="username">
                   Username<span className="text-sm text-destructive">*</span>
                 </Label>
-                <Input id="username" placeholder="Molly" maxLength={20} {...register('username')} />
+                <Input 
+                  id="username" 
+                  placeholder="Molly" 
+                  maxLength={20}
+                  {...register('username')}
+                  disabled={isSubmitting}
+                />
               </div>
               {errors.username && (
                 <p className="text-sm text-destructive -mt-5 ml-3">{errors.username.message}</p>
@@ -104,6 +116,7 @@ export default function SignupForm({ className, ...props }: React.ComponentProps
                     type={showPassword ? 'text' : 'password'}
                     {...register('password')}
                     className="pr-10"
+                    disabled={isSubmitting}
                   />
 
                   {/* Show Password Button */}
@@ -111,7 +124,9 @@ export default function SignupForm({ className, ...props }: React.ComponentProps
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showPassword}
                     className="absolute inset-y-0 right-0 pr-3"
+                    disabled={isSubmitting}
                   >
                     {showPassword ? <EyeSlashIcon weight="light" /> : <EyeIcon weight="light" />}
                   </button>
@@ -122,14 +137,16 @@ export default function SignupForm({ className, ...props }: React.ComponentProps
               )}
 
               {/* Backend Errors */}
-              {error && <div className="text-sm text-destructive">{error}</div>}
+              {error && 
+                (<div className="text-sm text-destructive" role="alert" aria-live="polite">{error}</div>
+              )}
 
               {/* Submit Button */}
               <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? 'Loading...' : 'Register'}
               </Button>
               {/* Google Login Button */}
-              <GoogleLoginButton disabled={isSubmitting} />
+              <GoogleLoginButton disabled={isSubmitting} onError={handleGoogleError} />
             </div>
 
             {/* Switch to Login page */}
