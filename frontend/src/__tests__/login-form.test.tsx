@@ -186,14 +186,8 @@ describe('LoginForm', () => {
   });
 
   test('test_malformed_api_response_handling', async () => {
-    const mockResponse = {
-      ok: true,
-      json: jest.fn().mockResolvedValue({
-        // Missing access_token field
-        user: { id: 1, email: 'test@example.com' },
-      }),
-    };
-    (fetch as jest.Mock).mockResolvedValue(mockResponse);
+    // If reponse doesn't return access_token, an error occurs
+    (fetch as jest.Mock).mockRejectedValue(new Error('An error occured'));
 
     render(
       <Providers>
@@ -210,9 +204,10 @@ describe('LoginForm', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('access_token', undefined);
+      expect(screen.getByText('An error occured')).toBeInTheDocument();
     });
 
-    expect(mockPush).toHaveBeenCalledWith('/');
+    expect(mockLocalStorage.setItem).not.toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
   });
 });

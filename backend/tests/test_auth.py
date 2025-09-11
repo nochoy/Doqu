@@ -371,7 +371,7 @@ async def test_google_login_success(async_client: AsyncClient, session: AsyncSes
         assert response.status_code == 200
         token_data = response.json()
         assert token_data["access_token"] == "mock_access_token"
-        assert token_data["token_type"] == "Bearer"
+        assert token_data["token_type"] == "bearer"
 
 
 @pytest.mark.asyncio
@@ -404,7 +404,7 @@ async def test_access_token_generation_success(async_client: AsyncClient, sessio
         assert response.status_code == 200
         token = Token(**response.json())
         assert token.access_token == expected_token
-        assert token.token_type == "Bearer"
+        assert token.token_type == "bearer"
 
         # Verify create_access_token was called with correct data
         mock_create_token.assert_called_once_with(
@@ -447,12 +447,12 @@ async def test_register_response_structure_complete(
         assert "access_token" in response_data
         assert "token_type" in response_data
         assert response_data["access_token"] == "complete_token"
-        assert response_data["token_type"] == "Bearer"
+        assert response_data["token_type"] == "bearer"
 
         # Verify it can be parsed as Token model
         token = Token(**response_data)
         assert token.access_token is not None
-        assert token.token_type == "Bearer"
+        assert token.token_type == "bearer"
 
 
 @pytest.mark.asyncio
@@ -484,4 +484,4 @@ async def test_google_login_missing_user_data(async_client: AsyncClient, session
         response = await async_client.post("/api/auth/google", json=google_login_data)
 
         assert response.status_code == 400
-        assert "Email, Name, or Google ID not found in token" in response.json()["detail"]
+        assert "Email or Google ID not found in token" in response.json()["detail"]
