@@ -1,12 +1,14 @@
 import uuid
 from datetime import timedelta
+from unittest.mock import Mock, patch
 
 import pytest
+from google.auth.exceptions import GoogleAuthError
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.user import Token, User, UserRead
-from app.services.auth_service import create_access_token
+from app.models.user import Token, User, UserRead, UserRegisterResponse
+from app.services.auth_service import GoogleUserData, create_access_token
 
 # Assuming 'async_client' and 'session' fixtures are available from conftest.py
 
@@ -16,13 +18,14 @@ async def register_and_login_user(client: AsyncClient, email: str, username: str
     register_data = {"email": email, "username": username, "password": password}
     register_response = await client.post("/api/auth/register", json=register_data)
     assert register_response.status_code == 201, f"Registration failed: {register_response.json()}"
-    user_id = UserRead(**register_response.json()).id
+    user_id = UserRegisterResponse(**register_response.json()).id
 
     login_data = {"email": email, "password": password}
     login_response = await client.post("/api/auth/login", json=login_data)
     assert login_response.status_code == 200, f"Login failed: {login_response.json()}"
     token = Token(**login_response.json())
     return token.access_token, user_id
+
 
 @pytest.mark.asyncio
 async def test_register_user_success_email_password(
@@ -334,3 +337,151 @@ async def test_login_google_only_user_with_password(
     response = await async_client.post("/api/auth/login", json=login_data)
     assert response.status_code == 401
     assert "Incorrect email or password" in response.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_google_login_success(async_client: AsyncClient, session: AsyncSession):
+    """
+    Test successful Google OAuth authentication with valid token and user data.
+    """
+    with (
+        patch("app.services.auth_service.verify_google_token") as mock_verify,
+        patch("app.services.auth_service.link_google_to_user") as mock_link,
+        patch("app.services.auth_service.create_access_token") as mock_create_token,
+    ):
+
+        # Mock the Google user data
+        mock_google_data = GoogleUserData(
+            google_id="google_123", email="test@example.com", name="Test User"
+        )
+        mock_verify.return_value = mock_google_data
+
+        # Mock the user object
+        mock_user = Mock()
+        mock_user.id = "user_123"
+        mock_user.email = "test@example.com"
+        mock_link.return_value = mock_user
+
+        # Mock the access token
+        mock_create_token.return_value = "mock_access_token"
+
+        google_login_data = {"code": "valid_google_code"}
+        response = await async_client.post("/api/auth/google", json=google_login_data)
+
+        assert response.status_code == 200
+        token_data = response.json()
+        assert token_data["access_token"] == "mock_access_token"
+        assert token_data["token_type"] == "Bearer"
+
+
+@pytest.mark.asyncio
+async def test_access_token_generation_success(async_client: AsyncClient, session: AsyncSession):
+    """
+    Test that JWT access token is properly generated and returned after successful authentication.
+    """
+    with (
+        patch("app.services.auth_service.verify_google_token") as mock_verify,
+        patch("app.services.auth_service.link_google_to_user") as mock_link,
+        patch("app.services.auth_service.create_access_token") as mock_create_token,
+    ):
+
+        mock_google_data = GoogleUserData(
+            google_id="google_456", email="token@example.com", name="Token User"
+        )
+        mock_verify.return_value = mock_google_data
+
+        mock_user = Mock()
+        mock_user.id = "user_456"
+        mock_user.email = "token@example.com"
+        mock_link.return_value = mock_user
+
+        expected_token = "jwt_access_token_123"
+        mock_create_token.return_value = expected_token
+
+        google_login_data = {"code": "token_test_code"}
+        response = await async_client.post("/api/auth/google", json=google_login_data)
+
+        assert response.status_code == 200
+        token = Token(**response.json())
+        assert token.access_token == expected_token
+        assert token.token_type == "Bearer"
+
+        # Verify create_access_token was called with correct data
+        mock_create_token.assert_called_once_with(
+            data={"sub": "user_456", "email": "token@example.com"}
+        )
+
+
+@pytest.mark.asyncio
+async def test_register_response_structure_complete(
+    async_client: AsyncClient, session: AsyncSession
+):
+    """
+    Test that Google login returns complete token response structure.
+    """
+    with (
+        patch("app.services.auth_service.verify_google_token") as mock_verify,
+        patch("app.services.auth_service.link_google_to_user") as mock_link,
+        patch("app.services.auth_service.create_access_token") as mock_create_token,
+    ):
+
+        mock_google_data = GoogleUserData(
+            google_id="google_789", email="structure@example.com", name="Structure User"
+        )
+        mock_verify.return_value = mock_google_data
+
+        mock_user = Mock()
+        mock_user.id = "user_789"
+        mock_user.email = "structure@example.com"
+        mock_link.return_value = mock_user
+
+        mock_create_token.return_value = "complete_token"
+
+        google_login_data = {"code": "structure_test_code"}
+        response = await async_client.post("/api/auth/google", json=google_login_data)
+
+        assert response.status_code == 200
+        response_data = response.json()
+
+        # Verify complete response structure
+        assert "access_token" in response_data
+        assert "token_type" in response_data
+        assert response_data["access_token"] == "complete_token"
+        assert response_data["token_type"] == "Bearer"
+
+        # Verify it can be parsed as Token model
+        token = Token(**response_data)
+        assert token.access_token is not None
+        assert token.token_type == "Bearer"
+
+
+@pytest.mark.asyncio
+async def test_google_login_auth_error(async_client: AsyncClient, session: AsyncSession):
+    """
+    Test Google login failure when token verification raises GoogleAuthError.
+    """
+    with patch("app.services.auth_service.verify_google_token") as mock_verify:
+        mock_verify.side_effect = GoogleAuthError("Invalid Google token")
+
+        google_login_data = {"code": "invalid_google_code"}
+        response = await async_client.post("/api/auth/google", json=google_login_data)
+
+        assert response.status_code == 401
+        assert response.json()["detail"] == "Invalid Google token"
+
+
+@pytest.mark.asyncio
+async def test_google_login_missing_user_data(async_client: AsyncClient, session: AsyncSession):
+    """
+    Test Google login failure when required user data is missing from token.
+    """
+    with patch("app.services.auth_service.verify_google_token") as mock_verify:
+        # Test missing google_id
+        mock_google_data = GoogleUserData(google_id="", email="test@example.com", name="Test User")
+        mock_verify.return_value = mock_google_data
+
+        google_login_data = {"code": "missing_data_code"}
+        response = await async_client.post("/api/auth/google", json=google_login_data)
+
+        assert response.status_code == 400
+        assert "Email, Name, or Google ID not found in token" in response.json()["detail"]

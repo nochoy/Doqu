@@ -21,6 +21,22 @@ async def get_user_by_id(session: AsyncSession, user_id: uuid.UUID) -> User | No
     return await session.get(User, user_id)
 
 
+async def get_user_by_google_id(session: AsyncSession, google_id: str) -> User | None:
+    """
+    Retrieve a user from the database by their Google ID.
+
+    Args:
+        `session`: Async database session for executing queries.
+        `google_id`: Google ID of the user to retrieve.
+
+    Returns:
+        User: The User object if found, otherwise None.
+    """
+    statement = select(User).where(User.google_id == google_id)
+    result = await session.execute(statement)
+    return result.scalar_one_or_none()
+
+
 async def get_user_by_email(session: AsyncSession, email: str) -> User | None:
     """
     Retrieve a user from the database by their email.
@@ -50,7 +66,7 @@ async def create_user(session: AsyncSession, user_in: UserCreate) -> User:
     """
 
     normalized_email = user_in.email.strip().lower()
-    normalized_username = user_in.username.strip()
+    normalized_username = user_in.username.strip().lower()
     normalized_password = user_in.password.strip() if user_in.password else None
     hashed_password = (
         auth_service.hash_password(normalized_password) if normalized_password else None
