@@ -11,7 +11,7 @@ license = {text = "MIT"}
 requires-python = ">=3.12.10"
 dependencies = [
     "fastapi>=0.104.0",
-    "sqlmodel>=0.0.14",
+    "sqlmodel>=0.0.18",
     "psycopg2-binary>=2.9.7",
     "alembic>=1.12.0",
     "python-dotenv>=1.0.0",
@@ -83,6 +83,7 @@ module = [
     "google.*",
     "passlib.*",
     "jose.*",
+    "google_auth_oauthlib.*",
 ]
 ignore_missing_imports = true
 
@@ -110,6 +111,7 @@ omit = [
     "*/db/init_db.py",
     "*/db/session.py",
     "*/db/utils.py",
+    "*/db/base.py",
     "*/websocket/*",
 ]
 
