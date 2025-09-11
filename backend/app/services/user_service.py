@@ -65,13 +65,18 @@ async def create_user(session: AsyncSession, user_in: UserCreate) -> User:
         User: The newly created User object.
     """
 
-    normalized_email = user_in.email.strip().lower()
-    normalized_username = user_in.username.strip().lower()
-    normalized_password = user_in.password.strip() if user_in.password else None
+    email: str = getattr(user_in, 'email', None)
+    username: str = getattr(user_in, 'username', None)
+    password: str = getattr(user_in, 'password', None)
+    google_id: str = getattr(user_in, 'google_id', None)
+
+    normalized_email = email.strip().lower()
+    normalized_username = username.strip().lower()
+    normalized_password = password.strip() if password else None
+    normalized_google_id = google_id.strip() if google_id else None
     hashed_password = (
-        auth_service.hash_password(normalized_password) if normalized_password else None
+        auth_service.hash_password(normalized_password)
     )
-    normalized_google_id = user_in.google_id.strip() if user_in.google_id else None
 
     new_user = User(
         email=normalized_email,
