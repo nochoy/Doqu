@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from google.auth.exceptions import GoogleAuthError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -54,6 +54,7 @@ async def register(
                 "id": user.id,
                 "is_active": user.is_active,
                 "created_at": user.created_at,
+                "updated_at": user.updated_at,
                 "access_token": access_token,
                 "token_type": "bearer",
             }

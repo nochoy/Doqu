@@ -28,7 +28,10 @@ class User(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), nullable=False),
         default_factory=lambda: datetime.now(timezone.utc),
     )  # lambda called independently for every row insertion
-
+    updated_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), nullable=False, onupdate=datetime.now(timezone.utc)),
+        default_factory=lambda: datetime.now(timezone.utc),
+    )
 
 # --- Request Models --- #
 class UserCreate(BaseModel):
@@ -69,7 +72,7 @@ class UserRead(BaseModel):
     id: uuid.UUID
     is_active: bool
     created_at: datetime
-
+    updated_at: datetime
 
 class UserRegisterResponse(UserRead):
     """
