@@ -186,3 +186,17 @@ async def google_login(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Google token",
         ) from err
+
+@router.post("/logout")
+async def logout(response: Response) -> None:
+    """
+    Log out the user by deleting the access token cookie.
+
+    This endpoint logs out the user by removing the access token cookie from the response.
+    It effectively invalidates the user's session on the client side.
+
+    Args:
+        `response` (Response): The response object to modify.
+    """
+    response.delete_cookie("access_token")
+
