@@ -6,7 +6,7 @@ from pydantic import field_validator
 from sqlalchemy import Column, DateTime
 from sqlmodel import Field, SQLModel
 
-from app.models.questions import QuestionRead
+from .question import QuestionRead
 
 # --- SQLModel Table --- #
 

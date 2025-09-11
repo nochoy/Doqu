@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.questions import Question, QuestionCreate, QuestionUpdate
+from app.models.question import Question, QuestionCreate, QuestionUpdate
 from sqlmodel import select
 import uuid
 

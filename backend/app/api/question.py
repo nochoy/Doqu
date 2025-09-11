@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
-from app.models.questions import QuestionCreate, QuestionUpdate, QuestionRead
-from app.services import questions_services
+from app.models.question import QuestionCreate, QuestionUpdate, QuestionRead
+from app.services import question_services
 from app.utils.responses import get_responses
 
 import uuid
@@ -11,8 +11,8 @@ import uuid
 router = APIRouter(prefix="/questions", tags=["questions"])
 
 
-@router.post("/create", response_model=QuestionRead, status_code=201)
-async def create_question(question_in: QuestionCreate, db: AsyncSession = Depends(get_db)):
+@router.post("/", response_model=QuestionRead, status_code=201)
+async def create_question(question_in: QuestionCreate, session: AsyncSession = Depends(get_db)):
     """
     FastAPI endpoint to create a new question.
 
@@ -23,12 +23,12 @@ async def create_question(question_in: QuestionCreate, db: AsyncSession = Depend
     Returns:
         Question: The newly created question.
     """
-    question = await questions_services.create_question(session=db, question_in=question_in)
+    question = await question_services.create_question(session=session, question_in=question_in)
     return question
 
 
-@router.get("/read/{question_id}", response_model=QuestionRead)
-async def read_question(question_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+@router.get("/{question_id}", response_model=QuestionRead)
+async def read_question(question_id: uuid.UUID, session: AsyncSession = Depends(get_db)):
     """
     FastAPI endpoint to retrieve a question by its unique identifier.
 
@@ -42,15 +42,15 @@ async def read_question(question_id: uuid.UUID, db: AsyncSession = Depends(get_d
     Raises:
         HTTPException: If the specified question does not exist.
     """
-    question = await questions_services.get_question(session=db, question_id=question_id)
+    question = await question_services.get_question(session=session, question_id=question_id)
     if not question:
         raise HTTPException(status_code=404, detail="Question not found")
     return question
 
 
-@router.put("/update/{question_id}", response_model=QuestionRead)
+@router.put("/{question_id}", response_model=QuestionRead)
 async def update_question(
-    question_id: uuid.UUID, question_in: QuestionUpdate, db: AsyncSession = Depends(get_db)
+    question_id: uuid.UUID, question_in: QuestionUpdate, session: AsyncSession = Depends(get_db)
 ):
     """
     FastAPI endpoint to update an existing question.
@@ -66,18 +66,18 @@ async def update_question(
     Raises:
         HTTPException: If the specified question does not exist.
     """
-    db_question = await questions_services.get_question(session=db, question_id=question_id)
+    db_question = await question_services.get_question(session=session, question_id=question_id)
     if not db_question:
         raise HTTPException(status_code=404, detail="Question not found")
 
-    updated_question = await questions_services.update_question(
-        session=db, db_question=db_question, question_in=question_in
+    updated_question = await question_services.update_question(
+        session=session, db_question=db_question, question_in=question_in
     )
     return updated_question
 
 
-@router.delete("/remove/{question_id}", status_code=204)
-async def delete_question(question_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+@router.delete("/{question_id}", status_code=204)
+async def delete_question(question_id: uuid.UUID, session: AsyncSession = Depends(get_db)):
     """
     FastAPI endpoint to delete a question by its unique identifier.
 
@@ -88,16 +88,16 @@ async def delete_question(question_id: uuid.UUID, db: AsyncSession = Depends(get
     Raises:
         HTTPException: If the specified question does not exist.
     """
-    db_question = await questions_services.get_question(session=db, question_id=question_id)
+    db_question = await question_services.get_question(session=session, question_id=question_id)
     if not db_question:
         raise HTTPException(status_code=404, detail="Question not found")
 
-    await questions_services.remove_question(session=db, question_id=question_id)
+    await question_services.remove_question(session=session, question_id=question_id)
     return None
 
 
-@router.get("/all", response_model=list[QuestionRead])
-async def read_all_questions(db: AsyncSession = Depends(get_db)):
+@router.get("/", response_model=list[QuestionRead])
+async def read_all_questions(session: AsyncSession = Depends(get_db)):
     """
     FastAPI endpoint to retrieve all questions.
 
@@ -107,5 +107,5 @@ async def read_all_questions(db: AsyncSession = Depends(get_db)):
     Returns:
         list[QuestionRead]: A list of all questions.
     """
-    questions = await questions_services.get_all_questions(session=db)
+    questions = await question_services.get_all_questions(session=session)
     return questions
