@@ -5,8 +5,9 @@ from google.auth.exceptions import GoogleAuthError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.db.session import get_db
-from app.models.user import GoogleLogin, Token, UserCreate, UserLogin, UserRegisterResponse
+from app.models.user import GoogleLogin, UserCreateEmail, UserLogin, UserRead
 from app.services import auth_service, user_service
 from app.utils.responses import get_responses
 
@@ -15,14 +16,15 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 
 @router.post(
     "/register",
-    response_model=UserRegisterResponse,
+    response_model=UserRead,
     status_code=status.HTTP_201_CREATED,
     responses=get_responses(409),
 )
 async def register(
-    user_create: UserCreate,
+    user_create: UserCreateEmail,
     session: Annotated[AsyncSession, Depends(get_db)],
-) -> UserRegisterResponse:
+    response: Response,
+) -> UserRead:
     """
     Register a new user.
 
@@ -31,11 +33,11 @@ async def register(
     is not registered, it creates a new user.
 
     Args:
-        `user_create` (`UserCreate`): User creation data (email and password OR google_id)
+        `user_create` (`UserCreateEmail`): User creation data (email and password)
         `session` (AsyncSession): Async database session for executing queries.
 
     Returns:
-        UserRegisterResponse: The newly created user + access token.
+        UserRead: The newly created user.
 
     Raises:
         HTTPException: 409 Conflict if email is already registered.
@@ -47,7 +49,17 @@ async def register(
             data={"sub": str(user.id), "email": user.email},
         )
 
-        return UserRegisterResponse.model_validate(
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            samesite='lax',
+            secure=settings.SECURE_COOKIES,
+            path='/',
+            max_age=settings.ACCESS_TOKEN_EXPIRE_DAYS * 60 * 60 * 24    # 30 days in seconds
+        )
+
+        return UserRead.model_validate(
             {
                 "email": user.email,
                 "username": user.username,
@@ -55,8 +67,6 @@ async def register(
                 "is_active": user.is_active,
                 "created_at": user.created_at,
                 "updated_at": user.updated_at,
-                "access_token": access_token,
-                "token_type": "bearer",
             }
         )
 
@@ -64,11 +74,12 @@ async def register(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
 
 
-@router.post("/login", response_model=Token, responses=get_responses(401))
+@router.post("/login", response_model=UserRead, responses=get_responses(401))
 async def login(
     form_data: UserLogin,
     session: Annotated[AsyncSession, Depends(get_db)],
-) -> Token:
+    response: Response,
+) -> UserRead:
     """
     Authenticate a user and return a JWT access token.
 
@@ -101,18 +112,29 @@ async def login(
         data={"sub": str(user.id), "email": user.email},
     )
 
-    return Token.model_validate({"access_token": access_token, "token_type": "bearer"})
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        samesite='lax',
+        secure=settings.SECURE_COOKIES,
+        path='/',
+        max_age=settings.ACCESS_TOKEN_EXPIRE_DAYS * 60 * 60 * 24    # 30 days in seconds
+    )
 
+    return UserRead.model_validate(user)
 
 @router.post(
     "/google",
-    response_model=Token,
+    response_model=UserRead,
     summary="Login a Google account user",
     responses=get_responses(401, 400),
 )
 async def google_login(
-    request: GoogleLogin, session: Annotated[AsyncSession, Depends(get_db)]
-) -> Token:
+    request: GoogleLogin, 
+    session: Annotated[AsyncSession, Depends(get_db)],
+    response: Response,
+) -> UserRead:
     """
     Authenticate a user using Google OAuth and return a JWT access token.
 
@@ -147,7 +169,17 @@ async def google_login(
             data={"sub": str(user.id), "email": user.email},
         )
 
-        return Token.model_validate({"access_token": access_token, "token_type": "bearer"})
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            samesite='lax',
+            secure=settings.SECURE_COOKIES,
+            path='/',
+            max_age=settings.ACCESS_TOKEN_EXPIRE_DAYS * 60 * 60 * 24    # 30 days in seconds
+        )
+
+        return UserRead.model_validate(user)
 
     except (ValueError, GoogleAuthError) as err:
         raise HTTPException(

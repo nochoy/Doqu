@@ -12,9 +12,11 @@ class User(SQLModel, table=True):
     """
     Represents a user in the database.
 
-    SQLModel table includes fields for user identification, authentication, and status.
-    It supports both password-based and Google ID-based authentication methods.
+    This class defines the schema for the 'users' table, including fields for user ID, email, username,
+    password, Google ID, active status, and timestamps for creation and updates. It uses SQLModel and
+    SQLAlchemy for ORM capabilities and Pydantic for data validation.
     """
+    
 
     __tablename__ = "users"
 
@@ -34,6 +36,16 @@ class User(SQLModel, table=True):
     )
 
 # --- Request Models --- #
+
+class UserCreateEmail(BaseModel):
+    """
+    Pydantic model for registering a new user with email, username, and password.
+    """
+
+    email: EmailStr
+    username: str
+    password: str
+
 class UserCreate(BaseModel):
     """
     Pydantic model for registering a new user with email, name, and authentication method.
@@ -61,7 +73,7 @@ class UserRead(BaseModel):
     Pydantic model for reading user information.
 
     This model is used to represent user data that is read from the database,
-    including email, username, user ID, active status, and creation timestamp.
+    including email, username, user ID, active status, creation/update timestamp.
     """
 
     # Validate fields from SQLAlchemy object attributes
@@ -73,16 +85,6 @@ class UserRead(BaseModel):
     is_active: bool
     created_at: datetime
     updated_at: datetime
-
-class UserRegisterResponse(UserRead):
-    """
-    Pydantic model for the response returned after a user registers.
-
-    Inherits from UserRead and includes additional fields for authentication tokens.
-    """
-
-    access_token: str
-    token_type: str = "bearer"
 
 
 class UserLogin(BaseModel):
@@ -117,6 +119,8 @@ class GoogleUserData(BaseModel):
 class Token(BaseModel):
     """
     Pydantic model for authenticating users.
+
+    This model includes fields for the access token and token type. 
     """
 
     access_token: str
@@ -126,6 +130,8 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     """
     Pydantic model for data extracted from JWT token after being successfully decoded and validated.
+
+    This model includes fields for user id and email.
     """
 
     user_id: uuid.UUID
