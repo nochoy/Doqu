@@ -13,9 +13,11 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { LoginFormInput, LoginFormSchema } from '@/types/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useAuth } from '@/contexts/authContext';
 
 export default function LoginForm({ className, ...props }: React.ComponentProps<'div'>) {
   const [error, setError] = useState<string | null>(null);
+  const { setCurrentUser } = useAuth();
   const router = useRouter();
 
   const {
@@ -44,11 +46,11 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
 
       const result = await response.json();
 
-      if (!response.ok || !result?.access_token) {
+      if (!response.ok) {
         throw new Error(result.detail || 'An error occured');
       }
 
-      localStorage.setItem('access_token', result.access_token);
+      setCurrentUser(result)
       router.push('/');
     } catch (err) {
       console.error('Login error: ', err);
