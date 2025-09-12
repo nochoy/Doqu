@@ -12,11 +12,10 @@ class User(SQLModel, table=True):
     """
     Represents a user in the database.
 
-    This class defines the schema for the 'users' table, including fields for user ID, email, username,
-    password, Google ID, active status, and timestamps for creation and updates. It uses SQLModel and
-    SQLAlchemy for ORM capabilities and Pydantic for data validation.
+    This class defines the schema for the 'users' table, including fields for user ID, email,
+    username, password, Google ID, active status, and timestamps for creation and updates. It
+    uses SQLModel and SQLAlchemy for ORM capabilities and Pydantic for data validation.
     """
-    
 
     __tablename__ = "users"
 
@@ -31,11 +30,15 @@ class User(SQLModel, table=True):
         default_factory=lambda: datetime.now(timezone.utc),
     )  # lambda called independently for every row insertion
     updated_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), nullable=False, onupdate=datetime.now(timezone.utc)),
+        sa_column=Column(
+            DateTime(timezone=True), nullable=False, onupdate=datetime.now(timezone.utc)
+        ),
         default_factory=lambda: datetime.now(timezone.utc),
     )
 
+
 # --- Request Models --- #
+
 
 class UserCreateEmail(BaseModel):
     """
@@ -45,6 +48,7 @@ class UserCreateEmail(BaseModel):
     email: EmailStr
     username: str
     password: str
+
 
 class UserCreate(BaseModel):
     """
@@ -120,7 +124,7 @@ class Token(BaseModel):
     """
     Pydantic model for authenticating users.
 
-    This model includes fields for the access token and token type. 
+    This model includes fields for the access token and token type.
     """
 
     access_token: str

@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from google.auth.exceptions import GoogleAuthError
@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.db.session import get_db
-from app.models.user import GoogleLogin, UserCreateEmail, UserLogin, UserRead
+from app.models.user import GoogleLogin, UserCreate, UserCreateEmail, UserLogin, UserRead
 from app.services import auth_service, user_service
 from app.utils.responses import get_responses
 
@@ -43,7 +43,7 @@ async def register(
         HTTPException: 409 Conflict if email is already registered.
     """
     try:
-        user = await user_service.create_user(session, user_create)
+        user = await user_service.create_user(session, cast(UserCreate, user_create))
 
         access_token = auth_service.create_access_token(
             data={"sub": str(user.id), "email": user.email},
@@ -53,10 +53,10 @@ async def register(
             key="access_token",
             value=access_token,
             httponly=True,
-            samesite='lax',
+            samesite="lax",
             secure=settings.SECURE_COOKIES,
-            path='/',
-            max_age=settings.ACCESS_TOKEN_EXPIRE_DAYS * 60 * 60 * 24    # 30 days in seconds
+            path="/",
+            max_age=settings.ACCESS_TOKEN_EXPIRE_DAYS * 60 * 60 * 24,  # 30 days in seconds
         )
 
         return UserRead.model_validate(
@@ -116,13 +116,14 @@ async def login(
         key="access_token",
         value=access_token,
         httponly=True,
-        samesite='lax',
+        samesite="lax",
         secure=settings.SECURE_COOKIES,
-        path='/',
-        max_age=settings.ACCESS_TOKEN_EXPIRE_DAYS * 60 * 60 * 24    # 30 days in seconds
+        path="/",
+        max_age=settings.ACCESS_TOKEN_EXPIRE_DAYS * 60 * 60 * 24,  # 30 days in seconds
     )
 
     return UserRead.model_validate(user)
+
 
 @router.post(
     "/google",
@@ -131,7 +132,7 @@ async def login(
     responses=get_responses(401, 400),
 )
 async def google_login(
-    request: GoogleLogin, 
+    request: GoogleLogin,
     session: Annotated[AsyncSession, Depends(get_db)],
     response: Response,
 ) -> UserRead:
@@ -173,10 +174,10 @@ async def google_login(
             key="access_token",
             value=access_token,
             httponly=True,
-            samesite='lax',
+            samesite="lax",
             secure=settings.SECURE_COOKIES,
-            path='/',
-            max_age=settings.ACCESS_TOKEN_EXPIRE_DAYS * 60 * 60 * 24    # 30 days in seconds
+            path="/",
+            max_age=settings.ACCESS_TOKEN_EXPIRE_DAYS * 60 * 60 * 24,  # 30 days in seconds
         )
 
         return UserRead.model_validate(user)
@@ -186,6 +187,7 @@ async def google_login(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Google token",
         ) from err
+
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(response: Response) -> None:
@@ -199,4 +201,3 @@ async def logout(response: Response) -> None:
         `response` (Response): The response object to modify.
     """
     response.delete_cookie("access_token")
-    

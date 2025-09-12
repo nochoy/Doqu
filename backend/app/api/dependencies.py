@@ -1,7 +1,6 @@
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
@@ -9,10 +8,8 @@ from app.models.user import User
 from app.services import auth_service, user_service
 
 
-
 async def get_current_user(
-    session: Annotated[AsyncSession, Depends(get_db)],
-    request: Request
+    session: Annotated[AsyncSession, Depends(get_db)], request: Request
 ) -> User:
     """
     FastAPI dependency to authenticate and retrieve the current user
