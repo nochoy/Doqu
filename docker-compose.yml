@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   frontend:
@@ -9,8 +8,9 @@ services:
       - .:/workspaces/doqu:cached # Mount the entire project root
       - frontend_node_modules:/workspaces/doqu/frontend/node_modules # Named volume for node_modules
       - frontend_next_cache:/workspaces/doqu/frontend/.next # Named volume for .next cache
-    environment:
-      - CHOKIDAR_USEPOLLING=true
+    # image: doqu-frontend:latest
+    env_file:
+      - ./.envs/.local/.frontend
     develop:
       watch:
         - action: sync
@@ -28,6 +28,16 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
+    # image: doqu-backend:latest
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    logging:
+      options:
+        max-size: "20m"
+        max-file: "3"
     develop:
       watch:
         - action: sync
@@ -39,20 +49,29 @@ services:
         - action: rebuild
           path: ./backend/requirements.txt
     depends_on:
-      - db
-    environment:
-      - DATABASE_URL=postgresql+asyncpg://user:password@db:5432/doqudb
+      db:
+        condition: service_healthy
+    env_file:
+      - ./.envs/.local/.backend
 
   db:
     image: postgres:16
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=doqudb
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: "20m"
+        max-file: "3"
+    env_file:
+      - ./.envs/.local/.db
 
 volumes:
   postgres_data:
