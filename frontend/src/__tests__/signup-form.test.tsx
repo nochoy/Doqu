@@ -15,17 +15,6 @@ jest.mock('next/navigation', () => ({
 // Mock fetch
 global.fetch = jest.fn();
 
-// Mock localStorage
-const mockLocalStorage = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
-};
-Object.defineProperty(window, 'localStorage', {
-  value: mockLocalStorage,
-});
-
 // Mock environment variable
 process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3000';
 
@@ -73,7 +62,6 @@ describe('SignupForm', () => {
       });
     });
 
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('access_token', 'mock-token-123');
     expect(mockPush).toHaveBeenCalledWith('/');
   });
 
@@ -181,7 +169,6 @@ describe('SignupForm', () => {
       expect(screen.getByText('Email already exists')).toBeInTheDocument();
     });
 
-    expect(mockLocalStorage.setItem).not.toHaveBeenCalled();
     expect(mockPush).not.toHaveBeenCalled();
   });
 
@@ -261,7 +248,6 @@ describe('SignupForm', () => {
       });
     });
 
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('access_token', 'mock-signup-token-456');
     expect(mockPush).toHaveBeenCalledWith('/');
   });
 

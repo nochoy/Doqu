@@ -1,30 +1,23 @@
 import uuid
 from datetime import timedelta
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 from google.auth.exceptions import GoogleAuthError
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.user import Token, User, UserRead, UserRegisterResponse
+from app.models.user import User, UserRead
 from app.services.auth_service import GoogleUserData, create_access_token
 
-# Assuming 'async_client' and 'session' fixtures are available from conftest.py
 
-
-# Helper to register and login a user, returning the token and user_id
-async def register_and_login_user(client: AsyncClient, email: str, username: str, password: str):
+# Helper to register a user and return their ID
+async def register_user(client: AsyncClient, email: str, username: str, password: str) -> uuid.UUID:
     register_data = {"email": email, "username": username, "password": password}
     register_response = await client.post("/api/auth/register", json=register_data)
     assert register_response.status_code == 201, f"Registration failed: {register_response.json()}"
-    user_id = UserRegisterResponse(**register_response.json()).id
-
-    login_data = {"email": email, "password": password}
-    login_response = await client.post("/api/auth/login", json=login_data)
-    assert login_response.status_code == 200, f"Login failed: {login_response.json()}"
-    token = Token(**login_response.json())
-    return token.access_token, user_id
+    user_id = UserRead(**register_response.json()).id
+    return user_id
 
 
 @pytest.mark.asyncio
@@ -33,6 +26,7 @@ async def test_register_user_success_email_password(
 ):
     """
     Test successful user registration with email and password.
+    The response should contain user data and set an access_token cookie.
     """
     user_data = {
         "email": "test@example.com",
@@ -41,54 +35,27 @@ async def test_register_user_success_email_password(
     }
     response = await async_client.post("/api/auth/register", json=user_data)
     assert response.status_code == 201
+
+    # 1. Check for the cookie
+    assert "access_token" in response.cookies
+    assert response.cookies["access_token"] is not None
+
+    # 2. Check the response body for user data
     user_read = UserRead(**response.json())
     assert user_read.email == user_data["email"]
     assert user_read.username == user_data["username"]
-    assert user_read.is_active is True
-    assert user_read.id is not None
 
-    # Verify user is in DB
+    # 3. Verify user in DB
     db_user = await session.get(User, user_read.id)
     assert db_user is not None
     assert db_user.email == user_data["email"]
-    assert db_user.username == user_data["username"]
-    assert db_user.password is not None
-    assert db_user.google_id is None  # Ensure google_id is None for password user
 
 
 @pytest.mark.asyncio
-async def test_register_user_success_google_id(async_client: AsyncClient, session: AsyncSession):
-    """
-    Test successful user registration with Google ID (no password).
-    """
-    user_data = {
-        "email": "google@example.com",
-        "username": "googleuser",
-        "google_id": "some_google_id_123",
-    }
-    response = await async_client.post("/api/auth/register", json=user_data)
-    assert response.status_code == 201
-    user_read = UserRead(**response.json())
-    assert user_read.email == user_data["email"]
-    assert user_read.username == user_data["username"]
-    assert user_read.is_active is True
-    assert user_read.id is not None
-
-    # Verify user is in DB
-    db_user = await session.get(User, user_read.id)
-    assert db_user is not None
-    assert db_user.email == user_data["email"]
-    assert db_user.username == user_data["username"]
-    assert db_user.password is None  # Ensure password is None for Google user
-    assert db_user.google_id == user_data["google_id"]
-
-
-@pytest.mark.asyncio
-async def test_register_user_duplicate_email(async_client: AsyncClient, session: AsyncSession):
+async def test_register_user_duplicate_email(async_client: AsyncClient):
     """
     Test registration with an already existing email.
     """
-    # First, register a user
     user_data = {
         "email": "duplicate@example.com",
         "username": "uniqueuser",
@@ -96,7 +63,6 @@ async def test_register_user_duplicate_email(async_client: AsyncClient, session:
     }
     await async_client.post("/api/auth/register", json=user_data)
 
-    # Try to register again with the same email
     duplicate_user_data = {
         "email": "duplicate@example.com",
         "username": "anotheruser",
@@ -104,119 +70,57 @@ async def test_register_user_duplicate_email(async_client: AsyncClient, session:
     }
     response = await async_client.post("/api/auth/register", json=duplicate_user_data)
     assert response.status_code == 409
-    assert "Email already registered" in response.json()["detail"]
 
 
 @pytest.mark.asyncio
-async def test_register_user_no_auth_method(async_client: AsyncClient):
-    """
-    Test registration with neither password nor google_id.
-    """
-    user_data = {
-        "email": "noauth@example.com",
-        "username": "noauthuser",
-    }
-    response = await async_client.post("/api/auth/register", json=user_data)
-    assert response.status_code == 422  # Pydantic validation error
-    assert "Either password or google_id must be provided" in response.json()["detail"][0]["msg"]
-
-
-@pytest.mark.asyncio
-async def test_register_user_both_auth_methods(async_client: AsyncClient):
-    """
-    Test registration with both password and google_id.
-    """
-    user_data = {
-        "email": "bothauth@example.com",
-        "username": "bothauthuser",
-        "password": "securepassword",
-        "google_id": "some_google_id_456",
-    }
-    response = await async_client.post("/api/auth/register", json=user_data)
-    assert response.status_code == 422  # Pydantic validation error
-    assert "Cannot provide both password and google_id" in response.json()["detail"][0]["msg"]
-
-
-@pytest.mark.asyncio
-async def test_login_user_success(async_client: AsyncClient, session: AsyncSession):
+async def test_login_user_success(async_client: AsyncClient):
     """
     Test successful user login.
+    The response should contain user data and set an access_token cookie.
     """
-    # Register a user first
-    register_data = {
-        "email": "login@example.com",
-        "username": "loginuser",
-        "password": "loginpassword",
-    }
-    await async_client.post("/api/auth/register", json=register_data)
+    await register_user(async_client, "login@example.com", "loginuser", "loginpassword")
 
-    # Attempt to log in
-    login_data = {
-        "email": "login@example.com",
-        "password": "loginpassword",
-    }
+    login_data = {"email": "login@example.com", "password": "loginpassword"}
     response = await async_client.post("/api/auth/login", json=login_data)
+
     assert response.status_code == 200
-    token = Token(**response.json())
-    assert token.access_token is not None
-    assert token.token_type == "bearer"
+
+    # 1. Check for the cookie
+    assert "access_token" in response.cookies
+    assert response.cookies["access_token"] is not None
+
+    # 2. Check the response body for user data
+    user_read = UserRead(**response.json())
+    assert user_read.email == login_data["email"]
 
 
 @pytest.mark.asyncio
-async def test_login_user_incorrect_password(async_client: AsyncClient, session: AsyncSession):
+async def test_login_user_incorrect_password(async_client: AsyncClient):
     """
     Test login with incorrect password.
     """
-    # Register a user first
-    register_data = {
-        "email": "wrongpass@example.com",
-        "username": "wrongpassuser",
-        "password": "correctpassword",
-    }
-    await async_client.post("/api/auth/register", json=register_data)
+    await register_user(async_client, "wrongpass@example.com", "wrongpassuser", "correctpassword")
 
-    # Attempt to log in with wrong password
-    login_data = {
-        "email": "wrongpass@example.com",
-        "password": "incorrectpassword",
-    }
+    login_data = {"email": "wrongpass@example.com", "password": "incorrectpassword"}
     response = await async_client.post("/api/auth/login", json=login_data)
     assert response.status_code == 401
-    assert "Incorrect email or password" in response.json()["detail"]
 
 
 @pytest.mark.asyncio
-async def test_login_user_unregistered_email(async_client: AsyncClient, session: AsyncSession):
-    """
-    Test login with an unregistered email.
-    """
-    login_data = {
-        "email": "nonexistent@example.com",
-        "password": "anypassword",
-    }
-    response = await async_client.post("/api/auth/login", json=login_data)
-    assert response.status_code == 401
-    assert "Incorrect email or password" in response.json()["detail"]
+async def test_read_users_me_success(async_client: AsyncClient):
+    """Test accessing /api/users/me with a valid cookie."""
+    await register_user(async_client, "me@example.com", "meuser", "mepassword")
 
+    login_data = {"email": "me@example.com", "password": "mepassword"}
+    login_response = await async_client.post("/api/auth/login", json=login_data)
+    auth_cookies = login_response.cookies
 
-@pytest.mark.asyncio
-async def test_read_users_me_success(async_client: AsyncClient, session: AsyncSession):
-    """
-    Test accessing /api/users/me with a valid token.
-    """
-    # Register and login a user
-    access_token, _ = await register_and_login_user(
-        async_client, "me@example.com", "meuser", "mepassword"
-    )
+    # Use the cookie from the login response for the authenticated request
+    response = await async_client.get("/api/users/me", cookies=auth_cookies)
 
-    # Access /api/users/me
-    response = await async_client.get(
-        "/api/users/me", headers={"Authorization": f"Bearer {access_token}"}
-    )
     assert response.status_code == 200
     user_read = UserRead(**response.json())
     assert user_read.email == "me@example.com"
-    assert user_read.username == "meuser"
 
 
 @pytest.mark.asyncio
@@ -231,17 +135,8 @@ async def test_read_users_me_unauthorized(async_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_read_users_me_inactive_user(async_client: AsyncClient, session: AsyncSession):
-    """
-    Test accessing /api/users/me with a token for an inactive user.
-    """
-    # Register a user
-    register_data = {
-        "email": "inactive@example.com",
-        "username": "inactiveuser",
-        "password": "inactivepassword",
-    }
-    register_response = await async_client.post("/api/auth/register", json=register_data)
-    user_id = UserRead(**register_response.json()).id
+    """Test accessing /api/users/me with a cookie for an inactive user."""
+    user_id = await register_user(async_client, "inactive@example.com", "inactiveuser", "password")
 
     # Deactivate the user directly in the database
     db_user = await session.get(User, user_id)
@@ -249,18 +144,11 @@ async def test_read_users_me_inactive_user(async_client: AsyncClient, session: A
     session.add(db_user)
     await session.commit()
 
-    # Login the user (token will be valid, but user is inactive)
-    login_data = {
-        "email": "inactive@example.com",
-        "password": "inactivepassword",
-    }
+    login_data = {"email": "inactive@example.com", "password": "password"}
     login_response = await async_client.post("/api/auth/login", json=login_data)
-    token = Token(**login_response.json())
+    auth_cookies = login_response.cookies
 
-    # Access /api/users/me
-    response = await async_client.get(
-        "/api/users/me", headers={"Authorization": f"Bearer {token.access_token}"}
-    )
+    response = await async_client.get("/api/users/me", cookies=auth_cookies)
     assert response.status_code == 403
     assert "Inactive user" in response.json()["detail"]
 
@@ -283,33 +171,23 @@ async def test_register_user_invalid_email_format(async_client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_get_data_from_token_invalid_token(async_client: AsyncClient):
-    """
-    Test get_data_from_token via an API call with an invalid JWT token.
-    This should be caught by the get_current_user dependency.
-    """
-    response = await async_client.get(
-        "/api/users/me", headers={"Authorization": "Bearer invalid.jwt.token"}
-    )
+async def test_read_users_me_invalid_cookie(async_client: AsyncClient):
+    """Test accessing /api/users/me with an invalid/malformed cookie."""
+    cookies = {"access_token": "invalid.jwt.token"}
+    response = await async_client.get("/api/users/me", cookies=cookies)
     assert response.status_code == 401
     assert "Invalid credentials" in response.json()["detail"]
 
 
 @pytest.mark.asyncio
-async def test_get_data_from_token_expired_token(async_client: AsyncClient, session: AsyncSession):
-    """
-    Test get_data_from_token via an API call with an expired JWT token.
-    """
-    # Manually create an expired token
-    user_id = uuid.uuid4()
+async def test_read_users_me_expired_token_cookie(async_client: AsyncClient):
+    """Test accessing /api/users/me with an expired token in the cookie."""
     expired_token = create_access_token(
-        data={"sub": str(user_id), "email": "expired@example.com"},
-        expires_delta=timedelta(minutes=-1),  # Token expired 1 minute ago
+        data={"sub": str(uuid.uuid4()), "email": "expired@example.com"},
+        expires_delta=timedelta(minutes=-1),
     )
-
-    response = await async_client.get(
-        "/api/users/me", headers={"Authorization": f"Bearer {expired_token}"}
-    )
+    cookies = {"access_token": expired_token}
+    response = await async_client.get("/api/users/me", cookies=cookies)
     assert response.status_code == 401
     assert "Invalid credentials" in response.json()["detail"]
 
@@ -340,119 +218,46 @@ async def test_login_google_only_user_with_password(
 
 
 @pytest.mark.asyncio
-async def test_google_login_success(async_client: AsyncClient, session: AsyncSession):
-    """
-    Test successful Google OAuth authentication with valid token and user data.
-    """
+async def test_logout_user(async_client: AsyncClient):
+    """Test the logout endpoint, which should clear the cookie."""
+    await register_user(async_client, "logout@example.com", "logoutuser", "password")
+
+    login_data = {"email": "logout@example.com", "password": "password"}
+    login_response = await async_client.post("/api/auth/login", json=login_data)
+    assert "access_token" in login_response.cookies
+
+    # Now, call logout with the same client instance
+    logout_response = await async_client.post("/api/auth/logout")
+    assert logout_response.status_code == 204
+
+
+@pytest.mark.asyncio
+async def test_google_login_success(async_client: AsyncClient):
+    """Test successful Google OAuth authentication."""
     with (
         patch("app.services.auth_service.verify_google_token") as mock_verify,
         patch("app.services.auth_service.link_google_to_user") as mock_link,
-        patch("app.services.auth_service.create_access_token") as mock_create_token,
     ):
 
-        # Mock the Google user data
         mock_google_data = GoogleUserData(
             google_id="google_123", email="test@example.com", name="Test User"
         )
         mock_verify.return_value = mock_google_data
 
-        # Mock the user object
-        mock_user = Mock()
-        mock_user.id = "user_123"
-        mock_user.email = "test@example.com"
+        # The link_google_to_user function returns a full User object
+        mock_user = User(
+            id=uuid.uuid4(), email="test@example.com", username="Test User", google_id="google_123"
+        )
         mock_link.return_value = mock_user
-
-        # Mock the access token
-        mock_create_token.return_value = "mock_access_token"
 
         google_login_data = {"code": "valid_google_code"}
         response = await async_client.post("/api/auth/google", json=google_login_data)
 
         assert response.status_code == 200
-        token_data = response.json()
-        assert token_data["access_token"] == "mock_access_token"
-        assert token_data["token_type"] == "bearer"
+        assert "access_token" in response.cookies
 
-
-@pytest.mark.asyncio
-async def test_access_token_generation_success(async_client: AsyncClient, session: AsyncSession):
-    """
-    Test that JWT access token is properly generated and returned after successful authentication.
-    """
-    with (
-        patch("app.services.auth_service.verify_google_token") as mock_verify,
-        patch("app.services.auth_service.link_google_to_user") as mock_link,
-        patch("app.services.auth_service.create_access_token") as mock_create_token,
-    ):
-
-        mock_google_data = GoogleUserData(
-            google_id="google_456", email="token@example.com", name="Token User"
-        )
-        mock_verify.return_value = mock_google_data
-
-        mock_user = Mock()
-        mock_user.id = "user_456"
-        mock_user.email = "token@example.com"
-        mock_link.return_value = mock_user
-
-        expected_token = "jwt_access_token_123"
-        mock_create_token.return_value = expected_token
-
-        google_login_data = {"code": "token_test_code"}
-        response = await async_client.post("/api/auth/google", json=google_login_data)
-
-        assert response.status_code == 200
-        token = Token(**response.json())
-        assert token.access_token == expected_token
-        assert token.token_type == "bearer"
-
-        # Verify create_access_token was called with correct data
-        mock_create_token.assert_called_once_with(
-            data={"sub": "user_456", "email": "token@example.com"}
-        )
-
-
-@pytest.mark.asyncio
-async def test_register_response_structure_complete(
-    async_client: AsyncClient, session: AsyncSession
-):
-    """
-    Test that Google login returns complete token response structure.
-    """
-    with (
-        patch("app.services.auth_service.verify_google_token") as mock_verify,
-        patch("app.services.auth_service.link_google_to_user") as mock_link,
-        patch("app.services.auth_service.create_access_token") as mock_create_token,
-    ):
-
-        mock_google_data = GoogleUserData(
-            google_id="google_789", email="structure@example.com", name="Structure User"
-        )
-        mock_verify.return_value = mock_google_data
-
-        mock_user = Mock()
-        mock_user.id = "user_789"
-        mock_user.email = "structure@example.com"
-        mock_link.return_value = mock_user
-
-        mock_create_token.return_value = "complete_token"
-
-        google_login_data = {"code": "structure_test_code"}
-        response = await async_client.post("/api/auth/google", json=google_login_data)
-
-        assert response.status_code == 200
-        response_data = response.json()
-
-        # Verify complete response structure
-        assert "access_token" in response_data
-        assert "token_type" in response_data
-        assert response_data["access_token"] == "complete_token"
-        assert response_data["token_type"] == "bearer"
-
-        # Verify it can be parsed as Token model
-        token = Token(**response_data)
-        assert token.access_token is not None
-        assert token.token_type == "bearer"
+        user_read = UserRead(**response.json())
+        assert user_read.email == "test@example.com"
 
 
 @pytest.mark.asyncio

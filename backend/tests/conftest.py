@@ -90,4 +90,3 @@ async def async_client(session: AsyncSession) -> AsyncClient:  # Return type is 
     await client.aclose()  # Ensure client is closed
 
     app.dependency_overrides.clear()
-
