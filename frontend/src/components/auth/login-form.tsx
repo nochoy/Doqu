@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import GoogleLoginButton from './google-login-button';
 import { Button } from '../ui/button';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { LoginFormInput, LoginFormSchema } from '@/types/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,6 +19,7 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
   const [error, setError] = useState<string | null>(null);
   const { setCurrentUser } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const {
     register,
@@ -51,7 +52,10 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
       }
 
       setCurrentUser(result)
-      router.push('/');
+
+      const redirectUrl = searchParams.get('redirect');
+      router.push(redirectUrl || '/');
+      
     } catch (err) {
       console.error('Login error: ', err);
       setError(err instanceof Error ? err.message : 'An error occurred');

@@ -21,7 +21,7 @@ export const AuthContext = createContext<AuthContextType>({
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(currentUser !== null);
+  const isAuthenticated = currentUser !== null;
 
   const checkAuthStatus = useCallback(async () => {
     try {      
@@ -53,10 +53,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     checkAuthStatus();
   }, [checkAuthStatus]);
-
-  useEffect(() => {
-    setIsAuthenticated(currentUser !== null);
-  }, [currentUser])
 
   return (
     <AuthContext.Provider value={{ currentUser, setCurrentUser, isAuthenticated, checkAuthStatus, logout }}>
