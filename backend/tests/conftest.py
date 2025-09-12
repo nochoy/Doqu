@@ -91,36 +91,3 @@ async def async_client(session: AsyncSession) -> AsyncClient:  # Return type is 
 
     app.dependency_overrides.clear()
 
-
-@pytest.fixture
-def test_user_data():
-    """Sample user data for testing."""
-    return {
-        "email": "test@example.com",
-        "username": "testuser",
-        "password": "testpassword123",
-    }
-
-
-@pytest.fixture
-def test_quiz_data():
-    """Sample quiz data for testing."""
-    return {
-        "title": "Test Quiz",
-        "description": "A test quiz for unit testing",
-        "questions": [
-            {
-                "question_text": "What is 2+2?",
-                "question_type": "multiple_choice",
-                "options": ["3", "4", "5", "6"],
-                "correct_answer": "4",
-                "points": 10,
-            },
-            {
-                "question_text": "Is Python a programming language?",
-                "question_type": "true_false",
-                "correct_answer": "true",
-                "points": 5,
-            },
-        ],
-    }
