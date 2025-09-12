@@ -49,7 +49,7 @@ export default function GoogleLoginButton({
     <Button
       variant="outline"
       type="button"
-      className={cn("w-full", className)}
+      className={cn('w-full', className)}
       aria-label="Login with Google"
       onClick={() => handleLogin()}
       {...props}

@@ -1,7 +1,7 @@
-"use client"
+'use client';
 
-import React, { createContext, useCallback, useEffect, useState, useContext } from "react"
-import { User } from "@/types/user";
+import React, { createContext, useCallback, useEffect, useState, useContext } from 'react';
+import { User } from '@/types/user';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -16,7 +16,7 @@ export const AuthContext = createContext<AuthContextType>({
   setCurrentUser: () => Promise.resolve(),
   isAuthenticated: false,
   checkAuthStatus: () => Promise.resolve(),
-  logout: () => Promise.resolve()
+  logout: () => Promise.resolve(),
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -24,15 +24,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = currentUser !== null;
 
   const checkAuthStatus = useCallback(async () => {
-    try {      
+    try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me`, {
-        credentials: 'include',   // send cookie containing JWT
+        credentials: 'include', // send cookie containing JWT
       });
 
       if (response.ok) {
         const userData = await response.json();
         setCurrentUser(userData);
-      } else {  // User logged out or token expired
+      } else {
+        // User logged out or token expired
         setCurrentUser(null);
       }
     } catch (err) {
@@ -45,7 +46,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       method: 'POST',
       credentials: 'include',
     });
-    
+
     setCurrentUser(null);
   }, []);
 
@@ -55,9 +56,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [checkAuthStatus]);
 
   return (
-    <AuthContext.Provider value={{ currentUser, setCurrentUser, isAuthenticated, checkAuthStatus, logout }}>
+    <AuthContext.Provider
+      value={{ currentUser, setCurrentUser, isAuthenticated, checkAuthStatus, logout }}
+    >
       {children}
-    </AuthContext.Provider>    
+    </AuthContext.Provider>
   );
 };
 

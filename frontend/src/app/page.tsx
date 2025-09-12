@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import { authenticatedFetch } from '@/lib/fetchWrapper';
 import { useAuth } from '@/contexts/authContext';
@@ -10,39 +10,42 @@ export default function Home() {
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated } = useAuth();
-  
+
   useEffect(() => {
     const createQuiz = async () => {
       const quizInfo = {
-        title: "Test quiz title",
-        description: "Test quiz description",
-        category: "Science",
+        title: 'Test quiz title',
+        description: 'Test quiz description',
+        category: 'Science',
         difficulty: 1,
         is_public: true,
-      }
-      try{
-        const response = await authenticatedFetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quizzes/`, {
-          method: 'POST',
-          body: JSON.stringify(quizInfo),
-        });
+      };
+      try {
+        const response = await authenticatedFetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/quizzes/`,
+          {
+            method: 'POST',
+            body: JSON.stringify(quizInfo),
+          }
+        );
 
         const result = await response.json();
 
-        if(!response.ok) {
-          throw new Error(result.detail || "An error occurred creating quiz")
+        if (!response.ok) {
+          throw new Error(result.detail || 'An error occurred creating quiz');
         }
 
         console.log('Created Quiz: ', result);
       } catch (err) {
         console.error('Create Quiz error: ', err);
-        
-        if(err instanceof Error && err.message === "Unauthorized") {
+
+        if (err instanceof Error && err.message === 'Unauthorized') {
           console.log('UNAUTHORIZED, redirecting to login page');
           // Redirect back to home page after successful login
           router.push(`/login?redirect=${pathname}`);
         }
       }
-    }
+    };
     createQuiz();
   }, [router, pathname, isAuthenticated]);
 

@@ -1,5 +1,4 @@
 export const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
-
   const defaultOptions = {
     ...options,
     credentials: 'include' as const, // Always send cookies
@@ -13,7 +12,7 @@ export const authenticatedFetch = async (url: string, options: RequestInit = {})
 
   // No authenticated user
   if (response.status === 401) {
-    throw new Error("Unauthorized");
+    throw new Error('Unauthorized');
   }
 
   return response;

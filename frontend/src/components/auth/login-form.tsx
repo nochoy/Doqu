@@ -51,11 +51,10 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
         throw new Error(result.detail || 'An error occured');
       }
 
-      setCurrentUser(result)
+      setCurrentUser(result);
 
       const redirectUrl = searchParams.get('redirect');
       router.push(redirectUrl || '/');
-      
     } catch (err) {
       console.error('Login error: ', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -116,9 +115,10 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
 
               {/* Backend Errors */}
               {error && (
-                <div className="text-sm text-destructive" role="alert" aria-live="polite">{error}</div>
+                <div className="text-sm text-destructive" role="alert" aria-live="polite">
+                  {error}
+                </div>
               )}
-
 
               {/* Submit Button */}
               <Button type="submit" className="w-full" disabled={isSubmitting}>

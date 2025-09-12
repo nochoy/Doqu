@@ -93,9 +93,9 @@ export default function SignupForm({ className, ...props }: React.ComponentProps
                 <Label htmlFor="username">
                   Username<span className="text-sm text-destructive">*</span>
                 </Label>
-                <Input 
-                  id="username" 
-                  placeholder="Molly" 
+                <Input
+                  id="username"
+                  placeholder="Molly"
                   maxLength={20}
                   {...register('username')}
                   disabled={isSubmitting}
@@ -139,8 +139,10 @@ export default function SignupForm({ className, ...props }: React.ComponentProps
               )}
 
               {/* Backend Errors */}
-              {error && 
-                (<div className="text-sm text-destructive" role="alert" aria-live="polite">{error}</div>
+              {error && (
+                <div className="text-sm text-destructive" role="alert" aria-live="polite">
+                  {error}
+                </div>
               )}
 
               {/* Submit Button */}
