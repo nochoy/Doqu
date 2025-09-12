@@ -117,7 +117,7 @@ npm run lint:fix
 ### Run Type Checking
 
 ```bash
-npm run type-check
+npm run typecheck
 ```
 
 ## 🎨 Formatting
