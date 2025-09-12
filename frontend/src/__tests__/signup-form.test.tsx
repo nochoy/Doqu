@@ -6,10 +6,12 @@ import Providers from '@/components/providers';
 
 // Mock Next.js router
 const mockPush = jest.fn();
+const mockGetSearchParams = jest.fn();
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
   }),
+  useSearchParams: () => ({ get: mockGetSearchParams }),
 }));
 
 // Mock fetch
