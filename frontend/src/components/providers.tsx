@@ -1,5 +1,6 @@
 'use client';
 
+import { AuthProvider } from '@/contexts/authContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -8,5 +9,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     return <div>Loading...</div>;
   }
 
-  return <GoogleOAuthProvider clientId={googleClientId}>{children}</GoogleOAuthProvider>;
+  return (
+    <AuthProvider>
+      <GoogleOAuthProvider clientId={googleClientId}>
+        {children}
+      </GoogleOAuthProvider>
+    </AuthProvider>
+  )
 }
