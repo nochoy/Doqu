@@ -81,8 +81,7 @@ async def login(
     response: Response,
 ) -> UserRead:
     """
-    Authenticate a user and return a JWT access token.
-
+    Authenticate a user and set an HTTP-only cookie with the access token.
     This endpoint allows a user to log in by providing their email and password.
     If the credentials are correct, an access token is generated and returned.
     If the credentials are incorrect, an HTTP 401 error is raised.
@@ -92,7 +91,7 @@ async def login(
         `session` (AsyncSession): Async database session for executing queries.
 
     Returns:
-        Token: Access token and token type
+        UserRead: The authenticated user's information.
 
     Raises:
         HTTPException: 401 Unauthorized if the credentials are invalid.
@@ -137,8 +136,7 @@ async def google_login(
     response: Response,
 ) -> UserRead:
     """
-    Authenticate a user using Google OAuth and return a JWT access token.
-
+    Authenticate a user using Google OAuth and set an HTTP-only cookie with the access token.
     This endpoint allows a user to log in using their Google account. It verifies the
     Google token, extracts user information, and links the Google account to an existing
     user or creates a new user if necessary. If the Google token is invalid, an HTTP 401
@@ -149,7 +147,7 @@ async def google_login(
         `session` (AsyncSession): Async database session for executing queries.
 
     Returns:
-        Token: Access token and token type.
+        UserRead: The authenticated user's information.
 
     Raises:
         HTTPException: 400 Bad Request if required Google user data is missing.
