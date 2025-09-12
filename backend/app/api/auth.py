@@ -187,7 +187,7 @@ async def google_login(
             detail="Invalid Google token",
         ) from err
 
-@router.post("/logout")
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(response: Response) -> None:
     """
     Log out the user by deleting the access token cookie.
@@ -199,4 +199,4 @@ async def logout(response: Response) -> None:
         `response` (Response): The response object to modify.
     """
     response.delete_cookie("access_token")
-
+    
