@@ -5,7 +5,8 @@ import React from 'react';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
 import { useGoogleLogin } from '@react-oauth/google';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/contexts/authContext';
 
 interface GoogleLoginButtonProps extends Omit<React.ComponentProps<typeof Button>, 'onError'> {
   onError?: (error: string) => void;
@@ -17,6 +18,8 @@ export default function GoogleLoginButton({
   ...props
 }: GoogleLoginButtonProps) {
   const router = useRouter();
+  const { setCurrentUser } = useAuth();
+  const searchParams = useSearchParams();
 
   const handleLogin = useGoogleLogin({
     onSuccess: async googleResponse => {
@@ -31,12 +34,14 @@ export default function GoogleLoginButton({
 
         const result = await response.json();
 
-        if (!response.ok || !result.access_token) {
+        if (!response.ok) {
           throw new Error(result.detail || 'Google login failed');
         }
 
-        localStorage.setItem('access_token', result.access_token);
-        router.push('/');
+        setCurrentUser(result);
+
+        const redirectUrl = searchParams.get('redirect');
+        router.push(redirectUrl || '/');
       } catch (error) {
         console.error('Error occurred during Google login: ', error);
         onError?.(error instanceof Error ? error.message : 'An error occurred during Google login');
