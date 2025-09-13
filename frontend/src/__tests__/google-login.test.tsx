@@ -63,8 +63,15 @@ describe('GoogleLoginButton', () => {
   });
 
   test('test_successful_authentication_sets_user_and_redirects', async () => {
-    const mockUser: User = { id: 'google-user-uuid', email: 'google.user@example.com', username: 'Google User', is_active: true, created_at: '2023-01-01T00:00:00Z', updated_at: '2023-01-01T00:00:00Z' };
-    
+    const mockUser: User = {
+      id: 'google-user-uuid',
+      email: 'google.user@example.com',
+      username: 'Google User',
+      is_active: true,
+      created_at: '2023-01-01T00:00:00Z',
+      updated_at: '2023-01-01T00:00:00Z',
+    };
+
     (fetch as jest.Mock).mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(mockUser),
@@ -75,8 +82,8 @@ describe('GoogleLoginButton', () => {
     // and then we call it when our mock function is executed.
     const useGoogleLoginMock = jest.requireMock('@react-oauth/google').useGoogleLogin;
     mockGoogleLoginFn.mockImplementation(() => {
-        const config = useGoogleLoginMock.mock.calls[0][0]; // Get the config object
-        config.onSuccess({ code: 'mock-google-code' });
+      const config = useGoogleLoginMock.mock.calls[0][0]; // Get the config object
+      config.onSuccess({ code: 'mock-google-code' });
     });
 
     renderGoogleLoginButton();
@@ -95,7 +102,7 @@ describe('GoogleLoginButton', () => {
 
   test('test_authentication_fails_with_api_error_response', async () => {
     const mockOnError = jest.fn();
-    
+
     (fetch as jest.Mock).mockResolvedValue({
       ok: false,
       json: () => Promise.resolve({ detail: 'Google auth failed' }),
@@ -103,8 +110,8 @@ describe('GoogleLoginButton', () => {
 
     const useGoogleLoginMock = jest.requireMock('@react-oauth/google').useGoogleLogin;
     mockGoogleLoginFn.mockImplementation(() => {
-        const config = useGoogleLoginMock.mock.calls[0][0];
-        config.onSuccess({ code: 'mock-google-code' });
+      const config = useGoogleLoginMock.mock.calls[0][0];
+      config.onSuccess({ code: 'mock-google-code' });
     });
 
     renderGoogleLoginButton({ onError: mockOnError });
@@ -120,13 +127,13 @@ describe('GoogleLoginButton', () => {
 
   test('test_network_request_fails_during_authentication', async () => {
     const mockOnError = jest.fn();
-    
+
     (fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
 
     const useGoogleLoginMock = jest.requireMock('@react-oauth/google').useGoogleLogin;
     mockGoogleLoginFn.mockImplementation(() => {
-        const config = useGoogleLoginMock.mock.calls[0][0];
-        config.onSuccess({ code: 'mock-google-code' });
+      const config = useGoogleLoginMock.mock.calls[0][0];
+      config.onSuccess({ code: 'mock-google-code' });
     });
 
     renderGoogleLoginButton({ onError: mockOnError });
@@ -141,19 +148,26 @@ describe('GoogleLoginButton', () => {
   });
 
   test('test_redirects_to_query_param_on_successful_login', async () => {
-    const mockUser: User = { id: 'google-user-uuid', email: 'google.user@example.com', username: 'Google User', is_active: true, created_at: '2023-01-01T00:00:00Z', updated_at: '2023-01-01T00:00:00Z' };
-    
+    const mockUser: User = {
+      id: 'google-user-uuid',
+      email: 'google.user@example.com',
+      username: 'Google User',
+      is_active: true,
+      created_at: '2023-01-01T00:00:00Z',
+      updated_at: '2023-01-01T00:00:00Z',
+    };
+
     (fetch as jest.Mock).mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(mockUser),
     });
-    
+
     mockGetSearchParams.mockReturnValue('/my-protected-page');
 
     const useGoogleLoginMock = jest.requireMock('@react-oauth/google').useGoogleLogin;
     mockGoogleLoginFn.mockImplementation(() => {
-        const config = useGoogleLoginMock.mock.calls[0][0];
-        config.onSuccess({ code: 'mock-google-code' });
+      const config = useGoogleLoginMock.mock.calls[0][0];
+      config.onSuccess({ code: 'mock-google-code' });
     });
 
     renderGoogleLoginButton();
@@ -162,7 +176,7 @@ describe('GoogleLoginButton', () => {
     await waitFor(() => {
       expect(mockSetCurrentUser).toHaveBeenCalledWith(mockUser);
     });
-    
+
     expect(mockPush).toHaveBeenCalledWith('/my-protected-page');
   });
 });

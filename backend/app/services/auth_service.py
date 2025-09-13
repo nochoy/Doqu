@@ -116,6 +116,7 @@ def get_data_from_token(token: str) -> TokenData | None:
         return None
     return token_data
 
+
 def verify_google_token(request: GoogleLogin) -> GoogleUserData:
     """
     Exchanges a Google OAuth2 authorization code for an ID token and extracts user information.
@@ -126,7 +127,7 @@ def verify_google_token(request: GoogleLogin) -> GoogleUserData:
     Returns:
         A GoogleUserData object containing the Google ID, user email, \
             and user name if the token is valid.
-    
+
     Raises:
         ValueError: If the authorization code is invalid or token verification fails.
     """
@@ -159,6 +160,7 @@ def verify_google_token(request: GoogleLogin) -> GoogleUserData:
     name = decoded_token.get("name") or ""
 
     return GoogleUserData(google_id=google_id, email=email, name=name)
+
 
 # --- Database Functions --- #
 async def authenticate_user(session: AsyncSession, email: str, password: str) -> User | None:
@@ -212,7 +214,7 @@ async def link_google_to_user(session: AsyncSession, google_user_data: GoogleUse
         else:  # First time logging in, create a new account
             username = google_user_data.name or google_user_data.email.split("@")[0]
             if not username:
-                username = f"user_{google_user_data.google_id[:8]}"            
+                username = f"user_{google_user_data.google_id[:8]}"
 
             new_user = UserCreate(
                 email=google_user_data.email,

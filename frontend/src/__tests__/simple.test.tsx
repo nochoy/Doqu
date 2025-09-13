@@ -58,9 +58,7 @@ describe('Signup Page', () => {
 
 describe('Quiz Create Page', () => {
   it('renders the temporary quiz create page', () => {
-    render(
-      <CreateQuizPage />
-    );
+    render(<CreateQuizPage />);
 
     const heading = screen.getByText('Quizzes');
     const button = screen.getByRole('button', { name: 'Create New Quiz' });
