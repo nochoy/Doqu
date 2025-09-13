@@ -120,17 +120,6 @@ class GoogleUserData(BaseModel):
     name: str
 
 
-class Token(BaseModel):
-    """
-    Pydantic model for authenticating users.
-
-    This model includes fields for the access token and token type.
-    """
-
-    access_token: str
-    token_type: str = "bearer"
-
-
 class TokenData(BaseModel):
     """
     Pydantic model for data extracted from JWT token after being successfully decoded and validated.
