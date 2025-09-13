@@ -14,7 +14,7 @@ import { useForm } from 'react-hook-form';
 import { SignupFormInput, SignupFormSchema } from '@/types/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { EyeIcon, EyeSlashIcon } from '@phosphor-icons/react';
-import { useAuth } from '@/contexts/authContext';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function SignupForm({ className, ...props }: React.ComponentProps<'div'>) {
   const [showPassword, setShowPassword] = useState(false);

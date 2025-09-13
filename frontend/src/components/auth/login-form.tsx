@@ -13,7 +13,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { LoginFormInput, LoginFormSchema } from '@/types/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuth } from '@/contexts/authContext';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginForm({ className, ...props }: React.ComponentProps<'div'>) {
   const [error, setError] = useState<string | null>(null);

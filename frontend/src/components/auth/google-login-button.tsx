@@ -6,7 +6,7 @@ import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/contexts/authContext';
+import { useAuth } from '@/hooks/useAuth';
 
 interface GoogleLoginButtonProps extends Omit<React.ComponentProps<typeof Button>, 'onError'> {
   onError?: (error: string) => void;

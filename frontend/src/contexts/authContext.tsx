@@ -1,23 +1,17 @@
 'use client';
 
-import React, { createContext, useCallback, useEffect, useState, useContext } from 'react';
+import React, { createContext, useCallback, useEffect, useState } from 'react';
 import { User } from '@/types/user';
 
-interface AuthContextType {
+export interface AuthContextType {
   currentUser: User | null;
-  setCurrentUser: (currentUser: User | null) => void;
+  setCurrentUser: React.Dispatch<React.SetStateAction<User | null>>;
   isAuthenticated: boolean;
   checkAuthStatus: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
-export const AuthContext = createContext<AuthContextType>({
-  currentUser: null,
-  setCurrentUser: () => Promise.resolve(),
-  isAuthenticated: false,
-  checkAuthStatus: () => Promise.resolve(),
-  logout: () => Promise.resolve(),
-});
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -30,8 +24,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       if (response.ok) {
-        const userData = await response.json();
-        setCurrentUser(userData);
+        try {
+          const userData = await response.json();
+          setCurrentUser(userData);
+        } catch {
+          setCurrentUser(null);
+        }
       } else {
         // User logged out or token expired
         setCurrentUser(null);
@@ -62,21 +60,4 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-/**
- * Custom hook to access the authentication context.
- *
- * This hook provides the current authentication state and functions to manage it.
- * It must be used within an AuthProvider to work correctly.
- *
- * @returns {AuthContextType} The authentication context value.
- * @throws {Error} If used outside of an AuthProvider.
- */
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 };
