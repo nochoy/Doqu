@@ -71,7 +71,7 @@ async def register(
         )
 
     except IntegrityError:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered") from None
 
 
 @router.post("/login", response_model=UserRead, responses=get_responses(401))
