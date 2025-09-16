@@ -1,6 +1,6 @@
 'use client';
 
-import { authenticatedFetch } from '@/lib/fetchWrapper';
+import { authenticatedFetch } from '@/lib/fetch-wrapper';
 import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
