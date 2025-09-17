@@ -2,7 +2,14 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, EmailStr, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    ValidationInfo,
+    field_validator,
+    model_validator,
+)
 from sqlalchemy import Column, DateTime, func
 from sqlmodel import Field, SQLModel
 
@@ -31,7 +38,10 @@ class User(SQLModel, table=True):
     )  # lambda called independently for every row insertion
     updated_at: datetime = Field(
         sa_column=Column(
-            DateTime(timezone=True), nullable=False, onupdate=func.now(), server_default=func.now(),
+            DateTime(timezone=True),
+            nullable=False,
+            onupdate=func.now(),
+            server_default=func.now(),
         ),
         default_factory=lambda: datetime.now(timezone.utc),
     )
@@ -40,28 +50,54 @@ class User(SQLModel, table=True):
 # --- Request Models --- #
 
 
-class UserCreateEmail(BaseModel):
+class UserBase(BaseModel):
     """
-    Pydantic model for registering a new user with email, username, and password.
-    """
+    Pydantic model for base user information.
 
-    email: EmailStr
-    username: str
-    password: str
-
-
-class UserCreate(BaseModel):
-    """
-    Pydantic model for registering a new user with email, name, and authentication method.
-
-    Validates that exactly one authentication method (`password` or `google_id`) is provided.
-    Raises ValueError if both or neither authentication methods are specified.
+    This model includes fields for email, username, password, and Google ID. It also
+    provides validation methods to ensure that required fields are not empty or blank
+    and that optional fields are properly normalized.
     """
 
     email: EmailStr
     username: str
     password: Optional[str] = None
     google_id: Optional[str] = None
+
+    @field_validator("email", "username", mode="before")
+    @classmethod
+    def normalize_required_str(cls, value: str, info: ValidationInfo) -> str:
+        if value is None:
+            raise ValueError(f"{info.field_name} cannot be None")
+        stripped_value = value.strip()
+        if not stripped_value:
+            raise ValueError(f"{info.field_name} must not be empty or blank")
+        return stripped_value.lower()
+
+    @field_validator("password", "google_id", mode="before")
+    @classmethod
+    def normalize_optional_str(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return value
+        stripped_value = value.strip()
+        return stripped_value or None
+
+
+class UserCreateEmail(UserBase):
+    """
+    Pydantic model for registering a new user with email, username, and password.
+    """
+
+    password: str
+
+
+class UserCreate(UserBase):
+    """
+    Pydantic model for registering a new user with email, name, and authentication method.
+
+    Validates that exactly one authentication method (`password` or `google_id`) is provided.
+    Raises ValueError if both or neither authentication methods are specified.
+    """
 
     @model_validator(mode="after")
     def check_auth_method(self) -> "UserCreate":
@@ -72,7 +108,7 @@ class UserCreate(BaseModel):
         return self
 
 
-class UserRead(BaseModel):
+class UserRead(UserBase):
     """
     Pydantic model for reading user information.
 
@@ -83,8 +119,6 @@ class UserRead(BaseModel):
     # Validate fields from SQLAlchemy object attributes
     model_config = ConfigDict(from_attributes=True)
 
-    email: EmailStr
-    username: str
     id: uuid.UUID
     is_active: bool
     created_at: datetime
