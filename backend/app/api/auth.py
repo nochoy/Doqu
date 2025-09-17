@@ -43,7 +43,13 @@ async def register(
         HTTPException: 409 Conflict if email is already registered.
     """
     try:
-        user = await user_service.create_user(session, cast(UserCreate, user_create))
+        user_in = UserCreate(
+            email=user_create.email,
+            username=user_create.username,
+            password=user_create.password,
+        )
+
+        user = await user_service.create_user(session, user_in)
 
         access_token = auth_service.create_access_token(
             data={"sub": str(user.id), "email": user.email},
@@ -51,16 +57,7 @@ async def register(
 
         set_auth_cookie(response, access_token)
 
-        return UserRead.model_validate(
-            {
-                "email": user.email,
-                "username": user.username,
-                "id": user.id,
-                "is_active": user.is_active,
-                "created_at": user.created_at,
-                "updated_at": user.updated_at,
-            }
-        )
+        return UserRead.model_validate(user)
 
     except IntegrityError:
         raise HTTPException(
@@ -98,7 +95,6 @@ async def login(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
         )
 
     access_token = auth_service.create_access_token(
@@ -176,4 +172,4 @@ async def logout(response: Response) -> None:
     Args:
         `response` (Response): The response object to modify.
     """
-    response.delete_cookie("access_token")
+    response.delete_cookie("access_token", "/")
