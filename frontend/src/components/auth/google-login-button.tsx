@@ -29,6 +29,7 @@ export default function GoogleLoginButton({
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({ code: googleResponse.code }),
         });
 

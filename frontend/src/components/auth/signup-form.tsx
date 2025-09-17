@@ -43,6 +43,7 @@ export default function SignupForm({ className, ...props }: React.ComponentProps
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
 

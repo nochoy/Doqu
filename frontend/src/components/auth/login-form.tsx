@@ -42,6 +42,7 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
 
