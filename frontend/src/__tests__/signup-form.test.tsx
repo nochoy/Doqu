@@ -56,6 +56,7 @@ describe('SignupForm', () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           email: 'test@example.com',
           username: 'testuser',
@@ -242,6 +243,7 @@ describe('SignupForm', () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           email: 'test@example.com',
           username: 'testuser',

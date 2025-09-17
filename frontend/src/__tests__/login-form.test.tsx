@@ -88,6 +88,7 @@ describe('LoginForm', () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           email: 'test@example.com',
           password: 'password123',

@@ -10,7 +10,11 @@ import CreateQuizPage from '@/app/quiz/create/page';
 
 describe('Home', () => {
   it('renders a heading', () => {
-    render(<Home />);
+    render(
+      <Providers>
+        <Home />
+      </Providers>
+    );
 
     const heading = screen.getByText('Save and see your changes instantly.');
 
