@@ -28,7 +28,7 @@ export default function Home() {
             body: JSON.stringify(quizInfo),
             headers: {
               'Content-Type': 'application/json',
-            }
+            },
           }
         );
 
