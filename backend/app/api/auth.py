@@ -5,10 +5,10 @@ from google.auth.exceptions import GoogleAuthError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
 from app.db.session import get_db
 from app.models.user import GoogleLogin, UserCreate, UserCreateEmail, UserLogin, UserRead
 from app.services import auth_service, user_service
+from app.utils.auth import set_auth_cookie
 from app.utils.responses import get_responses
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
@@ -49,15 +49,7 @@ async def register(
             data={"sub": str(user.id), "email": user.email},
         )
 
-        response.set_cookie(
-            key="access_token",
-            value=access_token,
-            httponly=True,
-            samesite="lax",
-            secure=settings.SECURE_COOKIES,
-            path="/",
-            max_age=settings.ACCESS_TOKEN_EXPIRE_DAYS * 60 * 60 * 24,  # 30 days in seconds
-        )
+        set_auth_cookie(response, access_token)
 
         return UserRead.model_validate(
             {
@@ -71,7 +63,9 @@ async def register(
         )
 
     except IntegrityError:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered") from None
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Email already registered"
+        ) from None
 
 
 @router.post("/login", response_model=UserRead, responses=get_responses(401))
@@ -111,15 +105,7 @@ async def login(
         data={"sub": str(user.id), "email": user.email},
     )
 
-    response.set_cookie(
-        key="access_token",
-        value=access_token,
-        httponly=True,
-        samesite="lax",
-        secure=settings.SECURE_COOKIES,
-        path="/",
-        max_age=settings.ACCESS_TOKEN_EXPIRE_DAYS * 60 * 60 * 24,  # 30 days in seconds
-    )
+    set_auth_cookie(response, access_token)
 
     return UserRead.model_validate(user)
 
@@ -168,15 +154,7 @@ async def google_login(
             data={"sub": str(user.id), "email": user.email},
         )
 
-        response.set_cookie(
-            key="access_token",
-            value=access_token,
-            httponly=True,
-            samesite="lax",
-            secure=settings.SECURE_COOKIES,
-            path="/",
-            max_age=settings.ACCESS_TOKEN_EXPIRE_DAYS * 60 * 60 * 24,  # 30 days in seconds
-        )
+        set_auth_cookie(response, access_token)
 
         return UserRead.model_validate(user)
 
