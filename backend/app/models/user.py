@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, model_validator
-from sqlalchemy import Column, DateTime
+from sqlalchemy import Column, DateTime, func
 from sqlmodel import Field, SQLModel
 
 
@@ -26,12 +26,12 @@ class User(SQLModel, table=True):
     google_id: Optional[str] = Field(default=None, nullable=True, unique=True, index=True)
     is_active: bool = Field(default=True, nullable=False)
     created_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), nullable=False),
+        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now()),
         default_factory=lambda: datetime.now(timezone.utc),
     )  # lambda called independently for every row insertion
     updated_at: datetime = Field(
         sa_column=Column(
-            DateTime(timezone=True), nullable=False, onupdate=datetime.now(timezone.utc)
+            DateTime(timezone=True), nullable=False, onupdate=func.now(), server_default=func.now(),
         ),
         default_factory=lambda: datetime.now(timezone.utc),
     )
