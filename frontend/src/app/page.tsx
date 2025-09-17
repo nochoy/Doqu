@@ -26,6 +26,9 @@ export default function Home() {
           {
             method: 'POST',
             body: JSON.stringify(quizInfo),
+            headers: {
+              'Content-Type': 'application/json',
+            }
           }
         );
 

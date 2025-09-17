@@ -4,7 +4,6 @@ export const authenticatedFetch = async (url: string, options: RequestInit = {})
     credentials: 'include' as const, // Always send cookies
     headers: {
       ...options.headers,
-      'Content-Type': 'application/json',
     },
   };
 
