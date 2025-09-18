@@ -1,9 +1,9 @@
 {
   "name": "Doqu Dev Container",
   "dockerComposeFile": "../docker-compose.yml",
-  "service": "frontend",
-  "workspaceFolder": "/workspaces/doqu",
-
+  "service": "backend",
+  "workspaceFolder": "/app",
+  "remoteUser": "root",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -17,6 +17,5 @@
       ]
     }
   },
-  "forwardPorts": [3000, 8000, 5432],
-  "remoteUser": "node"
+  "forwardPorts": [3000, 8000, 5432]
 }
