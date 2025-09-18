@@ -134,12 +134,16 @@ If you prefer not to use Dev Containers and instead develop locally:
     ```bash
     # Back to the repository root (from frontend)
     cd ..
-    
-    # Backend environment
-    cp backend/.env.example backend/.env
 
     # Frontend environment
-    cp frontend/.env.example frontend/.env.local
+    cp .envs/.local/.frontend.example .envs/.local/.frontend
+    
+    # Backend environment
+    cp .envs/.local/.backend.example .envs/.local/.backend
+
+    # Database environment
+    cp .envs/.local/.db.example .envs/.local/.db
+
     ```
 
 4.  **Database Setup:**
@@ -201,6 +205,9 @@ alembic downgrade base && alembic upgrade head
 
 # View migration history
 alembic history
+
+# Check for changes
+alembic check
 ```
 
 ### Testing

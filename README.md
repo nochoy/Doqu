@@ -61,6 +61,7 @@ Doqu/
 │   │   │   ├── auth_service.py  # Authentication services
 │   │   │   └── user_service.py  # User management services
 │   │   ├── 📁 utils/            # Utility functions
+│   │   │   ├── auth.py          # Auth utilities
 │   │   │   └── responses.py     # Response utilities
 │   │   ├── 📁 websocket/        # Real-time communication
 │   │   │   └── handlers.py      # WebSocket event handlers
@@ -70,7 +71,6 @@ Doqu/
 │   │   ├── test_auth.py         # Authentication tests
 │   │   └── test_user.py         # User management tests
 │   ├── 📁 htmlcov/              # Test coverage reports
-│   ├── .env.example             # Environment variable templates
 │   ├── .flake8                  # Python linting configuration
 │   ├── .gitignore               # Git ignore patterns
 │   ├── alembic.ini              # Alembic configuration
@@ -84,9 +84,7 @@ Doqu/
 ├── 📁 frontend/                 # Next.js frontend service
 │   ├── 📁 src/
 │   │   ├── 📁 __tests__/        # Frontend test suite
-│   │   │   └── simple.test.tsx  # Basic test example
 │   │   ├── 📁 app/              # Next.js 15 app directory
-│   │   │   ├── api/             # Next.js API routes (proxy)
 │   │   │   ├── login/           # Login page
 │   │   │   ├── signup/          # Signup page
 │   │   │   ├── globals.css      # Global styles & Tailwind
@@ -95,15 +93,18 @@ Doqu/
 │   │   ├── 📁 components/       # Reusable React components
 │   │   │   ├── auth/            # Auth-specific components
 │   │   │   ├── ui/              # Shadcn/ui primitive components
-│   │   │   └── shared/           # Shared application components
+│   │   │   └── shared/          # Shared application components
 │   │   ├── 📁 contexts/         # React context providers
+│   │   ├── 📁 hooks/            # React custom hooks
 │   │   ├── 📁 lib/              # Utility libraries
+│   │   │   ├── constants.ts     # Reusable constant definitions
+│   │   │   ├── fetch-wrapper.ts # Custom fetch wrapper 
 │   │   │   ├── socket.ts        # WebSocket client configuration
 │   │   │   └── utils.ts         # Helper functions
 │   │   └── 📁 types/            # TypeScript type definitions
-│   │       └── auth.ts          # Authentication-related types
+│   │       ├── auth.ts          # Authentication-related types
+│   │       └── user.ts          # User-related types
 │   ├── 📁 public/               # Static assets
-│   ├── .env.example             # Environment variable templates
 │   ├── .eslintrc.json           # ESLint configuration
 │   ├── .gitignore               # Git ignore patterns
 │   ├── .prettierignore          # Prettier ignore patterns
@@ -130,6 +131,12 @@ Doqu/
 ├── 📁 .github/                  # GitHub workflows & templates
 │   ├── ISSUE_TEMPLATE/          # Issue templates
 │   └── PULL_REQUEST_TEMPLATE.md # PR template
+│
+├── 📁 .envs/                    # Environment variable templates
+│   └── 📁 .local/               # Local environment variables
+│       ├── .frontend.example    # Frontend environment variable templates
+│       ├── .backend.example     # Backend environment variable templates
+│       └── .db.example          # Database environment variable templates
 │
 ├── .dockerignore                # Docker ignore patterns
 ├── .gitignore                   # Git ignore patterns
