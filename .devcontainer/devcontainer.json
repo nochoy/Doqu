@@ -1,9 +1,9 @@
 {
   "name": "Doqu Dev Container",
   "dockerComposeFile": "../docker-compose.yml",
-  "service": "frontend",
-  "workspaceFolder": "/workspaces/doqu",
-
+  "service": "backend",
+  "workspaceFolder": "/app",
+  "remoteUser": "root",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -13,11 +13,9 @@
         "esbenp.prettier-vscode",
         "dbaeumer.vscode-eslint",
         "bradlc.vscode-tailwindcss",
-        "ms-azuretools.vscode-docker",
-        "cweijan.vscode-postgresql-client2"
+        "ms-azuretools.vscode-docker"
       ]
     }
   },
-  "forwardPorts": [3000, 8000, 5432],
-  "remoteUser": "root"
+  "forwardPorts": [3000, 8000, 5432]
 }
