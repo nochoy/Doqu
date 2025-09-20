@@ -61,6 +61,7 @@ Doqu/
 │   │   │   ├── auth_service.py  # Authentication services
 │   │   │   └── user_service.py  # User management services
 │   │   ├── 📁 utils/            # Utility functions
+│   │   │   ├── auth.py          # Auth utilities
 │   │   │   └── responses.py     # Response utilities
 │   │   ├── 📁 websocket/        # Real-time communication
 │   │   │   └── handlers.py      # WebSocket event handlers
@@ -70,7 +71,7 @@ Doqu/
 │   │   ├── test_auth.py         # Authentication tests
 │   │   └── test_user.py         # User management tests
 │   ├── 📁 htmlcov/              # Test coverage reports
-│   ├── .env.example             # Environment variable templates
+│   ├── .env.example             # Environment variable template
 │   ├── .flake8                  # Python linting configuration
 │   ├── .gitignore               # Git ignore patterns
 │   ├── alembic.ini              # Alembic configuration
@@ -95,13 +96,17 @@ Doqu/
 │   │   ├── 📁 components/       # Reusable React components
 │   │   │   ├── auth/            # Auth-specific components
 │   │   │   ├── ui/              # Shadcn/ui primitive components
-│   │   │   └── shared/           # Shared application components
+│   │   │   └── shared/          # Shared application components
 │   │   ├── 📁 contexts/         # React context providers
+│   │   ├── 📁 hooks/            # React custom hooks
 │   │   ├── 📁 lib/              # Utility libraries
+│   │   │   ├── constants.ts     # Reusable constant definitions
+│   │   │   ├── fetch-wrapper.ts # Custom fetch wrapper 
 │   │   │   ├── socket.ts        # WebSocket client configuration
 │   │   │   └── utils.ts         # Helper functions
 │   │   └── 📁 types/            # TypeScript type definitions
-│   │       └── auth.ts          # Authentication-related types
+│   │       ├── auth.ts          # Authentication-related types
+│   │       └── user.ts          # User-related types
 │   ├── 📁 public/               # Static assets
 │   ├── .env.example             # Environment variable templates
 │   ├── .eslintrc.json           # ESLint configuration
