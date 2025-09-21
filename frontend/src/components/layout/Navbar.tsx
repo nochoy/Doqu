@@ -1,19 +1,34 @@
-import React from 'react';
+"use client"
 
-const Navbar = () => {
+import React from 'react';
+import Link from 'next/link';
+import { PlusSquareIcon } from '@phosphor-icons/react';
+
+import { Button } from '@/components/ui/button';
+import AccountDropdownMenu from './AccountDropdownMenu';
+
+export default function Navbar() {
+
   return (
-    <header className="bg-sidebar text-sidebar-foreground border-sidebar-border p-4 px-8 border-b fixed w-full">
-      <nav className="flex justify-between mx-auto">
+    <header className="bg-sidebar text-sidebar-foreground border-sidebar-border p-3 px-8 border-b w-full">
+      <nav className="flex justify-between items-center mx-auto">
         <div>Logo</div>
-        <div className="flex items-center gap-4 ">
-          <span>Host</span>
-          <span>Join</span>
-          <span>Create</span>
-          <span>Profile</span>
+        <div className="flex items-center gap-1">
+          <Button variant='ghost'>
+            Host
+          </Button>
+          <Link href='/join'>
+            <Button variant='ghost'>
+              Join
+            </Button>
+          </Link>
+          <Button variant='default' className='mx-0 sm:mx-2'>
+            <PlusSquareIcon/>
+            Create
+          </Button>
+          <AccountDropdownMenu/>
         </div>
       </nav>
     </header>
   );
 };
-
-export default Navbar;
