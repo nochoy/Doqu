@@ -6,6 +6,7 @@ import { PlusSquareIcon } from '@phosphor-icons/react';
 
 import { Button } from '@/components/ui/button';
 import AccountDropdownMenu from './navbar/AccountDropdownMenu';
+import QuizListDialog from './navbar/QuizListDialog';
 
 export default function Navbar() {
 
@@ -17,6 +18,7 @@ export default function Navbar() {
           <Button variant='ghost'>
             Host
           </Button>
+          <QuizListDialog/>
           <Link href='/join'>
             <Button variant='ghost'>
               Join
