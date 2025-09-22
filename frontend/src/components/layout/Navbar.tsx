@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { PlusSquareIcon } from '@phosphor-icons/react';
 
 import { Button } from '@/components/ui/button';
-import AccountDropdownMenu from './AccountDropdownMenu';
+import AccountDropdownMenu from './navbar/AccountDropdownMenu';
 
 export default function Navbar() {
 
