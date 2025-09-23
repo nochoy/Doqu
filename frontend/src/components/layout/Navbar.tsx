@@ -18,20 +18,21 @@ export default function Navbar() {
       <nav className="flex justify-between items-center mx-auto">
         <Logo/>
         <div className="flex items-center gap-1">
-          <Button variant='ghost'>
-            Host
-          </Button>
+          {/* Host Quiz Button */}
           <QuizListDialog/>
+          {/* Join Room Button */}
           <Link href='/join'>
             <Button variant='ghost'>
               Join
             </Button>
           </Link>
+          {/* Create Quiz Button */}
           <Button variant='default' onClick={() => setCreateQuizFormOpen(true)} className='mx-0 sm:mx-2'>
             <PlusSquareIcon/>
             Create
           </Button>
           {isCreateQuizFormOpen && <QuizCreateModal onClose={() => setCreateQuizFormOpen(false)}/>}
+          {/* Account Dropdown Menu */}
           <AccountDropdownMenu/>
         </div>
       </nav>
