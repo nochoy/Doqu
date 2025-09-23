@@ -5,17 +5,18 @@ import Link from 'next/link';
 import { PlusSquareIcon } from '@phosphor-icons/react';
 
 import { Button } from '@/components/ui/button';
-import AccountDropdownMenu from './navbar/AccountDropdownMenu';
-import QuizListDialog from './navbar/QuizListDialog';
-import QuizCreateModal from '../quiz/QuizCreateModal';
+import Logo from '@/components/Logo';
+import AccountDropdownMenu from '@/components/layout/navbar/AccountDropdownMenu';
+import QuizListDialog from '@/components/layout/navbar/QuizListDialog';
+import QuizCreateModal from '@/components/quiz/QuizCreateModal';
 
 export default function Navbar() {
   const [isCreateQuizFormOpen, setCreateQuizFormOpen] = useState(false);
 
   return (
-    <header className="bg-sidebar text-sidebar-foreground border-sidebar-border p-3 px-8 border-b w-full">
+    <header className="bg-sidebar text-sidebar-foreground border-sidebar-border p-2 px-4 border-b w-full">
       <nav className="flex justify-between items-center mx-auto">
-        <div>Logo</div>
+        <Logo/>
         <div className="flex items-center gap-1">
           <Button variant='ghost'>
             Host
