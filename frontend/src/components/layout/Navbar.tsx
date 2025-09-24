@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { PlusSquareIcon } from '@phosphor-icons/react';
 
 import { Button } from '@/components/ui/button';
-import Logo from '@/components/Logo';
+import Logo from '@/components/shared/Logo';
 import AccountDropdownMenu from '@/components/layout/navbar/AccountDropdownMenu';
 import QuizListDialog from '@/components/layout/navbar/QuizListDialog';
 import QuizCreateModal from '@/components/quiz/QuizCreateModal';
