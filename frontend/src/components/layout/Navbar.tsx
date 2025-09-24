@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import Logo from '@/components/shared/Logo';
 import AccountDropdownMenu from '@/components/layout/navbar/AccountDropdownMenu';
 import QuizListDialog from '@/components/layout/navbar/QuizListDialog';
+import ThemeToggle from '@/components/layout/navbar/ThemeToggle';
 import QuizCreateModal from '@/components/quiz/QuizCreateModal';
 
 export default function Navbar() {
@@ -18,6 +19,7 @@ export default function Navbar() {
       <nav className="flex justify-between items-center mx-auto">
         <Logo/>
         <div className="flex items-center gap-1">
+          <ThemeToggle/>
           {/* Host Quiz Button */}
           <QuizListDialog/>
           {/* Join Room Button */}
