@@ -1,19 +1,20 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useAuth } from '@/hooks/useAuth';
 
 import { cn } from '@/lib/utils';
+import { LoginFormInput, LoginFormSchema } from '@/types/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import GoogleLoginButton from './google-login-button';
-import { Button } from '../ui/button';
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { LoginFormInput, LoginFormSchema } from '@/types/auth';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuth } from '@/hooks/useAuth';
+import GoogleLoginButton from '@/components/auth/google-login-button';
+import { Button } from '@/components/ui/button';
+import Logo from '@/components/shared/Logo';
 
 export default function LoginForm({ className, ...props }: React.ComponentProps<'div'>) {
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +66,8 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
-        <CardHeader className="text-center">
+        <CardHeader className="flex flex-col items-center">
+          <Logo/>
           <CardTitle>Welcome back!</CardTitle>
           <CardDescription>Login to your Doqu account</CardDescription>
         </CardHeader>
