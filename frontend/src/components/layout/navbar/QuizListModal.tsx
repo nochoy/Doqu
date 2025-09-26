@@ -49,7 +49,7 @@ function QuizList({ className, selectedQuiz, onQuizSelect }: QuizListProps) {
 }
 
 
-export default function QuizListDialog() {
+export default function QuizListModal() {
   const [openMobile, setOpenMobile] = useState<boolean>(false);
   const [openDesktop, setOpenDesktop] = useState<boolean>(false);
   const [selectedQuiz, setSelectedQuiz] = useState<string>('');

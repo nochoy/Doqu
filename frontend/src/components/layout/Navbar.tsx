@@ -7,7 +7,7 @@ import { PlusSquareIcon } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import Logo from '@/components/shared/Logo';
 import AccountDropdownMenu from '@/components/layout/navbar/AccountDropdownMenu';
-import QuizListDialog from '@/components/layout/navbar/QuizListDialog';
+import QuizListModal from '@/components/layout/navbar/QuizListModal';
 import ThemeToggle from '@/components/layout/navbar/ThemeToggle';
 import QuizCreateModal from '@/components/quiz/QuizCreateModal';
 
@@ -21,7 +21,7 @@ export default function Navbar() {
         <div className="flex items-center gap-1">
           <ThemeToggle/>
           {/* Host Quiz Button */}
-          <QuizListDialog/>
+          <QuizListModal/>
           {/* Join Room Button */}
           <Link href='/join'>
             <Button variant='ghost'>
