@@ -4,7 +4,7 @@ from sqlmodel import select
 import uuid
 
 
-async def create_question(*, session: AsyncSession, question_in: QuestionCreate) -> Question:
+async def create_question(session: AsyncSession, question_in: QuestionCreate) -> Question:
     """
     Creates a new question in the database.
 
@@ -24,7 +24,7 @@ async def create_question(*, session: AsyncSession, question_in: QuestionCreate)
     return db_question
 
 
-async def get_question(*, session: AsyncSession, question_id: uuid.UUID) -> Question | None:
+async def get_question(session: AsyncSession, question_id: uuid.UUID) -> Question | None:
     """
     Retrieves a question from the database by its ID.
 
@@ -38,22 +38,23 @@ async def get_question(*, session: AsyncSession, question_id: uuid.UUID) -> Ques
     return await session.get(Question, question_id)
 
 
-async def get_all_questions(*, session: AsyncSession) -> list[Question]:
+async def get_all_questions(session: AsyncSession, quiz_id: int) -> list[Question]:
     """
-    Retrieves all questions from the database.
+    Retrieves all questions from the database for a specific quiz.
 
     Args:
         session (AsyncSession): The SQLAlchemy async session.
+        quiz_id (int): The ID of the quiz.
 
     Returns:
-        list[Question]: A list of all questions.
+        list[Question]: A list of all questions for the specified quiz.
     """
-    result = await session.execute(select(Question))
-    return result.scalars().all()
+    result = await session.execute(select(Question).where(Question.quiz_id == quiz_id))
+    return list(result.scalars().all())
 
 
 async def update_question(
-    *, session: AsyncSession, db_question: Question, question_in: QuestionUpdate
+    session: AsyncSession, db_question: Question, question_in: QuestionUpdate
 ) -> Question:
     """
     Updates an existing question in the database.
@@ -75,7 +76,7 @@ async def update_question(
     return db_question
 
 
-async def remove_question(*, session: AsyncSession, question_id: uuid.UUID) -> None:
+async def remove_question(session: AsyncSession, question_id: uuid.UUID) -> None:
     """
     Deletes a question from the database by its ID.
 

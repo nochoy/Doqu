@@ -1,6 +1,6 @@
 import uuid
 from typing import Any, List, cast
-
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
@@ -55,7 +55,11 @@ async def get_quiz(session: AsyncSession, quiz_id: int) -> Quiz:
     Raises:
         QuizNotFoundException: If quiz id not found
     """
-    db_quiz = await session.get(Quiz, quiz_id)
+    statement = (
+        select(Quiz).where(Quiz.id == quiz_id).options(selectinload(getattr(Quiz, "questions")))
+    )
+    result = await session.execute(statement)
+    db_quiz = result.scalars().first()
     if not db_quiz:
         raise QuizNotFoundException("Quiz not found.")
     return db_quiz
