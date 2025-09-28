@@ -1,13 +1,14 @@
-from typing import Annotated
+from typing import Annotated, cast
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from google.auth.exceptions import GoogleAuthError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
-from app.models.user import GoogleLogin, Token, UserCreate, UserLogin, UserRegisterResponse
+from app.models.user import GoogleLogin, UserCreate, UserCreateEmail, UserLogin, UserRead
 from app.services import auth_service, user_service
+from app.utils.auth import set_auth_cookie
 from app.utils.responses import get_responses
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
@@ -15,14 +16,15 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 
 @router.post(
     "/register",
-    response_model=UserRegisterResponse,
+    response_model=UserRead,
     status_code=status.HTTP_201_CREATED,
     responses=get_responses(409),
 )
 async def register(
-    user_create: UserCreate,
+    user_create: UserCreateEmail,
     session: Annotated[AsyncSession, Depends(get_db)],
-) -> UserRegisterResponse:
+    response: Response,
+) -> UserRead:
     """
     Register a new user.
 
@@ -31,46 +33,46 @@ async def register(
     is not registered, it creates a new user.
 
     Args:
-        `user_create` (`UserCreate`): User creation data (email and password OR google_id)
+        `user_create` (`UserCreateEmail`): User creation data (email and password)
         `session` (AsyncSession): Async database session for executing queries.
 
     Returns:
-        UserRegisterResponse: The newly created user + access token.
+        UserRead: The newly created user.
 
     Raises:
         HTTPException: 409 Conflict if email is already registered.
     """
     try:
-        user = await user_service.create_user(session, user_create)
+        user_in = UserCreate(
+            email=user_create.email,
+            username=user_create.username,
+            password=user_create.password,
+        )
+
+        user = await user_service.create_user(session, user_in)
 
         access_token = auth_service.create_access_token(
             data={"sub": str(user.id), "email": user.email},
         )
 
-        return UserRegisterResponse.model_validate(
-            {
-                "email": user.email,
-                "username": user.username,
-                "id": user.id,
-                "is_active": user.is_active,
-                "created_at": user.created_at,
-                "access_token": access_token,
-                "token_type": "bearer",
-            }
-        )
+        set_auth_cookie(response, access_token)
+
+        return UserRead.model_validate(user)
 
     except IntegrityError:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Email already registered"
+        ) from None
 
 
-@router.post("/login", response_model=Token, responses=get_responses(401))
+@router.post("/login", response_model=UserRead, responses=get_responses(401))
 async def login(
     form_data: UserLogin,
     session: Annotated[AsyncSession, Depends(get_db)],
-) -> Token:
+    response: Response,
+) -> UserRead:
     """
-    Authenticate a user and return a JWT access token.
-
+    Authenticate a user and set an HTTP-only cookie with the access token.
     This endpoint allows a user to log in by providing their email and password.
     If the credentials are correct, an access token is generated and returned.
     If the credentials are incorrect, an HTTP 401 error is raised.
@@ -80,7 +82,7 @@ async def login(
         `session` (AsyncSession): Async database session for executing queries.
 
     Returns:
-        Token: Access token and token type
+        UserRead: The authenticated user's information.
 
     Raises:
         HTTPException: 401 Unauthorized if the credentials are invalid.
@@ -93,28 +95,30 @@ async def login(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
         )
 
     access_token = auth_service.create_access_token(
         data={"sub": str(user.id), "email": user.email},
     )
 
-    return Token.model_validate({"access_token": access_token, "token_type": "bearer"})
+    set_auth_cookie(response, access_token)
+
+    return UserRead.model_validate(user)
 
 
 @router.post(
     "/google",
-    response_model=Token,
+    response_model=UserRead,
     summary="Login a Google account user",
     responses=get_responses(401, 400),
 )
 async def google_login(
-    request: GoogleLogin, session: Annotated[AsyncSession, Depends(get_db)]
-) -> Token:
+    request: GoogleLogin,
+    session: Annotated[AsyncSession, Depends(get_db)],
+    response: Response,
+) -> UserRead:
     """
-    Authenticate a user using Google OAuth and return a JWT access token.
-
+    Authenticate a user using Google OAuth and set an HTTP-only cookie with the access token.
     This endpoint allows a user to log in using their Google account. It verifies the
     Google token, extracts user information, and links the Google account to an existing
     user or creates a new user if necessary. If the Google token is invalid, an HTTP 401
@@ -125,7 +129,7 @@ async def google_login(
         `session` (AsyncSession): Async database session for executing queries.
 
     Returns:
-        Token: Access token and token type.
+        UserRead: The authenticated user's information.
 
     Raises:
         HTTPException: 400 Bad Request if required Google user data is missing.
@@ -146,10 +150,26 @@ async def google_login(
             data={"sub": str(user.id), "email": user.email},
         )
 
-        return Token.model_validate({"access_token": access_token, "token_type": "bearer"})
+        set_auth_cookie(response, access_token)
+
+        return UserRead.model_validate(user)
 
     except (ValueError, GoogleAuthError) as err:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Google token",
         ) from err
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+async def logout(response: Response) -> None:
+    """
+    Log out the user by deleting the access token cookie.
+
+    This endpoint logs out the user by removing the access token cookie from the response.
+    It effectively invalidates the user's session on the client side.
+
+    Args:
+        `response` (Response): The response object to modify.
+    """
+    response.delete_cookie("access_token", "/")

@@ -6,25 +6,16 @@ import Providers from '@/components/providers';
 
 // Mock Next.js router
 const mockPush = jest.fn();
+const mockGetSearchParams = jest.fn();
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
   }),
+  useSearchParams: () => ({ get: mockGetSearchParams }),
 }));
 
 // Mock fetch
 global.fetch = jest.fn();
-
-// Mock localStorage
-const mockLocalStorage = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
-};
-Object.defineProperty(window, 'localStorage', {
-  value: mockLocalStorage,
-});
 
 // Mock environment variable
 process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3000';
@@ -65,6 +56,7 @@ describe('SignupForm', () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           email: 'test@example.com',
           username: 'testuser',
@@ -73,7 +65,6 @@ describe('SignupForm', () => {
       });
     });
 
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('access_token', 'mock-token-123');
     expect(mockPush).toHaveBeenCalledWith('/');
   });
 
@@ -181,7 +172,6 @@ describe('SignupForm', () => {
       expect(screen.getByText('Email already exists')).toBeInTheDocument();
     });
 
-    expect(mockLocalStorage.setItem).not.toHaveBeenCalled();
     expect(mockPush).not.toHaveBeenCalled();
   });
 
@@ -253,6 +243,7 @@ describe('SignupForm', () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           email: 'test@example.com',
           username: 'testuser',
@@ -261,7 +252,6 @@ describe('SignupForm', () => {
       });
     });
 
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('access_token', 'mock-signup-token-456');
     expect(mockPush).toHaveBeenCalledWith('/');
   });
 

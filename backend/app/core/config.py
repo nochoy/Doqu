@@ -18,6 +18,8 @@ class Settings(BaseSettings):
         `ALGORITHM` (str): The algorithm used for security, default is "HS256".
         `ACCESS_TOKEN_EXPIRE_DAYS` (int): The number of days before an access token expires,\
             default is 30 days.
+        `SECURE_COOKIES` (bool): Whether or not to send cookies over HTTPS. Should be false \
+            for local development, true for prod.
         `GOOGLE_CLIENT_ID` (Optional[str]): The Google OAuth client ID.
         `GOOGLE_CLIENT_SECRET` (Optional[str]): The Google OAuth client secret.
         `CORS_ORIGINS` (list[str]): A list of allowed CORS origins.
@@ -36,6 +38,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_DAYS: int = 30
+    SECURE_COOKIES: bool = False
 
     # Google OAuth
     GOOGLE_CLIENT_ID: Optional[str] = None

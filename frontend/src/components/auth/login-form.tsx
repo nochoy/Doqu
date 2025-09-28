@@ -9,14 +9,17 @@ import { Label } from '@/components/ui/label';
 import GoogleLoginButton from './google-login-button';
 import { Button } from '../ui/button';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { LoginFormInput, LoginFormSchema } from '@/types/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginForm({ className, ...props }: React.ComponentProps<'div'>) {
   const [error, setError] = useState<string | null>(null);
+  const { setCurrentUser } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const {
     register,
@@ -39,17 +42,20 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
 
       const result = await response.json();
 
-      if (!response.ok || !result?.access_token) {
+      if (!response.ok) {
         throw new Error(result.detail || 'An error occured');
       }
 
-      localStorage.setItem('access_token', result.access_token);
-      router.push('/');
+      setCurrentUser(result);
+
+      const redirectUrl = searchParams.get('redirect');
+      router.push(redirectUrl || '/');
     } catch (err) {
       console.error('Login error: ', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -110,9 +116,10 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
 
               {/* Backend Errors */}
               {error && (
-                <div className="text-sm text-destructive" role="alert" aria-live="polite">{error}</div>
+                <div className="text-sm text-destructive" role="alert" aria-live="polite">
+                  {error}
+                </div>
               )}
-
 
               {/* Submit Button */}
               <Button type="submit" className="w-full" disabled={isSubmitting}>

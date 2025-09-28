@@ -19,8 +19,8 @@ Closes #<issue-number> (if applicable)
 </details>
 
 ## How to Test Locally
-1. `git checkout dev && git pull`
-2. `git checkout -b feature/your-feature`
+1. `git checkout -b feature/your-feature`
+2. `git pull origin feature/your-feature`
 3. Describe the steps to test the feature
 
 ## Notes

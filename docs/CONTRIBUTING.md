@@ -201,6 +201,9 @@ alembic downgrade base && alembic upgrade head
 
 # View migration history
 alembic history
+
+# Check for changes
+alembic check
 ```
 
 ### Testing
