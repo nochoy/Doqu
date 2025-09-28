@@ -108,10 +108,16 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
         category: raw.category === '' ? undefined : raw.category,
         description: raw.description === '' ? undefined : raw.description,
       };
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        throw new Error('Authentication token not found. Please log in.');
+      }
+
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });

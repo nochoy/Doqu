@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+
 /**
  * General template for creating schemas for questions.
  * @param question_text - The text of the question.
@@ -17,7 +18,7 @@ const mcSchema = z.object({
   question_text: z.string().min(1, 'Question title is required.'),
   type: z.literal('MC'),
   time_limit: z.number().min(1, 'Time limit must be at least 1.'),
-  explanation: z.string().optional(),
+  explanation: z.string().nullable().optional(),
   correct_answer: z.object({
     answer: z.string().optional(),
   }),
@@ -36,7 +37,7 @@ const tfSchema = z.object({
   question_text: z.string().min(1, 'Question title is required.'),
   type: z.literal('TF'),
   time_limit: z.number().min(1, 'Time limit must be at least 1.'),
-  explanation: z.string().optional(),
+  explanation: z.string().nullable().optional(),
   correct_answer: z.object({
     answer: z.string().optional(),
   }),
@@ -53,7 +54,7 @@ const smSchema = z.object({
   question_text: z.string().min(1, 'Question title is required.'),
   type: z.literal('SM'),
   time_limit: z.number().min(1, 'Time limit must be at least 1.'),
-  explanation: z.string().optional(),
+  explanation: z.string().nullable().optional(),
   correct_answer: z.object({
     answers: z.array(z.string()).optional(),
   }),
@@ -75,3 +76,11 @@ export const questionSchema = z.discriminatedUnion('type', [mcSchema, tfSchema, 
  * Matches the zod schema defined in the validators.ts file.
  */
 export type FormData = z.infer<typeof questionSchema>;
+
+/**
+ * This is the type of the question object, including the ID from the database.
+ * It's derived from the form data schemas to ensure consistency.
+ */
+export type Question = z.infer<typeof questionSchema> & {
+  id: string;
+};
