@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Optional
 
 from pydantic import field_validator
-from sqlalchemy import Column, DateTime
+from sqlalchemy import Column, DateTime, func
 from sqlmodel import Field, SQLModel
 
 from .question import QuestionRead
@@ -26,7 +26,7 @@ class Quiz(SQLModel, table=True):
     difficulty: Optional[int] = Field(default=None, ge=1, le=5, nullable=True)
     is_public: bool = Field(default=True, nullable=False)
     created_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), nullable=False),
+        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now()),
         default_factory=lambda: datetime.now(timezone.utc),
     )
 
