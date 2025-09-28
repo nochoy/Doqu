@@ -2,52 +2,77 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import LoginForm from '@/components/auth/login-form';
-import Providers from '@/components/providers';
+import { AuthContext } from '@/contexts/authContext';
+import { User } from '@/types/user';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
-// Mock Next.js router
+// Mock Next.js router and searchParams
 const mockPush = jest.fn();
+const mockGetSearchParams = jest.fn();
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
+  }),
+  useSearchParams: () => ({
+    get: mockGetSearchParams,
   }),
 }));
 
 // Mock fetch
 global.fetch = jest.fn();
 
-// Mock localStorage
-const mockLocalStorage = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
-};
-Object.defineProperty(window, 'localStorage', {
-  value: mockLocalStorage,
-});
+// Mock environment variables
+process.env.NEXT_PUBLIC_API_URL = 'http://localhost:8000';
+process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID = 'mock-google-client-id';
 
-// Mock environment variable
-process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3000';
+// Mock AuthContext functions
+const mockSetCurrentUser = jest.fn();
+const mockCheckAuthStatus = jest.fn();
+const mockLogout = jest.fn();
+
+const mockAuthContextValue = {
+  currentUser: null,
+  setCurrentUser: mockSetCurrentUser,
+  isAuthenticated: false,
+  checkAuthStatus: mockCheckAuthStatus,
+  logout: mockLogout,
+};
 
 describe('LoginForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset mock search params for each test
+    mockGetSearchParams.mockReturnValue(null);
   });
 
-  test('test_successful_login_with_valid_credentials', async () => {
+  // Helper to render LoginForm within a mocked AuthContext
+  const renderLoginForm = (authContextValue = mockAuthContextValue) => {
+    const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'mock-google-client-id';
+    return render(
+      <AuthContext.Provider value={authContextValue}>
+        <GoogleOAuthProvider clientId={googleClientId}>
+          <LoginForm />
+        </GoogleOAuthProvider>
+      </AuthContext.Provider>
+    );
+  };
+
+  test('test_successful_login_with_valid_credentials_and_redirects_home', async () => {
+    const mockUser: User = {
+      id: 'some-uuid',
+      email: 'test@example.com',
+      username: 'testuser',
+      is_active: true,
+      created_at: '2023-01-01T00:00:00Z',
+      updated_at: '2023-01-01T00:00:00Z',
+    };
     const mockResponse = {
       ok: true,
-      json: jest.fn().mockResolvedValue({
-        access_token: 'mock-token-123',
-      }),
+      json: jest.fn().mockResolvedValue(mockUser),
     };
     (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
-    render(
-      <Providers>
-        <LoginForm />
-      </Providers>
-    );
+    renderLoginForm();
 
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const passwordInput = screen.getByLabelText(/Password/);
@@ -58,11 +83,12 @@ describe('LoginForm', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith('http://localhost:3000/api/auth/login', {
+      expect(fetch).toHaveBeenCalledWith('http://localhost:8000/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           email: 'test@example.com',
           password: 'password123',
@@ -70,16 +96,49 @@ describe('LoginForm', () => {
       });
     });
 
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('access_token', 'mock-token-123');
+    expect(mockSetCurrentUser).toHaveBeenCalledWith(mockUser);
     expect(mockPush).toHaveBeenCalledWith('/');
   });
 
+  test('test_successful_login_with_valid_credentials_and_redirects_to_original_page', async () => {
+    const mockUser: User = {
+      id: 'some-uuid',
+      email: 'test@example.com',
+      username: 'testuser',
+      is_active: true,
+      created_at: '2023-01-01T00:00:00Z',
+      updated_at: '2023-01-01T00:00:00Z',
+    };
+    const mockResponse = {
+      ok: true,
+      json: jest.fn().mockResolvedValue(mockUser),
+    };
+    (fetch as jest.Mock).mockResolvedValue(mockResponse);
+
+    // Mock the redirect query parameter
+    mockGetSearchParams.mockReturnValue('/quiz/create');
+
+    renderLoginForm();
+
+    const emailInput = screen.getByPlaceholderText('molly@doqu.com');
+    const passwordInput = screen.getByLabelText(/Password/);
+    const submitButton = screen.getByRole('button', { name: 'Login' });
+
+    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledTimes(1); // Only login fetch
+    });
+
+    expect(mockSetCurrentUser).toHaveBeenCalledWith(mockUser);
+    // Assert that it redirects to the specified page
+    expect(mockPush).toHaveBeenCalledWith('/quiz/create');
+  });
+
   test('test_form_validation_displays_error_messages', async () => {
-    render(
-      <Providers>
-        <LoginForm />
-      </Providers>
-    );
+    renderLoginForm();
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const passwordInput = screen.getByLabelText(/Password/);
     const submitButton = screen.getByRole('button', { name: 'Login' });
@@ -92,24 +151,28 @@ describe('LoginForm', () => {
       expect(screen.getByText('Invalid email address.')).toBeInTheDocument();
       expect(screen.getByText('Password cannot be blank.')).toBeInTheDocument();
     });
+    expect(mockSetCurrentUser).not.toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   test('test_form_shows_loading_state_during_submission', async () => {
+    const mockUser: User = {
+      id: 'some-uuid',
+      email: 'test@example.com',
+      username: 'testuser',
+      is_active: true,
+      created_at: '2023-01-01T00:00:00Z',
+      updated_at: '2023-01-01T00:00:00Z',
+    };
     const mockResponse = {
       ok: true,
-      json: jest.fn().mockResolvedValue({
-        access_token: 'mock-token-123',
-      }),
+      json: jest.fn().mockResolvedValue(mockUser),
     };
     (fetch as jest.Mock).mockImplementation(
       () => new Promise(resolve => setTimeout(() => resolve(mockResponse), 100))
     );
 
-    render(
-      <Providers>
-        <LoginForm />
-      </Providers>
-    );
+    renderLoginForm();
 
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const passwordInput = screen.getByLabelText(/Password/);
@@ -127,6 +190,8 @@ describe('LoginForm', () => {
     await waitFor(() => {
       expect(screen.getByText('Login')).toBeInTheDocument();
     });
+    expect(mockSetCurrentUser).toHaveBeenCalledWith(mockUser);
+    expect(mockPush).toHaveBeenCalledWith('/');
   });
 
   test('test_login_failure_with_api_error_response', async () => {
@@ -138,11 +203,7 @@ describe('LoginForm', () => {
     };
     (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
-    render(
-      <Providers>
-        <LoginForm />
-      </Providers>
-    );
+    renderLoginForm();
 
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const passwordInput = screen.getByLabelText(/Password/);
@@ -156,18 +217,14 @@ describe('LoginForm', () => {
       expect(screen.getByText('Invalid credentials provided')).toBeInTheDocument();
     });
 
-    expect(mockLocalStorage.setItem).not.toHaveBeenCalled();
+    expect(mockSetCurrentUser).not.toHaveBeenCalled();
     expect(mockPush).not.toHaveBeenCalled();
   });
 
   test('test_network_failure_during_login_request', async () => {
     (fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
 
-    render(
-      <Providers>
-        <LoginForm />
-      </Providers>
-    );
+    renderLoginForm();
 
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const passwordInput = screen.getByLabelText(/Password/);
@@ -181,19 +238,21 @@ describe('LoginForm', () => {
       expect(screen.getByText('Network error')).toBeInTheDocument();
     });
 
-    expect(mockLocalStorage.setItem).not.toHaveBeenCalled();
+    expect(mockSetCurrentUser).not.toHaveBeenCalled();
     expect(mockPush).not.toHaveBeenCalled();
   });
 
   test('test_malformed_api_response_handling', async () => {
-    // If reponse doesn't return access_token, an error occurs
-    (fetch as jest.Mock).mockRejectedValue(new Error('An error occured'));
+    // If response is not ok, the error message should be displayed
+    const mockResponse = {
+      ok: false,
+      json: jest.fn().mockResolvedValue({
+        detail: 'An unexpected error occurred',
+      }),
+    };
+    (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
-    render(
-      <Providers>
-        <LoginForm />
-      </Providers>
-    );
+    renderLoginForm();
 
     const emailInput = screen.getByPlaceholderText('molly@doqu.com');
     const passwordInput = screen.getByLabelText(/Password/);
@@ -204,10 +263,10 @@ describe('LoginForm', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText('An error occured')).toBeInTheDocument();
+      expect(screen.getByText('An unexpected error occurred')).toBeInTheDocument();
     });
 
-    expect(mockLocalStorage.setItem).not.toHaveBeenCalled();
+    expect(mockSetCurrentUser).not.toHaveBeenCalled();
     expect(mockPush).not.toHaveBeenCalled();
   });
 });

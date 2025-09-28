@@ -1,6 +1,57 @@
+'use client';
+
+import { authenticatedFetch } from '@/lib/fetch-wrapper';
+import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function Home() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    const createQuiz = async () => {
+      const quizInfo = {
+        title: 'Test quiz title',
+        description: 'Test quiz description',
+        category: 'Science',
+        difficulty: 1,
+        is_public: true,
+      };
+      try {
+        const response = await authenticatedFetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/quizzes/`,
+          {
+            method: 'POST',
+            body: JSON.stringify(quizInfo),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.detail || 'An error occurred creating quiz');
+        }
+
+        console.log('Created Quiz: ', result);
+      } catch (err) {
+        console.error('Create Quiz error: ', err);
+
+        if (err instanceof Error && err.message === 'Unauthorized') {
+          console.log('UNAUTHORIZED, redirecting to login page');
+          // Redirect back to home page after successful login
+          router.push(`/login?redirect=${pathname}`);
+        }
+      }
+    };
+    createQuiz();
+  }, [router, pathname, isAuthenticated]);
+
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">

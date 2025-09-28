@@ -11,6 +11,7 @@ ENV/
 .venv
 
 # Environment variables
+.envs/
 .env
 .env.local
 .env.production

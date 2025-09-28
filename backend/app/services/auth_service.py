@@ -17,6 +17,8 @@ from app.services import user_service
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Must match frontend origin + configured in Google Cloud Console
+if not settings.CORS_ORIGINS:
+    raise ValueError("CORS_ORIGINS must contain at least one origin for OAuth redirect")
 redirect_uri = settings.CORS_ORIGINS[0]
 
 # Client config for Google OAuth flow
@@ -125,27 +127,33 @@ def verify_google_token(request: GoogleLogin) -> GoogleUserData:
     Returns:
         A GoogleUserData object containing the Google ID, user email, \
             and user name if the token is valid.
+
+    Raises:
+        ValueError: If the authorization code is invalid or token verification fails.
     """
 
-    flow = Flow.from_client_config(
-        client_config,
-        scopes=[
-            "openid",
-            "https://www.googleapis.com/auth/userinfo.email",
-            "https://www.googleapis.com/auth/userinfo.profile",
-        ],
-        redirect_uri=redirect_uri,
-    )
+    try:
+        flow = Flow.from_client_config(
+            client_config,
+            scopes=[
+                "openid",
+                "https://www.googleapis.com/auth/userinfo.email",
+                "https://www.googleapis.com/auth/userinfo.profile",
+            ],
+            redirect_uri=redirect_uri,
+        )
 
-    #  Exchange authorization code for credentials
-    flow.fetch_token(code=request.code)
-    credentials = flow.credentials
+        #  Exchange authorization code for credentials
+        flow.fetch_token(code=request.code)
+        credentials = flow.credentials
 
-    decoded_token = id_token.verify_oauth2_token(
-        credentials.id_token,
-        google_requests.Request(),
-        settings.GOOGLE_CLIENT_ID,
-    )
+        decoded_token = id_token.verify_oauth2_token(
+            credentials.id_token,
+            google_requests.Request(),
+            settings.GOOGLE_CLIENT_ID,
+        )
+    except Exception as e:
+        raise ValueError(f"Failed to verify Google token: {str(e)}")
 
     google_id = decoded_token.get("sub") or ""
     email = decoded_token.get("email") or ""
@@ -205,6 +213,9 @@ async def link_google_to_user(session: AsyncSession, google_user_data: GoogleUse
             await session.refresh(user)
         else:  # First time logging in, create a new account
             username = google_user_data.name or google_user_data.email.split("@")[0]
+            if not username:
+                username = f"user_{google_user_data.google_id[:8]}"
+
             new_user = UserCreate(
                 email=google_user_data.email,
                 username=username,

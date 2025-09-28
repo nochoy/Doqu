@@ -1,14 +1,20 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
+
 import Home from '@/app/page';
 import LoginPage from '@/app/login/page';
 import SignupPage from '@/app/signup/page';
 import Providers from '@/components/providers';
+import CreateQuizPage from '@/app/quiz/create/page';
 
 describe('Home', () => {
   it('renders a heading', () => {
-    render(<Home />);
+    render(
+      <Providers>
+        <Home />
+      </Providers>
+    );
 
     const heading = screen.getByText('Save and see your changes instantly.');
 
@@ -51,5 +57,19 @@ describe('Signup Page', () => {
     expect(usernameInput).toBeInTheDocument();
     expect(passwordInput).toBeInTheDocument();
     expect(submitButton).toBeInTheDocument();
+  });
+});
+
+describe('Quiz Create Page', () => {
+  it('renders the temporary quiz create page', () => {
+    render(<CreateQuizPage />);
+
+    const heading = screen.getByText('Quizzes');
+    const button = screen.getByRole('button', { name: 'Create New Quiz' });
+
+    expect(heading).toBeInTheDocument();
+    expect(button).toBeInTheDocument();
+
+    fireEvent.click(button);
   });
 });

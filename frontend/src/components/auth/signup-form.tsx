@@ -14,11 +14,13 @@ import { useForm } from 'react-hook-form';
 import { SignupFormInput, SignupFormSchema } from '@/types/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { EyeIcon, EyeSlashIcon } from '@phosphor-icons/react';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function SignupForm({ className, ...props }: React.ComponentProps<'div'>) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { setCurrentUser } = useAuth();
 
   const {
     register,
@@ -41,16 +43,17 @@ export default function SignupForm({ className, ...props }: React.ComponentProps
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
 
       const result = await response.json();
 
-      if (!response.ok || !result?.access_token) {
+      if (!response.ok) {
         throw new Error(result.detail || 'An error occurred');
       }
 
-      localStorage.setItem('access_token', result.access_token);
+      setCurrentUser(result);
       router.push('/');
     } catch (err) {
       console.error('Signup error: ', err);
@@ -91,9 +94,9 @@ export default function SignupForm({ className, ...props }: React.ComponentProps
                 <Label htmlFor="username">
                   Username<span className="text-sm text-destructive">*</span>
                 </Label>
-                <Input 
-                  id="username" 
-                  placeholder="Molly" 
+                <Input
+                  id="username"
+                  placeholder="Molly"
                   maxLength={20}
                   {...register('username')}
                   disabled={isSubmitting}
@@ -137,8 +140,10 @@ export default function SignupForm({ className, ...props }: React.ComponentProps
               )}
 
               {/* Backend Errors */}
-              {error && 
-                (<div className="text-sm text-destructive" role="alert" aria-live="polite">{error}</div>
+              {error && (
+                <div className="text-sm text-destructive" role="alert" aria-live="polite">
+                  {error}
+                </div>
               )}
 
               {/* Submit Button */}

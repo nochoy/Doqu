@@ -1,20 +1,15 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
 from app.models.user import User
 from app.services import auth_service, user_service
 
-# HTTPBearer is used to extract the token from the Authorization header
-http_scheme = HTTPBearer(auto_error=False)
-
 
 async def get_current_user(
-    session: Annotated[AsyncSession, Depends(get_db)],
-    http_credentials: Annotated[HTTPAuthorizationCredentials, Depends(http_scheme)],
+    session: Annotated[AsyncSession, Depends(get_db)], request: Request
 ) -> User:
     """
     FastAPI dependency to authenticate and retrieve the current user
@@ -30,17 +25,13 @@ async def get_current_user(
     Raises:
         HTTPException: If the token is invalid, the user is not found, or the user is inactive.
     """
+    token = request.cookies.get("access_token")
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid credentials",
-        headers={"WWW-Authenticate": "Bearer"},
     )
 
-    if http_credentials is None:
-        raise credentials_exception
-
-    token = http_credentials.credentials
-    if not token:
+    if token is None:
         raise credentials_exception
 
     token_data = auth_service.get_data_from_token(token)

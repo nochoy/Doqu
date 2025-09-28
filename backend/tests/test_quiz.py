@@ -7,6 +7,7 @@ from app.main import app
 from app.models.quiz import QuizCreate, QuizUpdate
 from app.models.user import User, UserCreate
 from app.services import quiz_service, user_service
+
 # Added import for custom service exceptions
 from app.services.quiz_service import QuizNotFoundException, QuizPermissionException
 
@@ -23,9 +24,7 @@ async def create_test_user(session: AsyncSession) -> User:
     return await user_service.create_user(session, user_create)
 
 
-async def get_authenticated_client(
-    async_client: AsyncClient, session: AsyncSession
-) -> AsyncClient:
+async def get_authenticated_client(async_client: AsyncClient, session: AsyncSession) -> AsyncClient:
     """Creates a user and returns an authenticated client."""
     test_user = await create_test_user(session)
     app.dependency_overrides[get_current_active_user] = lambda: test_user
@@ -42,7 +41,6 @@ async def test_create_quiz_unauthorized(async_client: AsyncClient):
     assert response.status_code == 401
 
 
-
 # --- CRUD Tests ---
 
 
@@ -50,9 +48,7 @@ async def test_create_quiz_unauthorized(async_client: AsyncClient):
 async def test_create_quiz_success(async_client: AsyncClient, session: AsyncSession):
     """Tests successful creation of a quiz with an authenticated user."""
     authenticated_client = await get_authenticated_client(async_client, session)
-    response = await authenticated_client.post(
-        "/api/quizzes/", json={"title": "My Awesome Quiz"}
-    )
+    response = await authenticated_client.post("/api/quizzes/", json={"title": "My Awesome Quiz"})
     assert response.status_code == 201
     data = response.json()
     assert data["title"] == "My Awesome Quiz"
@@ -77,9 +73,7 @@ async def test_read_quizzes_success(async_client: AsyncClient, session: AsyncSes
 async def test_read_quiz(async_client: AsyncClient, session: AsyncSession):
     """Tests retrieving a single, existing quiz."""
     authenticated_client = await get_authenticated_client(async_client, session)
-    create_response = await authenticated_client.post(
-        "/api/quizzes/", json={"title": "Specific"}
-    )
+    create_response = await authenticated_client.post("/api/quizzes/", json={"title": "Specific"})
     quiz_id = create_response.json()["id"]
 
     response = await authenticated_client.get(f"/api/quizzes/{quiz_id}")
@@ -91,9 +85,7 @@ async def test_read_quiz(async_client: AsyncClient, session: AsyncSession):
 async def test_update_quiz_success(async_client: AsyncClient, session: AsyncSession):
     """Tests successfully updating a quiz as its owner."""
     authenticated_client = await get_authenticated_client(async_client, session)
-    create_response = await authenticated_client.post(
-        "/api/quizzes/", json={"title": "Original"}
-    )
+    create_response = await authenticated_client.post("/api/quizzes/", json={"title": "Original"})
     quiz_id = create_response.json()["id"]
 
     response = await authenticated_client.patch(
@@ -137,12 +129,12 @@ async def test_delete_quiz_success(async_client: AsyncClient, session: AsyncSess
 
 
 @pytest.mark.asyncio
-async def test_update_quiz_permission_denied(
-    async_client: AsyncClient, session: AsyncSession
-):
+async def test_update_quiz_permission_denied(async_client: AsyncClient, session: AsyncSession):
     """Tests that updating a quiz owned by another user returns a 403 error."""
     authenticated_client = await get_authenticated_client(async_client, session)
-    create_response = await authenticated_client.post("/api/quizzes/", json={"title": "Owner's Quiz"})
+    create_response = await authenticated_client.post(
+        "/api/quizzes/", json={"title": "Owner's Quiz"}
+    )
     quiz_id = create_response.json()["id"]
 
     attacker_create = UserCreate(email="attacker@example.com", username="attacker", password="pw")
@@ -156,12 +148,12 @@ async def test_update_quiz_permission_denied(
 
 
 @pytest.mark.asyncio
-async def test_delete_quiz_permission_denied(
-    async_client: AsyncClient, session: AsyncSession
-):
+async def test_delete_quiz_permission_denied(async_client: AsyncClient, session: AsyncSession):
     """Tests that deleting a quiz owned by another user returns a 403 error."""
     authenticated_client = await get_authenticated_client(async_client, session)
-    create_response = await authenticated_client.post("/api/quizzes/", json={"title": "Owner's Quiz"})
+    create_response = await authenticated_client.post(
+        "/api/quizzes/", json={"title": "Owner's Quiz"}
+    )
     quiz_id = create_response.json()["id"]
 
     attacker_create = UserCreate(email="attacker@example.com", username="attacker", password="pw")
@@ -181,16 +173,12 @@ async def test_update_quiz_set_non_nullable_to_null(
     create_response = await authenticated_client.post("/api/quizzes/", json={"title": "Test Title"})
     quiz_id = create_response.json()["id"]
 
-    response = await authenticated_client.patch(
-        f"/api/quizzes/{quiz_id}", json={"title": None}
-    )
+    response = await authenticated_client.patch(f"/api/quizzes/{quiz_id}", json={"title": None})
     assert response.status_code == 422
 
 
 @pytest.mark.asyncio
-async def test_read_quizzes_pagination_edge_cases(
-    async_client: AsyncClient, session: AsyncSession
-):
+async def test_read_quizzes_pagination_edge_cases(async_client: AsyncClient, session: AsyncSession):
     """Tests pagination with out-of-bounds skip and limit values."""
     authenticated_client = await get_authenticated_client(async_client, session)
     for i in range(5):
@@ -228,9 +216,7 @@ async def test_create_quiz_long_title(async_client: AsyncClient, session: AsyncS
     """Tests that creating a quiz with a title > 50 chars fails with a 422 error."""
     authenticated_client = await get_authenticated_client(async_client, session)
     long_title = "a" * 51
-    response = await authenticated_client.post(
-        "/api/quizzes/", json={"title": long_title}
-    )
+    response = await authenticated_client.post("/api/quizzes/", json={"title": long_title})
     assert response.status_code == 422
 
 
@@ -238,28 +224,26 @@ async def test_create_quiz_long_title(async_client: AsyncClient, session: AsyncS
 async def test_create_quiz_missing_title(async_client: AsyncClient, session: AsyncSession):
     """Tests that creating a quiz with a missing title fails with a 422 error."""
     authenticated_client = await get_authenticated_client(async_client, session)
-    response = await authenticated_client.post(
-        "/api/quizzes/", json={"description": "Desc"}
-    )
+    response = await authenticated_client.post("/api/quizzes/", json={"description": "Desc"})
     assert response.status_code == 422
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("title", ["", "   "])
-async def test_create_quiz_blank_title(async_client: AsyncClient, session: AsyncSession, title: str):
+async def test_create_quiz_blank_title(
+    async_client: AsyncClient, session: AsyncSession, title: str
+):
     """Creating a quiz with empty/blank title should fail with 422."""
     authenticated_client = await get_authenticated_client(async_client, session)
     response = await authenticated_client.post("/api/quizzes/", json={"title": title})
     assert response.status_code == 422
-    
-    
+
+
 # --- NEW: Router-Level Exception Handling Tests ---
 
 
 @pytest.mark.asyncio
-async def test_read_quiz_service_not_found_exception(
-    async_client: AsyncClient, mocker
-):
+async def test_read_quiz_service_not_found_exception(async_client: AsyncClient, mocker):
     """Tests that the router correctly handles QuizNotFoundException from the service."""
     mocker.patch(
         "app.services.quiz_service.get_quiz",
@@ -277,7 +261,7 @@ async def test_update_quiz_service_exceptions(
 ):
     """Tests the router's handling of various exceptions from the update_quiz service."""
     authenticated_client = await get_authenticated_client(async_client, session)
-    
+
     # Test QuizNotFoundException from service
     mocker.patch(
         "app.services.quiz_service.update_quiz",
@@ -295,7 +279,7 @@ async def test_update_quiz_service_exceptions(
     response_403 = await authenticated_client.patch("/api/quizzes/1", json={"title": "..."})
     assert response_403.status_code == 403
     assert response_403.json()["detail"] == "Not authorized to update this quiz"
-    
+
     # Test ValueError from service
     mocker.patch(
         "app.services.quiz_service.update_quiz",
