@@ -16,16 +16,7 @@ import { MoreHorizontal, Edit, Trash } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
-
-interface Question {
-  id: string;
-  question_text: string;
-  type: 'MC' | 'TF' | 'SM';
-  time_limit: number;
-  explanation: string;
-  correct_answer: { answer?: string; answers?: string[] };
-  possible_answers: Record<string, string>;
-}
+import { Question } from '@/types/question';
 
 /**
  * @description This page displays a list of all the questions in the database.
@@ -39,7 +30,7 @@ interface Question {
  * - `error`: string state variable containing any errors encountered during fetching questions.
  */
 export default function CreateQuestionsPage() {
-  const [isCreateFormOpen, setisCreateFormOpen] = useState(false);
+  const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -48,7 +39,7 @@ export default function CreateQuestionsPage() {
   const fetchQuestions = async () => {
     try {
       setError(null);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/questions/all`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/questions/`);
       if (!response.ok) {
         throw new Error('Failed to fetch questions');
       }
@@ -68,7 +59,7 @@ export default function CreateQuestionsPage() {
   }, []);
 
   const handleCreateFormClose = () => {
-    setisCreateFormOpen(false);
+    setIsCreateFormOpen(false);
     fetchQuestions(); // Refetch questions after form is closed
   };
 
@@ -86,7 +77,7 @@ export default function CreateQuestionsPage() {
   const handleDelete = async (id: string) => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/questions/remove/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/questions/${id}`,
         {
           method: 'DELETE',
         }
@@ -104,12 +95,11 @@ export default function CreateQuestionsPage() {
     }
   };
 
-  // Render the UI for question manager.
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl font-bold">Question Manager</h1>
-        <Button onClick={() => setisCreateFormOpen(true)}>Create Question</Button>
+        <Button onClick={() => setIsCreateFormOpen(true)}>Create Question</Button>
       </div>
       <Separator className="my-4" />
 
