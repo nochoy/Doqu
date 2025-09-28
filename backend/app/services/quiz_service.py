@@ -61,24 +61,42 @@ async def get_quiz(session: AsyncSession, quiz_id: int) -> Quiz:
     return db_quiz
 
 
-async def get_quizzes(session: AsyncSession, skip: int = 0, limit: int = 100) -> List[Quiz]:
+async def get_quizzes(
+    session: AsyncSession,
+    owner_id: uuid.UUID | None = None,
+    category: str | None = None,
+    difficulty: int | None = None,
+    offset: int = 0, 
+    limit: int = 100
+) -> List[Quiz]:
     """
-    Get a list of quizzes with pagination.
+    Get a list of quizzes with pagination and optional
+    filtering on owner_id, category, and difficulty.
 
     Args:
         session(AsyncSession): The DB session
-        skip (int): Number of quizzes to skip for pagination
+        owner_id (uuid.UUID | None): Filter by owner ID if provided
+        category (str | None): Filter by category if provided
+        difficulty (int | None): Filter by difficulty if provided (1-5)
+        offset (int): Number of quizzes to skip for pagination
         limit (int): Max number of quizzes to return
 
     Returns:
         List[Quiz]: List of quiz objects
     """
-    # TODO: Add filtering based on category, difficulty, owner id, etc
-    max_limit = 100
-    safe_limit = max(0, min(limit, max_limit))
-    safe_skip = max(0, skip)
-    quiz_table = cast(Any, Quiz).__table__
-    statement = select(Quiz).order_by(quiz_table.c.id).offset(safe_skip).limit(safe_limit)
+    statement = select(Quiz)
+
+    # Filters
+    if owner_id is not None:
+        statement = statement.where(Quiz.owner_id == owner_id)
+    if category is not None:
+        statement = statement.where(Quiz.category == category)
+    if difficulty is not None:
+        statement = statement.where(Quiz.difficulty == difficulty)
+
+    # Pagination
+    statement = statement.order_by(Quiz.id).offset(offset).limit(limit)
+
     result = await session.execute(statement)
     quizzes = result.scalars().all()
     return list(quizzes)
