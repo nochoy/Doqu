@@ -1,10 +1,10 @@
-from sqlmodel import Field, SQLModel, Relationship
-from typing import Optional, TYPE_CHECKING
-from sqlalchemy import Column, JSON, DateTime
-from datetime import datetime, timezone
 import uuid
+from datetime import datetime, timezone
 from enum import Enum
-from typing import Dict, Any
+from typing import TYPE_CHECKING, Any, Dict, Optional
+
+from sqlalchemy import JSON, Column, DateTime
+from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from app.models.quiz import Quiz
@@ -37,13 +37,14 @@ class Question(SQLModel, table=True):
 
     __tablename__ = "questions"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, nullable=False)
-    quiz_id: int = Field(foreign_key="quizzes.id")
+    quiz_id: uuid.UUID = Field(foreign_key="quizzes.id")
     question_text: str = Field(min_length=1, max_length=250)
     type: QuestionType = Field(default=QuestionType.MULTIPLE_CHOICE)
     time_limit: int = Field(default=30, ge=1, le=60)
     explanation: Optional[str] = Field(default=None, max_length=250)
     correct_answer: Dict[str, Any] = Field(sa_column=Column(JSON))
     possible_answers: Dict[str, Any] = Field(sa_column=Column(JSON))
+    point_value: int = Field(default=10, ge=10, le=100)
     created_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), nullable=False),
         default_factory=lambda: datetime.now(timezone.utc),
@@ -60,13 +61,14 @@ class QuestionCreate(SQLModel):
         Explanation is optional but must be no longer than 250 characters.
     """
 
-    quiz_id: int
-    question_text: str = Field(default=None, min_length=1, max_length=250)
+    quiz_id: uuid.UUID
+    question_text: str = Field(min_length=1, max_length=250)
     type: QuestionType
     time_limit: int = Field(default=30, ge=1, le=60)
     explanation: Optional[str] = Field(default=None, max_length=250)
     correct_answer: Dict[str, Any]
     possible_answers: Dict[str, Any]
+    point_value: int = Field(default=10, ge=10, le=100)
 
 
 class QuestionUpdate(SQLModel):
@@ -76,10 +78,11 @@ class QuestionUpdate(SQLModel):
 
     question_text: Optional[str] = Field(default=None, min_length=1, max_length=250)
     type: Optional[QuestionType] = None
-    time_limit: Optional[int] = Field(default=None, ge=1, le=3600)
+    time_limit: Optional[int] = Field(default=None, ge=1, le=60)
     explanation: Optional[str] = Field(default=None, max_length=250)
     correct_answer: Optional[Dict[str, Any]] = None
     possible_answers: Optional[Dict[str, Any]] = None
+    point_value: Optional[int] = Field(default=None, ge=10, le=100)
 
 
 class QuestionRead(SQLModel):
@@ -88,11 +91,12 @@ class QuestionRead(SQLModel):
     """
 
     id: uuid.UUID
-    quiz_id: int
+    quiz_id: uuid.UUID
     question_text: str
     type: QuestionType
     time_limit: int
     explanation: Optional[str] = None
     correct_answer: Dict[str, Any]
     possible_answers: Dict[str, Any]
+    point_value: int
     created_at: datetime

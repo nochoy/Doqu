@@ -1,10 +1,12 @@
+import uuid
+
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.question import QuestionCreate
 from app.models.quiz import QuizCreate
 from app.services.quiz_service import create_quiz
-from app.models.question import QuestionCreate
-import uuid
 
 pytestmark = pytest.mark.asyncio
 
@@ -16,8 +18,8 @@ async def test_create_question_for_quiz(
     Test creating a question for a quiz.
     """
     # Create a user and a quiz first
-    from app.services.user_service import create_user
     from app.models.user import UserCreate
+    from app.services.user_service import create_user
 
     user_in = UserCreate(
         email=test_user_data["email"],
@@ -65,8 +67,8 @@ async def test_create_question_with_invalid_time_limit(
     Test creating a question with an invalid time limit.
     """
     # Create a user and a quiz first
-    from app.services.user_service import create_user
     from app.models.user import UserCreate
+    from app.services.user_service import create_user
 
     user_in = UserCreate(
         email=test_user_data["email"],

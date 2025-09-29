@@ -1,8 +1,8 @@
 """Merge user and quiz branches
 
-Revision ID: 5dcde8a63e11
-Revises: 8f951c01403b, 62d5cc8fa12d
-Create Date: 2025-09-10 23:40:20.099736
+Revision ID: 1001941c015f
+Revises: 52b8e238cc48, 731e18130e01
+Create Date: 2025-09-29 05:51:20.737678
 
 """
 from typing import Sequence, Union
@@ -13,8 +13,8 @@ import sqlmodel.sql.sqltypes
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = '5dcde8a63e11'
-down_revision: Union[str, Sequence[str], None] = ('8f951c01403b', '62d5cc8fa12d')
+revision: str = '1001941c015f'
+down_revision: Union[str, Sequence[str], None] = ('52b8e238cc48', '731e18130e01')
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

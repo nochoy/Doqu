@@ -1,11 +1,10 @@
 import uuid
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from pydantic import field_validator
 from sqlalchemy import Column, DateTime
-from sqlmodel import Field, SQLModel, Relationship
-from typing import List
+from sqlmodel import Field, Relationship, SQLModel
 
 from .question import Question
 
@@ -17,7 +16,7 @@ class Quiz(SQLModel, table=True):
 
     __tablename__ = "quizzes"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True, nullable=False)
 
     owner_id: uuid.UUID = Field(foreign_key="users.id", index=True, nullable=False)
 
@@ -81,7 +80,7 @@ class QuizUpdate(QuizBase):
 class QuizRead(QuizBase):
     """Model for reading quiz data"""
 
-    id: int
+    id: uuid.UUID
     owner_id: uuid.UUID
     created_at: datetime
     title: str

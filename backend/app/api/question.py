@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -7,8 +9,6 @@ from app.models.question import QuestionCreate, QuestionRead, QuestionUpdate
 from app.models.user import User
 from app.services import question_services, quiz_service
 from app.utils.responses import get_responses
-
-import uuid
 
 router = APIRouter(prefix="/questions", tags=["questions"])
 
@@ -139,13 +139,13 @@ async def delete_question(
 
 @router.get("/", response_model=list[QuestionRead])
 async def read_all_questions(
-    quiz_id: int, session: AsyncSession = Depends(get_db)
+    quiz_id: uuid.UUID, session: AsyncSession = Depends(get_db)
 ) -> list[QuestionRead]:
     """
     FastAPI endpoint to retrieve all questions for a specific quiz.
 
     Args:
-        quiz_id (int): The ID of the quiz.
+        quiz_id (uuid.UUID): The ID of the quiz.
         session (AsyncSession): Database session provided by FastAPI's dependency injection system.
 
     Returns:

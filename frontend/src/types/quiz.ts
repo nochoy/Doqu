@@ -49,4 +49,4 @@ export const QuizSchema = z.object({
   is_public: z.boolean(),
 });
 
-export type CreateQuizResponse = { id: number };
+export type CreateQuizResponse = { id: string };

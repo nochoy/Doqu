@@ -15,10 +15,10 @@ import { z } from 'zod';
  * Multiple Choice Schema
  */
 const mcSchema = z.object({
-  question_text: z.string().min(1, 'Question title is required.'),
+  question_text: z.string().trim().min(1, 'Question title is required.').max(250, 'Max 250 characters.'),
   type: z.literal('MC'),
-  time_limit: z.number().min(1, 'Time limit must be at least 1.'),
-  explanation: z.string().nullable().optional(),
+  time_limit: z.coerce.number().int().min(1, 'Time limit must be at least 1 second.'),
+  explanation: z.string().trim().max(250, 'Max 250 characters.').optional(),
   correct_answer: z.object({
     answer: z.string().optional(),
   }),
@@ -34,10 +34,10 @@ const mcSchema = z.object({
  * True False Schema
  */
 const tfSchema = z.object({
-  question_text: z.string().min(1, 'Question title is required.'),
+  question_text: z.string().trim().min(1, 'Question title is required.').max(250, 'Max 250 characters.'),
   type: z.literal('TF'),
-  time_limit: z.number().min(1, 'Time limit must be at least 1.'),
-  explanation: z.string().nullable().optional(),
+  time_limit: z.coerce.number().int().min(1, 'Time limit must be at least 1 second.'),
+  explanation: z.string().trim().max(250, 'Max 250 characters.').optional(),
   correct_answer: z.object({
     answer: z.string().optional(),
   }),
@@ -53,8 +53,8 @@ const tfSchema = z.object({
 const smSchema = z.object({
   question_text: z.string().min(1, 'Question title is required.'),
   type: z.literal('SM'),
-  time_limit: z.number().min(1, 'Time limit must be at least 1.'),
-  explanation: z.string().nullable().optional(),
+  time_limit: z.coerce.number().int().min(1, 'Time limit must be at least 1 second.'),
+  explanation: z.string().trim().max(250, 'Max 250 characters.').optional(),
   correct_answer: z.object({
     answers: z.array(z.string()).optional(),
   }),

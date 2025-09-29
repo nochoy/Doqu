@@ -1,7 +1,9 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.question import Question, QuestionCreate, QuestionUpdate
-from sqlmodel import select
 import uuid
+
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
+
+from app.models.question import Question, QuestionCreate, QuestionUpdate
 
 
 async def create_question(session: AsyncSession, question_in: QuestionCreate) -> Question:
@@ -38,13 +40,13 @@ async def get_question(session: AsyncSession, question_id: uuid.UUID) -> Questio
     return await session.get(Question, question_id)
 
 
-async def get_all_questions(session: AsyncSession, quiz_id: int) -> list[Question]:
+async def get_all_questions(session: AsyncSession, quiz_id: uuid.UUID) -> list[Question]:
     """
     Retrieves all questions from the database for a specific quiz.
 
     Args:
         session (AsyncSession): The SQLAlchemy async session.
-        quiz_id (int): The ID of the quiz.
+        quiz_id (uuid.UUID): The ID of the quiz.
 
     Returns:
         list[Question]: A list of all questions for the specified quiz.
