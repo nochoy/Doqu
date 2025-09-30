@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/select';
 import OptionToggle from '@/components/ui/OptionToggle';
 import { TITLE_MAX_LENGTH, DESC_MAX_LENGTH } from '@/lib/constants';
-import { QuizData, QuizSchema, CreateQuizResponse, categoryOptions } from '@/types/quiz';
+import { QuizCreateData, QuizSchema, CreateQuizResponse, categoryOptions } from '@/types/quiz';
 
 interface QuizCreateModalProps {
   onClose: () => void;
@@ -33,7 +33,7 @@ const difficultyOptions = [
 
 export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
   const router = useRouter();
-  const [formData, setFormData] = useState<QuizData>({
+  const [formData, setFormData] = useState<QuizCreateData>({
     title: '',
     description: '',
     category: '',
@@ -62,10 +62,10 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
       inputValue = value === '' ? null : Number(value);
     }
 
-    setFormData(prev => ({ ...prev, [name as keyof QuizData]: inputValue }));
+    setFormData(prev => ({ ...prev, [name as keyof QuizCreateData]: inputValue }));
   };
 
-  const handleSelectChange = (name: keyof QuizData) => (value: string) => {
+  const handleSelectChange = (name: keyof QuizCreateData) => (value: string) => {
     if (validationErrors[name as string]) {
       setValidationErrors(prev => ({ ...prev, [name as string]: undefined }));
     }

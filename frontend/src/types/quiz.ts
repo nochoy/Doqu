@@ -18,11 +18,21 @@ export const categoryOptions = [
 
 const validCategories = categoryOptions.map(c => c.value);
 
-export type QuizData = {
+export type QuizCreateData = {
   title: string;
   description: string;
   category: string;
   difficulty: number | null;
+  is_public: boolean;
+}
+
+export type QuizReadData = {
+  title: string;
+  description: string | null;
+  category: string | null;
+  difficulty: number | null;
+  id: number;
+  created_at: Date;
   is_public: boolean;
 }
 
