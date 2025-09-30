@@ -31,7 +31,7 @@ export type QuizReadData = {
   description: string | null;
   category: string | null;
   difficulty: number | null;
-  id: number;
+  id: string;
   created_at: Date;
   is_public: boolean;
 }
