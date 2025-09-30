@@ -6,7 +6,7 @@ from pydantic import field_validator
 from sqlalchemy import Column, DateTime
 from sqlmodel import Field, Relationship, SQLModel
 
-from .question import Question
+from .question import Question, QuestionRead
 
 # --- SQLModel Table --- #
 
@@ -90,7 +90,7 @@ class QuizRead(QuizBase):
 class QuizReadWithQuestions(QuizRead):
     """Model for reading all questions in a quiz"""
 
-    questions: list[Question] = Field(default_factory=list)
+    questions: list[QuestionRead] = Field(default_factory=list)
 
 
 # Resolve forward refs at runtime for Pydantic schema generation

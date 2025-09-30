@@ -9,8 +9,14 @@ from app.models.question import QuestionCreate, QuestionRead, QuestionUpdate
 from app.models.user import User
 from app.services import question_services, quiz_service
 from app.utils.responses import get_responses
+from app.api.dependencies import get_current_active_user, get_current_user
 
-router = APIRouter(prefix="/questions", tags=["questions"])
+router = APIRouter(
+    prefix="/questions", 
+    tags=["questions"], 
+    dependencies=[Depends(get_current_user)], 
+    # responses=get_responses([400, 401, 404]),
+)
 
 
 @router.post(

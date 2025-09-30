@@ -44,7 +44,7 @@ class Question(SQLModel, table=True):
     explanation: Optional[str] = Field(default=None, max_length=250)
     correct_answer: Dict[str, Any] = Field(sa_column=Column(JSON))
     possible_answers: Dict[str, Any] = Field(sa_column=Column(JSON))
-    point_value: int = Field(default=10, ge=10, le=100)
+    point_value: int = Field(default=1, ge=1, le=100)
     created_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), nullable=False),
         default_factory=lambda: datetime.now(timezone.utc),
@@ -68,7 +68,7 @@ class QuestionCreate(SQLModel):
     explanation: Optional[str] = Field(default=None, max_length=250)
     correct_answer: Dict[str, Any]
     possible_answers: Dict[str, Any]
-    point_value: int = Field(default=10, ge=10, le=100)
+    point_value: int = Field(default=1, ge=1, le=100)
 
 
 class QuestionUpdate(SQLModel):

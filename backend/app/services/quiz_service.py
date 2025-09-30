@@ -57,7 +57,7 @@ async def get_quiz(session: AsyncSession, quiz_id: uuid.UUID) -> Quiz:
         QuizNotFoundException: If quiz id not found
     """
     statement = (
-        select(Quiz).where(Quiz.id == quiz_id).options(selectinload(getattr(Quiz, "questions")))
+        select(Quiz).where(Quiz.id == quiz_id).options(selectinload(Quiz.questions))
     )
     result = await session.execute(statement)
     db_quiz = result.scalars().first()

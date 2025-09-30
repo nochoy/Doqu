@@ -2,6 +2,7 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
+from fastapi import HTTPException
 
 from app.models.question import Question, QuestionCreate, QuestionUpdate
 
@@ -86,10 +87,11 @@ async def remove_question(session: AsyncSession, question_id: uuid.UUID) -> None
         session (AsyncSession): The SQLAlchemy async session.
         question_id (uuid.UUID): The unique identifier of the question to be deleted.
 
-    Raises:
-        HTTPException: If the specified question does not exist.
+    Note:
+        Silently ignores if the question does not exist.
     """
     db_question = await get_question(session=session, question_id=question_id)
-    if db_question:
-        await session.delete(db_question)
-        await session.commit()
+    if not db_question:
+        raise HTTPException(status_code=404, detail="Question not found")
+    await session.delete(db_question)
+    await session.commit()
