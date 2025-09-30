@@ -1,6 +1,6 @@
 "use client"
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-
-// TODO: Get all quizzes owned by user
-const quizzes = Array.from({ length: 100 }, (_, i) => ({ id: `${i}`, title: `Quiz${i}`}))
+import { authenticatedFetch } from "@/lib/fetch-wrapper";
+import { useAuth } from "@/hooks/useAuth";
+import { QuizReadData } from "@/types/quiz";
 
 interface QuizListProps {
   className?: string;
@@ -19,6 +19,40 @@ interface QuizListProps {
 }
 
 function QuizList({ className, selectedQuiz, onQuizSelect }: QuizListProps) {
+  const { currentUser, isAuthenticated } = useAuth();
+  const [userQuizzes, setUserQuizzes] = useState<QuizReadData[]>([]);
+
+  useEffect(() => {
+    const fetchUserQuizzes = async () => {
+      if(!isAuthenticated || !currentUser?.id) {
+        setUserQuizzes([]);
+        return;
+      }
+      try {
+
+        const params = new URLSearchParams({
+          owner_id: currentUser.id,
+          offset: '0',
+          limit: '100',
+        });
+
+        const response = await authenticatedFetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quizzes/?${params.toString()}`);
+
+        const result = await response.json();
+
+        if(!response.ok) {
+          throw new Error(result.detail || ' An error occured retrieving quizzes');
+        }
+        setUserQuizzes(result);
+      } catch (err) {
+        console.error('Error retrieving user quizzes: ', err);
+        setUserQuizzes([]);
+      }
+    }
+
+    fetchUserQuizzes();
+  }, [currentUser?.id, isAuthenticated]);
+
   const handleQuizClick = (quizId: string) => {
     if(selectedQuiz === quizId) {
       onQuizSelect('');
@@ -28,23 +62,32 @@ function QuizList({ className, selectedQuiz, onQuizSelect }: QuizListProps) {
   }
 
   return (
-    <ScrollArea className={cn('flex-1 overflow-auto', className)}>
-        {quizzes.map((quiz) => (
-          <>
-            <div 
-              key={quiz.id}
-              onClick={() => handleQuizClick(quiz.id)}
-              role='button'
-              tabIndex={0}
-              aria-pressed={selectedQuiz === quiz.id}
-              className={`text-sm hover:bg-accent p-2 ${selectedQuiz === quiz.id ? 'bg-accent border-l-4 border-l-primary pl-1' : ''}`}
-            >
-              {quiz.title}
-            </div>
-            <Separator className=""/>
-          </>
-        ))}
-    </ScrollArea>
+    <>
+      { isAuthenticated ? (
+        <ScrollArea className={cn('flex-1 overflow-auto', className)}>
+          {userQuizzes.map((quiz) => (
+            <>
+              <div 
+                key={quiz.id}
+                onClick={() => handleQuizClick(quiz.id)}
+                role='button'
+                tabIndex={0}
+                aria-pressed={selectedQuiz === quiz.id}
+                className={`text-sm hover:bg-accent p-2 ${selectedQuiz === quiz.id ? 'bg-accent border-l-4 border-l-primary pl-1' : ''}`}
+              >
+                {quiz.title}
+              </div>
+              <Separator className=""/>
+            </>
+          ))}
+        </ScrollArea>
+        ) : (
+          <p>
+            Sign in
+          </p>
+        )
+      }
+    </>
   )
 }
 
