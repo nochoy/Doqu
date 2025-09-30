@@ -42,7 +42,7 @@ function QuizList({ className, quizzes, selectedQuiz, onQuizSelect, isLoading }:
 
   return (
     <>
-      <ScrollArea className={cn('flex-1 overflow-auto', className)}>
+      <ScrollArea className={cn('flex-1', className)}>
         {quizzes.map((quiz) => (
           <Fragment key={quiz.id}>
             <div 
@@ -54,7 +54,7 @@ function QuizList({ className, quizzes, selectedQuiz, onQuizSelect, isLoading }:
             >
               {quiz.title}
             </div>
-            <Separator className=""/>
+            <Separator/>
           </Fragment >
         ))}
       </ScrollArea>
@@ -69,6 +69,7 @@ export default function QuizListModal() {
   const [selectedQuiz, setSelectedQuiz] = useState<string>('');
   const [userQuizzes, setUserQuizzes] = useState<QuizReadData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   
   const { currentUser, isAuthenticated } = useAuth();
 
@@ -98,6 +99,7 @@ export default function QuizListModal() {
         setUserQuizzes(result);
       } catch (err) {
         console.error("Error fetching user's quizzes: ", err);
+        setError(err instanceof Error ? err.message : 'An error occurred');
         setUserQuizzes([]);
       } finally {
         setIsLoading(false);
@@ -117,18 +119,25 @@ export default function QuizListModal() {
     // TODO: Link to create room?
     setOpenMobile(false);
     setOpenDesktop(false);
+    setError(null);
 
     console.log("Selected quiz ID: ", selectedQuiz);
   }
 
   const handleMobileOpenChange = (isOpen: boolean) => {
     setOpenMobile(isOpen);
-    if (!isOpen) setSelectedQuiz('');
+    if (!isOpen) {
+      setSelectedQuiz('');
+      setError(null);
+    }
   }
 
   const handleDesktopOpenChange = (isOpen: boolean) => {
     setOpenDesktop(isOpen);
-    if (!isOpen) setSelectedQuiz('');
+    if (!isOpen) {
+      setSelectedQuiz('');
+      setError(null);
+    }
   }
 
   return (
@@ -183,14 +192,14 @@ export default function QuizListModal() {
             </Button>
           </DialogTrigger>
 
-          <DialogContent className="flex flex-col max-h-[50vh]">
+          <DialogContent className="flex flex-col max-h-[50vh] gap-1">
             <DialogHeader>
               <DialogTitle>Select a quiz</DialogTitle>
               <DialogDescription>Choose a quiz from your collection to host a game</DialogDescription>
             </DialogHeader>
 
             {/* Quiz List */}
-            <form onSubmit={handleSubmit} id="current-user-quizzes" className="flex min-h-0">
+            <form onSubmit={handleSubmit} id="current-user-quizzes" className="flex min-h-0 pb-2">
               <QuizList
                 selectedQuiz={selectedQuiz}
                 onQuizSelect={setSelectedQuiz}
@@ -198,15 +207,21 @@ export default function QuizListModal() {
                 isLoading={isLoading}
               />
             </form>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant='secondary'>
-                  Cancel
+            <DialogFooter className="flex flex-row sm:justify-between items-center">
+              {/* Error message */}
+              <div className="text-sm text-destructive">
+                {error}
+              </div>
+              <div className="flex gap-2">
+                <DialogClose asChild>
+                  <Button variant='secondary' className=''>
+                    Cancel
+                  </Button>
+                </DialogClose>
+                <Button type='submit' form='current-user-quizzes' disabled={!selectedQuiz} className='flex-0'>
+                  Select
                 </Button>
-              </DialogClose>
-              <Button type='submit' form='current-user-quizzes' disabled={!selectedQuiz}>
-                Select
-              </Button>
+              </div>
             </DialogFooter>
           </DialogContent>
         </Dialog>
