@@ -2,11 +2,12 @@
 
 import { useState, FormEvent, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { XIcon } from '@phosphor-icons/react';
 
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Textarea } from '../ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -14,10 +15,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import OptionToggle from '../ui/OptionToggle';
-import { XIcon } from '@phosphor-icons/react';
-import { TITLE_MAX_LENGTH, DESC_MAX_LENGTH } from '../../lib/constants';
-import { QuizModalData, QuizSchema, CreateQuizResponse, categoryOptions } from '@/types/quiz';
+import OptionToggle from '@/components/ui/OptionToggle';
+import { TITLE_MAX_LENGTH, DESC_MAX_LENGTH } from '@/lib/constants';
+import { QuizData, QuizSchema, CreateQuizResponse, categoryOptions } from '@/types/quiz';
 
 interface QuizCreateModalProps {
   onClose: () => void;
@@ -33,7 +33,7 @@ const difficultyOptions = [
 
 export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
   const router = useRouter();
-  const [formData, setFormData] = useState<QuizModalData>({
+  const [formData, setFormData] = useState<QuizData>({
     title: '',
     description: '',
     category: '',
@@ -62,10 +62,10 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
       inputValue = value === '' ? null : Number(value);
     }
 
-    setFormData(prev => ({ ...prev, [name as keyof QuizModalData]: inputValue }));
+    setFormData(prev => ({ ...prev, [name as keyof QuizData]: inputValue }));
   };
 
-  const handleSelectChange = (name: keyof QuizModalData) => (value: string) => {
+  const handleSelectChange = (name: keyof QuizData) => (value: string) => {
     if (validationErrors[name as string]) {
       setValidationErrors(prev => ({ ...prev, [name as string]: undefined }));
     }

@@ -18,7 +18,7 @@ export const categoryOptions = [
 
 const validCategories = categoryOptions.map(c => c.value);
 
-export interface QuizModalData {
+export type QuizData = {
   title: string;
   description: string;
   category: string;
