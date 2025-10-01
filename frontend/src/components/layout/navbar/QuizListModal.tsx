@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { authenticatedFetch } from "@/lib/fetch-wrapper";
 import { useAuth } from "@/hooks/useAuth";
 import { QuizReadData } from "@/types/quiz";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface QuizListProps {
   className?: string;
@@ -30,10 +31,15 @@ function QuizList({ className, quizzes, selectedQuiz, onQuizSelect, isLoading }:
     }
   }
 
-  // quizzes = Array.from({ length: 100 }, (_, i) => ({ id: `${i}`, title: `Quiz${i}`}))
-
+  isLoading = true;
   if (isLoading) {
-    return <div className="p-4 text-center text-muted-foreground">Loading quizzes...</div>
+    return (
+      <div className="w-full flex flex-col gap-2">
+        {Array.from({ length: 3}).map((_, index) => 
+          <Skeleton key={index} className="h-9 w-full"/>
+        )}
+      </div>
+    )
   }
 
   if (quizzes.length === 0) {
