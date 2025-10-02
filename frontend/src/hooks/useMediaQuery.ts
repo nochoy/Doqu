@@ -3,14 +3,12 @@
 import { useEffect, useState } from "react"
 
 /**
- * Custom hook to determine if the current viewport width is considered mobile.
+ * Custom hook to determine if the current window width is less than a specified width.
  *
- * This hook sets up a resize event listener to check if the window's inner width
- * is less than 640 pixels, which is considered a mobile view (Tailwind's 'sm' breakpoint)
- *
- * @returns {boolean} - True if the viewport width is less than 640 pixels, false otherwise.
+ * @param width - The width threshold to determine if the device is mobile. Default is 640.
+ * @returns {boolean} A boolean indicating if the current window width is less than the specified width.
  */
-export const useMediaQuery = (): boolean => {
+export const useMediaQuery = (width: number = 640): boolean => {
   const [isClient, setIsClient] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -20,7 +18,7 @@ export const useMediaQuery = (): boolean => {
     if (typeof window === 'undefined') return;
 
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 640);
+      setIsMobile(window.innerWidth < width);
     }
 
     window.addEventListener('resize', handleResize);
