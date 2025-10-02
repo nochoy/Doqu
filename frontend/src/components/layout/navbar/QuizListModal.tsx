@@ -2,16 +2,17 @@
 
 import { FormEvent, useEffect, useState, Fragment } from "react";
 
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
-import { authenticatedFetch } from "@/lib/fetch-wrapper";
-import { useAuth } from "@/hooks/useAuth";
-import { QuizReadData } from "@/types/quiz";
 import { Skeleton } from "@/components/ui/skeleton";
+import { authenticatedFetch } from "@/lib/fetch-wrapper";
+import { cn } from "@/lib/utils";
+import { QuizReadData } from "@/types/quiz";
+import { useAuth } from "@/hooks/useAuth";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 interface QuizListProps {
   className?: string;
@@ -19,6 +20,11 @@ interface QuizListProps {
   selectedQuiz?: string;
   onQuizSelect: (quizId: string) => void;
   isLoading: boolean;
+}
+
+interface QuizListModalProps {
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
 }
 
 function QuizList({ className, quizzes, selectedQuiz, onQuizSelect, isLoading }: QuizListProps) {
@@ -31,10 +37,9 @@ function QuizList({ className, quizzes, selectedQuiz, onQuizSelect, isLoading }:
     }
   }
 
-  isLoading = true;
   if (isLoading) {
     return (
-      <div className="w-full flex flex-col gap-2">
+      <div className={cn('w-full flex flex-col gap-2', className)}>
         {Array.from({ length: 3}).map((_, index) => 
           <Skeleton key={index} className="h-9 w-full"/>
         )}
@@ -43,12 +48,12 @@ function QuizList({ className, quizzes, selectedQuiz, onQuizSelect, isLoading }:
   }
 
   if (quizzes.length === 0) {
-    return <div className="p-4 text-center text-muted-foreground">No quizzes found. Create your first quiz!</div>
+    return <div className="text-center text-muted-foreground">No quizzes found. Create your first quiz!</div>
   }
 
   return (
     <>
-      <ScrollArea className={cn('flex-1', className)}>
+      <ScrollArea className={cn('flex-1 overflow-auto', className)}>
         {quizzes.map((quiz) => (
           <Fragment key={quiz.id}>
             <div 
@@ -69,15 +74,14 @@ function QuizList({ className, quizzes, selectedQuiz, onQuizSelect, isLoading }:
 }
 
 
-export default function QuizListModal() {
-  const [openMobile, setOpenMobile] = useState<boolean>(false);
-  const [openDesktop, setOpenDesktop] = useState<boolean>(false);
+export default function QuizListModal({ isOpen, onOpenChange }: QuizListModalProps) {
   const [selectedQuiz, setSelectedQuiz] = useState<string>('');
   const [userQuizzes, setUserQuizzes] = useState<QuizReadData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   
   const { currentUser, isAuthenticated } = useAuth();
+  const isMobile = useMediaQuery();
 
   useEffect(() => {
     const fetchUserQuizzes = async () => {
@@ -112,35 +116,26 @@ export default function QuizListModal() {
       }
     }
 
-    if (openMobile || openDesktop) {
+    if (isOpen) {
       fetchUserQuizzes();
     } else {
       setUserQuizzes([]);
       setSelectedQuiz('');
     }
-  }, [currentUser?.id, isAuthenticated, openMobile, openDesktop]);
+  }, [currentUser?.id, isAuthenticated, isOpen]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     // TODO: Link to create room?
-    setOpenMobile(false);
-    setOpenDesktop(false);
+    onOpenChange(false);
     setError(null);
 
     console.log("Selected quiz ID: ", selectedQuiz);
   }
 
-  const handleMobileOpenChange = (isOpen: boolean) => {
-    setOpenMobile(isOpen);
-    if (!isOpen) {
-      setSelectedQuiz('');
-      setError(null);
-    }
-  }
-
-  const handleDesktopOpenChange = (isOpen: boolean) => {
-    setOpenDesktop(isOpen);
-    if (!isOpen) {
+  const handleModalOpenChange = (newOpenState: boolean) => {
+    onOpenChange(newOpenState);
+    if(!newOpenState) {
       setSelectedQuiz('');
       setError(null);
     }
@@ -149,14 +144,8 @@ export default function QuizListModal() {
   return (
     <>
       {/* Mobile Drawer */}
-      <div className="block sm:hidden">
-        <Drawer open={openMobile} onOpenChange={handleMobileOpenChange}>
-          <DrawerTrigger asChild>
-            <Button variant='ghost'>
-              Host
-            </Button>
-          </DrawerTrigger>
-
+      {isMobile ? (
+        <Drawer open={isOpen} onOpenChange={handleModalOpenChange}>
           <DrawerContent className="max-h-3/4">
             <DrawerHeader>
               <DrawerTitle>Select a quiz</DrawerTitle>
@@ -172,9 +161,12 @@ export default function QuizListModal() {
                 onQuizSelect={setSelectedQuiz}
                 isLoading={isLoading}
               />
-
-              {/* Buttons */}
               <DrawerFooter>
+                {/* Error message */}
+                <div className="text-sm text-destructive">
+                  {error}
+                </div>
+                {/* Buttons */}
                 <Button type='submit' disabled={!selectedQuiz}>
                   Select
                 </Button>
@@ -187,25 +179,16 @@ export default function QuizListModal() {
             </form>
           </DrawerContent>
         </Drawer>
-      </div>
-
-      {/* Desktop Dialog Popup */}
-      <div className="hidden sm:block">
-        <Dialog open={openDesktop} onOpenChange={handleDesktopOpenChange}>
-          <DialogTrigger asChild>
-            <Button variant='ghost'>
-              Host
-            </Button>
-          </DialogTrigger>
-
-          <DialogContent className="flex flex-col max-h-[50vh] gap-1">
+      ) : ( // Desktop Drawer
+        <Dialog open={isOpen} onOpenChange={handleModalOpenChange}>
+          <DialogContent className="flex flex-col max-h-[50vh]">
             <DialogHeader>
               <DialogTitle>Select a quiz</DialogTitle>
               <DialogDescription>Choose a quiz from your collection to host a game</DialogDescription>
             </DialogHeader>
 
             {/* Quiz List */}
-            <form onSubmit={handleSubmit} id="current-user-quizzes" className="flex min-h-0 pb-2">
+            <form onSubmit={handleSubmit} id="current-user-quizzes" className="flex min-h-0">
               <QuizList
                 selectedQuiz={selectedQuiz}
                 onQuizSelect={setSelectedQuiz}
@@ -218,6 +201,7 @@ export default function QuizListModal() {
               <div className="text-sm text-destructive">
                 {error}
               </div>
+              {/* Buttons */}
               <div className="flex gap-2">
                 <DialogClose asChild>
                   <Button variant='secondary' className=''>
@@ -231,7 +215,7 @@ export default function QuizListModal() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
+      )}
     </>
   )
 }
