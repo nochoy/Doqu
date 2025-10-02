@@ -7,8 +7,8 @@ import { MoonIcon, SunIcon } from "@phosphor-icons/react";
 import { Switch } from "@/components/ui/switch";
 
 export default function ThemeToggle() {
-  const { theme, setTheme, systemTheme } = useTheme()
-  const [checked, setChecked] = React.useState<boolean>(systemTheme !== 'dark');
+  const { theme, setTheme, resolvedTheme } = useTheme()
+  const [checked, setChecked] = React.useState<boolean>(resolvedTheme !== 'dark');
 
   const handleCheckedChange = () => {
     if (theme === 'light') {
@@ -39,24 +39,3 @@ export default function ThemeToggle() {
   )
 }
 
-
-{/* <DropdownMenu>
-  <DropdownMenuTrigger asChild>
-    <Button variant="outline" size="icon">
-      <SunIcon className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-      <MoonIcon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
-      <span className="sr-only">Toggle theme</span>
-    </Button>
-  </DropdownMenuTrigger>
-  <DropdownMenuContent align="end">
-    <DropdownMenuItem onClick={() => setTheme("light")}>
-      Light
-    </DropdownMenuItem>
-    <DropdownMenuItem onClick={() => setTheme("dark")}>
-      Dark
-    </DropdownMenuItem>
-    <DropdownMenuItem onClick={() => setTheme("system")}>
-      System
-    </DropdownMenuItem>
-  </DropdownMenuContent>
-</DropdownMenu> */}
