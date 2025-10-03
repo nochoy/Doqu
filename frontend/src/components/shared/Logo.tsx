@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 
-export default function Logo() {
+export default function Logo({ className = '' }) {
   return (
-    <Link href='/'>
+    <Link href='/' className={className}>
       <Image
         src='/DoquLogo1.svg'
         alt='Doqu logo'
