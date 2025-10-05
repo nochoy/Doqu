@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function Logo({ className = '' }) {
   return (
-    <Link href='/' className='flex items-center'>
+    <Link href='/' className='flex items-center mb-0'>
       <Image
         src='/DoquLogo1.svg'
         alt='Doqu logo'
