@@ -1,6 +1,5 @@
 
-
-export const Footer = () => {
+export default function Footer() {
 
   return (
     <footer className="bg-muted p-4 mt-auto">
