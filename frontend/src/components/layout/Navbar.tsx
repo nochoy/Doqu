@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { ListIcon, PlusSquareIcon } from '@phosphor-icons/react';
+import { ApplePodcastsLogoIcon, ListIcon, PlusSquareIcon, UsersIcon } from '@phosphor-icons/react';
 
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from '@/components/ui/button';
@@ -28,7 +28,6 @@ export default function Navbar() {
   
     const handleOpenQuizListModal = () => {
       setQuizListModalOpen(true);
-      setMobileSidebarOpen(false);
     }
   
     const handleCloseQuizListModal = () => {
@@ -37,7 +36,12 @@ export default function Navbar() {
 
     const HostQuizButton = (
       <>
-        <Button variant='ghost' onClick={handleOpenQuizListModal}>
+        <Button 
+          variant='ghost' 
+          onClick={handleOpenQuizListModal} 
+          className={isMobile ? 'justify-start' : ''}
+        >
+          {isMobile && <ApplePodcastsLogoIcon size={20}/>}
           Host
         </Button>
         {isQuizListModalOpen &&
@@ -47,11 +51,12 @@ export default function Navbar() {
     )
 
     const JoinRoomButton = (
-      <Button variant='ghost'>
-        <Link href='/join' className='w-full'>
+      <Link href='/join'>
+        <Button variant='ghost' className={isMobile ? 'justify-start w-full' : ''}>
+            {isMobile && <UsersIcon size={20}/>}
             Join
-        </Link>
-      </Button>
+        </Button>
+      </Link>
     )
 
     const CreateQuizButton = (
@@ -72,21 +77,24 @@ export default function Navbar() {
         <nav className="flex items-center mx-auto relative h-10">
         <Sheet open={isMobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
           <SheetTrigger>
-              <ListIcon size={24}/>
-              <span className='sr-only'>Toggle navigation menu</span>
+            <ListIcon size={24}/>
+            <span className='sr-only'>Toggle navigation menu</span>
           </SheetTrigger>
 
           {/* Side drawer */}
-          <SheetContent side="left" className='flex flex-col'>
-            <SheetHeader className="flex items-center">
+          <SheetContent side="left" xCloseButton={false} className='flex flex-col gap-2'>
+            <SheetHeader className="flex flex-row items-center justify-center relative">
               <Logo/>
+              <ThemeToggle className='absolute right-0 scale-90'/>
             </SheetHeader>
 
-            <div className='flex-1 flex flex-col px-3'>
-              {HostQuizButton}
-              {JoinRoomButton}
+            {/* Buttons */}
+            <div className='flex-1 flex flex-col px-3 gap-4'>
               {CreateQuizButton}
-              <ThemeToggle/>
+              <div className='flex flex-col'>
+                {HostQuizButton}
+                {JoinRoomButton}
+              </div>
             </div>
 
             <SheetFooter className='mt-auto'>
