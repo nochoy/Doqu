@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
 interface ThemeToggleProps {
-  className: string;
+  className?: string;
 }
 
 export default function ThemeToggle({ className='' }: ThemeToggleProps) {
