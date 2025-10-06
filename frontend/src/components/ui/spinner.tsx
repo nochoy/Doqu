@@ -37,7 +37,7 @@ interface SpinnerContentProps
 
 export function Spinner({ size, show, children, className }: SpinnerContentProps) {
   return (
-    <span className={spinnerVariants({ show })}>
+    <span role='status' className={spinnerVariants({ show })}>
       <CircleNotchIcon className={cn(loaderVariants({ size }), className)} />
       {children}
     </span>
