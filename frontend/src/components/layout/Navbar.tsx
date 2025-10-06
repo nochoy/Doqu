@@ -5,7 +5,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { ApplePodcastsLogoIcon, ListIcon, PlusSquareIcon, UsersIcon } from '@phosphor-icons/react';
 
-import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from '@/components/ui/button';
 import Logo from '@/components/shared/Logo';
 import AccountDropdownMenu from '@/components/layout/navbar/AccountDropdownMenu';
@@ -84,7 +84,9 @@ export default function Navbar() {
           {/* Side drawer */}
           <SheetContent side="left" xCloseButton={false} className='flex flex-col gap-2'>
             <SheetHeader className="flex flex-row items-center justify-center relative">
-              <Logo/>
+              <SheetTitle className='h-8'>
+                <Logo/>
+              </SheetTitle>
               <ThemeToggle className='absolute right-0 scale-90'/>
             </SheetHeader>
 
