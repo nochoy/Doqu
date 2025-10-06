@@ -12,20 +12,22 @@ interface ThemeToggleProps {
 }
 
 export default function ThemeToggle({ className='' }: ThemeToggleProps) {
-  const { theme, setTheme, resolvedTheme } = useTheme()
-  const [checked, setChecked] = React.useState<boolean>(resolvedTheme !== 'dark');
+  const { setTheme, resolvedTheme } = useTheme()
+
+  const checked = resolvedTheme !== 'dark';
+
+  const containerClassName = 'relative inline-grid h-8 grid-cols-[1fr_1fr] items-center text-sm font-medium';
 
   const handleCheckedChange = () => {
-    if (theme === 'light') {
-      setTheme('dark') 
+    if (resolvedTheme === 'light') {
+      setTheme('dark');
     } else {
       setTheme('light');
     }
-    setChecked(!checked);
   }
 
   return (
-    <div className={cn('relative inline-grid h-8 grid-cols-[1fr_1fr] items-center text-sm font-medium', className)}>
+    <div className={cn(containerClassName, className)}>
       <Switch
         checked={checked}
         onCheckedChange={handleCheckedChange}
