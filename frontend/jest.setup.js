@@ -36,6 +36,22 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
+// Mock window.getComputedStyle for libraries that rely on it (like vaul)
+const originalGetComputedStyle = window.getComputedStyle;
+window.getComputedStyle = (elt, pseudo) => {
+  const style = originalGetComputedStyle(elt, pseudo);
+  if (style.transform === '' || style.transform === undefined || style.transform === null) {
+    style.transform = 'none';
+  }
+  return style;
+};
+
+// Mock PointerEvent methods for libraries that rely on them (like vaul)
+if (typeof window !== 'undefined' && !window.Element.prototype.setPointerCapture) {
+  window.Element.prototype.setPointerCapture = jest.fn();
+  window.Element.prototype.releasePointerCapture = jest.fn();
+}
+
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
   constructor() {}
