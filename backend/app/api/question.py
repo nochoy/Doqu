@@ -20,7 +20,7 @@ from app.utils.responses import get_responses
 router = APIRouter(
     prefix="/questions",
     tags=["questions"],
-    dependencies=[Depends(get_current_active_user)],
+    # dependencies=[Depends(get_current_active_user)],
     # responses=get_responses([400, 401, 404]),
 )
 
