@@ -23,7 +23,7 @@ export default function AccountDropdownMenu() {
   return (
     <DropdownMenu>
       { isMobile ? (
-        <DropdownMenuTrigger asChild>
+        <DropdownMenuTrigger asChild aria-label="Open user menu">
           <Button variant='ghost' className='py-6 px-2 rounded-xl'>
             {isAuthenticated ? <UserCircleIcon size={32} weight='fill'/> : <UserCircleIcon size={32} className='text-muted-foreground'/>}
             <div className='flex flex-col items-start'>
@@ -41,9 +41,9 @@ export default function AccountDropdownMenu() {
           </Button>
         </DropdownMenuTrigger>
       ) : (
-        <DropdownMenuTrigger className='flex items-center cursor-pointer p-1 h-9 w-auto gap-0.5'>
-            {isAuthenticated ? <UserCircleIcon size={28} weight='fill'/> : <UserCircleIcon size={28}/>}
-            <CaretDownIcon weight='bold'/>
+        <DropdownMenuTrigger className='flex items-center cursor-pointer p-1 h-9 w-auto gap-0.5' aria-label="Open user menu">
+          {isAuthenticated ? <UserCircleIcon size={28} weight='fill'/> : <UserCircleIcon size={28}/>}
+          <CaretDownIcon weight='bold'/>
         </DropdownMenuTrigger>
       )}
       {/* Popup */}
