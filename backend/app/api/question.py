@@ -1,20 +1,27 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_active_user
 from app.db.session import get_db
 from app.models.question import QuestionCreate, QuestionRead, QuestionUpdate
 from app.models.user import User
-from app.services import question_services, quiz_service
+from app.services import question_services
+from app.services.quiz_service import (
+    get_quiz,
+    QuizPermissionException,
+    QuizNotFoundException,
+)
+from app.services.question_services import QuestionNotFoundException
 from app.utils.responses import get_responses
-from app.api.dependencies import get_current_active_user, get_current_user
+from app.api.dependencies import get_current_active_user
 
 router = APIRouter(
     prefix="/questions", 
     tags=["questions"], 
-    dependencies=[Depends(get_current_user)], 
+    dependencies=[Depends(get_current_active_user)], 
     # responses=get_responses([400, 401, 404]),
 )
 
@@ -41,11 +48,20 @@ async def create_question(
     Returns:
         Question: The newly created question.
     """
-    quiz = await quiz_service.get_quiz(session=session, quiz_id=question_in.quiz_id)
-    if quiz.owner_id != current_user.id:
+    try:
+        quiz = await get_quiz(session=session, quiz_id=question_in.quiz_id)
+        if quiz.owner_id != current_user.id:
+            raise QuizPermissionException(
+                "Not authorized to add a question to this quiz"
+            )
+    except QuizNotFoundException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except QuizPermissionException as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+    except SQLAlchemyError:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to add a question to this quiz",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unexpected database error has occurred",
         )
     question = await question_services.create_question(session=session, question_in=question_in)
     return QuestionRead.model_validate(question)
@@ -66,7 +82,7 @@ async def read_question(
         QuestionRead: The retrieved question.
 
     Raises:
-        HTTPException: If the specified question does not exist.
+        HTTPException 404: If the specified question does not exist.
     """
     question = await question_services.get_question(session=session, question_id=question_id)
     if not question:
@@ -96,14 +112,27 @@ async def update_question(
     Raises:
         HTTPException: If the specified question does not exist or user is not authorized.
     """
-    db_question = await question_services.get_question(session=session, question_id=question_id)
-    if not db_question:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Question not found")
+    try:
+        db_question = await question_services.get_question(
+            session=session, question_id=question_id
+        )
+        if not db_question:
+            raise QuestionNotFoundException("Question not found")
 
-    quiz = await quiz_service.get_quiz(session=session, quiz_id=db_question.quiz_id)
-    if quiz.owner_id != current_user.id:
+        quiz = await get_quiz(session=session, quiz_id=db_question.quiz_id)
+        if quiz.owner_id != current_user.id:
+            raise QuizPermissionException("Not authorized to update this question")
+
+    except QuestionNotFoundException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except QuizNotFoundException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except QuizPermissionException as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+    except SQLAlchemyError:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to update this question"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unexpected database error has occurred",
         )
 
     updated_question = await question_services.update_question(
@@ -129,21 +158,33 @@ async def delete_question(
     Raises:
         HTTPException: If the specified question does not exist or user is not authorized.
     """
-    db_question = await question_services.get_question(session=session, question_id=question_id)
-    if not db_question:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Question not found")
-
-    quiz = await quiz_service.get_quiz(session=session, quiz_id=db_question.quiz_id)
-    if quiz.owner_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to delete this question"
+    try:
+        db_question = await question_services.get_question(
+            session=session, question_id=question_id
         )
+        if not db_question:
+            raise QuestionNotFoundException("Question not found")
 
-    await question_services.remove_question(session=session, question_id=question_id)
+        quiz = await get_quiz(session=session, quiz_id=db_question.quiz_id)
+        if quiz.owner_id != current_user.id:
+            raise QuizPermissionException("Not authorized to delete this question")
+
+        await question_services.remove_question(session=session, question_id=question_id)
+    except QuestionNotFoundException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except QuizNotFoundException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except QuizPermissionException as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+    except SQLAlchemyError:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unexpected database error has occurred",
+        )
     return None
 
 
-@router.get("/", response_model=list[QuestionRead])
+@router.get("/{quiz_id}", response_model=list[QuestionRead])
 async def read_all_questions(
     quiz_id: uuid.UUID, session: AsyncSession = Depends(get_db)
 ) -> list[QuestionRead]:

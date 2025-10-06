@@ -5,6 +5,13 @@ from sqlmodel import select
 from fastapi import HTTPException
 
 from app.models.question import Question, QuestionCreate, QuestionUpdate
+from app.services.quiz_service import QuizPermissionException
+
+
+class QuestionNotFoundException(Exception):
+    """Raised when a question is not found in the database."""
+
+    pass
 
 
 async def create_question(session: AsyncSession, question_in: QuestionCreate) -> Question:
@@ -52,8 +59,8 @@ async def get_all_questions(session: AsyncSession, quiz_id: uuid.UUID) -> list[Q
     Returns:
         list[Question]: A list of all questions for the specified quiz.
     """
-    result = await session.execute(select(Question).where(Question.quiz_id == quiz_id))
-    return list(result.scalars().all())
+    question_list = await session.execute(select(Question).where(Question.quiz_id == quiz_id))
+    return list(question_list.scalars().all())
 
 
 async def update_question(
@@ -92,6 +99,6 @@ async def remove_question(session: AsyncSession, question_id: uuid.UUID) -> None
     """
     db_question = await get_question(session=session, question_id=question_id)
     if not db_question:
-        raise HTTPException(status_code=404, detail="Question not found")
+        raise QuestionNotFoundException("Question not found")
     await session.delete(db_question)
     await session.commit()
