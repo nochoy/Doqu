@@ -7,7 +7,6 @@ import QuizListModal from '@/components/layout/navbar/QuizListModal';
 import { useAuth } from '@/hooks/useAuth';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { authenticatedFetch } from '@/lib/fetch-wrapper';
-import { QuizReadData } from '@/types/quiz';
 import { User } from '@/types/user';
 
 // Mock dependencies
@@ -37,9 +36,27 @@ const mockUser: User = {
   updated_at: new Date().toISOString(),
 };
 
-const mockQuizzes: QuizReadData[] = [
-  { id: 'quiz-1', title: 'Science Quiz', description: '', category: 'Science', difficulty: 1, is_public: true, owner_id: 'user-123', questions: [] },
-  { id: 'quiz-2', title: 'History Quiz', description: '', category: 'History', difficulty: 2, is_public: true, owner_id: 'user-123', questions: [] },
+const mockQuizzes = [
+  {
+    id: 'quiz-1',
+    title: 'Science Quiz',
+    description: '',
+    category: 'Science',
+    difficulty: 1,
+    is_public: true,
+    owner_id: 'user-123',
+    questions: [],
+  },
+  {
+    id: 'quiz-2',
+    title: 'History Quiz',
+    description: '',
+    category: 'History',
+    difficulty: 2,
+    is_public: true,
+    owner_id: 'user-123',
+    questions: [],
+  },
 ];
 
 describe('QuizListModal', () => {
@@ -64,7 +81,7 @@ describe('QuizListModal', () => {
   };
 
   // --- Shared Tests for Desktop and Mobile ---
-  [true, false].forEach((isMobile) => {
+  [true, false].forEach(isMobile => {
     describe(isMobile ? 'Mobile View' : 'Desktop View', () => {
       it('does not render when isOpen is false', () => {
         renderModal(false, isMobile);
@@ -81,7 +98,9 @@ describe('QuizListModal', () => {
         renderModal(true, isMobile);
         await waitFor(() => {
           expect(mockAuthenticatedFetch).toHaveBeenCalledTimes(1);
-          expect(mockAuthenticatedFetch).toHaveBeenCalledWith(expect.stringContaining(`/api/quizzes/?owner_id=${mockUser.id}`));
+          expect(mockAuthenticatedFetch).toHaveBeenCalledWith(
+            expect.stringContaining(`/api/quizzes/?owner_id=${mockUser.id}`)
+          );
         });
         expect(screen.getByText('Science Quiz')).toBeInTheDocument();
         expect(screen.getByText('History Quiz')).toBeInTheDocument();

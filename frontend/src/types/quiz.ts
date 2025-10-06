@@ -24,7 +24,7 @@ export type QuizCreateData = {
   category: string;
   difficulty: number | null;
   is_public: boolean;
-}
+};
 
 export type QuizReadData = {
   title: string;
@@ -34,7 +34,7 @@ export type QuizReadData = {
   id: string;
   created_at: Date;
   is_public: boolean;
-}
+};
 
 export const QuizSchema = z.object({
   title: z

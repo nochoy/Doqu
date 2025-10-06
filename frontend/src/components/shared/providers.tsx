@@ -5,7 +5,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ThemeProvider as NextThemeProvider } from 'next-themes';
 
 function ThemeProvider({ children, ...props }: React.ComponentProps<typeof NextThemeProvider>) {
-  return <NextThemeProvider {...props}>{children}</NextThemeProvider>
+  return <NextThemeProvider {...props}>{children}</NextThemeProvider>;
 }
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -15,12 +15,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <ThemeProvider 
-      attribute='class' 
-      defaultTheme='system' 
-      enableSystem 
-      disableTransitionOnChange
-    >
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
       <AuthProvider>
         <GoogleOAuthProvider clientId={googleClientId}>{children}</GoogleOAuthProvider>
       </AuthProvider>

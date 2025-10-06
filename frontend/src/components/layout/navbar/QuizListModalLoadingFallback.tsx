@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
@@ -12,7 +12,7 @@ export default function QuizModalLoadingFallback() {
     // Mobile Loading
     return (
       <>
-        <span className='fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0'/>
+        <span className="fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <div className="fixed inset-x-0 bottom-0 z-50 flex h-1/3 flex-col rounded-t-[10px] border bg-background p-6">
           <div className="flex flex-col items-center justify-center h-full gap-2">
             <Spinner />
@@ -28,7 +28,7 @@ export default function QuizModalLoadingFallback() {
     // Desktop Loading
     return (
       <>
-        <span className='fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0'/>
+        <span className="fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <div className="fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] bg-background p-6 shadow-lg duration-200 sm:rounded-lg md:w-full max-h-[50vh] flex flex-col min-h-0">
           <div className="flex flex-col items-center justify-center h-auto gap-2">
             <Spinner />

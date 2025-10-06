@@ -78,7 +78,7 @@ describe('HomeLayout', () => {
     expect(screen.getByTestId('navbar')).toBeInTheDocument();
     expect(screen.getByRole('main')).toBeInTheDocument();
     expect(screen.getByTestId('footer')).toBeInTheDocument();
-    
+
     const mainElement = screen.getByRole('main');
     expect(mainElement).toBeEmptyDOMElement();
   });
@@ -89,7 +89,7 @@ describe('HomeLayout', () => {
     expect(screen.getByTestId('navbar')).toBeInTheDocument();
     expect(screen.getByRole('main')).toBeInTheDocument();
     expect(screen.getByTestId('footer')).toBeInTheDocument();
-    
+
     const mainElement = screen.getByRole('main');
     expect(mainElement).toBeEmptyDOMElement();
   });
@@ -107,7 +107,7 @@ describe('HomeLayout', () => {
     expect(screen.getByText('First child')).toBeInTheDocument();
     expect(screen.getByText('Second child')).toBeInTheDocument();
     expect(screen.getByText('Third child')).toBeInTheDocument();
-    
+
     expect(mainElement).toContainElement(screen.getByText('First child'));
     expect(mainElement).toContainElement(screen.getByText('Second child'));
     expect(mainElement).toContainElement(screen.getByText('Third child'));
@@ -123,7 +123,7 @@ describe('HomeLayout', () => {
     // Check the layout structure: div > [header, main, footer]
     const layoutDiv = container.firstChild;
     const children = layoutDiv?.childNodes;
-    
+
     expect(children).toHaveLength(3);
     expect(children?.[0]).toContainHTML('data-testid="navbar"');
     expect(children?.[1]?.nodeName).toBe('MAIN');

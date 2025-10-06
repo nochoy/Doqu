@@ -9,5 +9,4 @@ describe('Footer', () => {
     render(<Footer />);
     expect(screen.getByText('Footer Placeholder')).toBeInTheDocument();
   });
-
 });

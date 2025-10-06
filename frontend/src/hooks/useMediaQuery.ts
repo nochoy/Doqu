@@ -1,6 +1,6 @@
-"use client"
+'use client';
 
-import { useEffect, useState } from "react"
+import { useEffect, useState } from 'react';
 
 /**
  * Custom hook to determine if the current window width is less than a specified width.
@@ -19,16 +19,15 @@ export const useMediaQuery = (width: number = 640): boolean => {
 
     const handleResize = () => {
       setIsMobile(window.innerWidth < width);
-    }
+    };
 
     window.addEventListener('resize', handleResize);
     handleResize();
 
     return () => {
       window.removeEventListener('resize', handleResize);
-    }
+    };
   }, [width]);
 
   return isClient ? isMobile : false;
-}
-
+};

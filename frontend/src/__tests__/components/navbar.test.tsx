@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 
 import Navbar from '@/components/layout/Navbar';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 // Mock the useMediaQuery hook
 jest.mock('@/hooks/useMediaQuery');
@@ -11,7 +12,11 @@ jest.mock('@/hooks/useMediaQuery');
 // Mock all the imported components
 jest.mock('@/components/shared/Logo', () => {
   return function MockLogo({ className }: { className?: string }) {
-    return <div data-testid="logo" className={className}>Logo</div>;
+    return (
+      <div data-testid="logo" className={className}>
+        Logo
+      </div>
+    );
   };
 });
 
@@ -23,7 +28,11 @@ jest.mock('@/components/layout/navbar/AccountDropdownMenu', () => {
 
 jest.mock('@/components/layout/navbar/ThemeToggle', () => {
   return function MockThemeToggle({ className }: { className?: string }) {
-    return <div data-testid="theme-toggle" className={className}>Theme Toggle</div>;
+    return (
+      <div data-testid="theme-toggle" className={className}>
+        Theme Toggle
+      </div>
+    );
   };
 });
 
@@ -45,11 +54,15 @@ jest.mock('@/components/layout/navbar/QuizListModalLoadingFallback', () => {
 
 // Mock dynamic import for LazyQuizListModal
 jest.mock('next/dynamic', () => {
-  return (_importFunc: () => Promise<unknown>, _options?: { loading?: () => React.ReactElement; ssr?: boolean }) => {
-    const MockLazyQuizListModal = ({ onOpenChange }: { onOpenChange: () => void }) => {
+  return () => {
+    const MockLazyQuizListModal = ({
+      onOpenChange,
+    }: {
+      onOpenChange: (isOpen: boolean) => void;
+    }) => {
       return (
         <div data-testid="quiz-list-modal">
-          <button onClick={onOpenChange}>Close Quiz List Modal</button>
+          <button onClick={() => onOpenChange(false)}>Close Quiz List Modal</button>
         </div>
       );
     };
@@ -60,11 +73,15 @@ jest.mock('next/dynamic', () => {
 // Mock Next.js Link component
 jest.mock('next/link', () => {
   return function MockLink({ children, href }: { children: React.ReactNode; href: string }) {
-    return <a href={href} data-testid={`link-${href}`}>{children}</a>;
+    return (
+      <a href={href} data-testid={`link-${href}`}>
+        {children}
+      </a>
+    );
   };
 });
 
-const mockUseMediaQuery = require('@/hooks/useMediaQuery').useMediaQuery as jest.MockedFunction<typeof import('@/hooks/useMediaQuery').useMediaQuery>;
+const mockUseMediaQuery = useMediaQuery as jest.Mock;
 
 describe('Navbar', () => {
   beforeEach(() => {
@@ -83,7 +100,7 @@ describe('Navbar', () => {
       expect(screen.getByTestId('logo')).toBeInTheDocument();
       expect(screen.getByTestId('theme-toggle')).toBeInTheDocument();
       expect(screen.getByTestId('account-dropdown')).toBeInTheDocument();
-      
+
       // Check buttons
       expect(screen.getByRole('button', { name: /host/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /create/i })).toBeInTheDocument();
@@ -92,7 +109,7 @@ describe('Navbar', () => {
 
     it('renders host button without mobile icon in desktop mode', () => {
       render(<Navbar />);
-      
+
       const hostButton = screen.getByRole('button', { name: /host/i });
       expect(hostButton).toBeInTheDocument();
       expect(hostButton).not.toHaveClass('justify-start');
@@ -100,7 +117,7 @@ describe('Navbar', () => {
 
     it('renders join button without mobile styles in desktop mode', () => {
       render(<Navbar />);
-      
+
       const joinLink = screen.getByTestId('link-/join');
       const joinButton = joinLink.querySelector('button');
       expect(joinButton).not.toHaveClass('justify-start', 'w-full');
@@ -108,9 +125,11 @@ describe('Navbar', () => {
 
     it('does not render mobile sidebar elements in desktop mode', () => {
       render(<Navbar />);
-      
+
       // Mobile-specific elements should not be present
-      expect(screen.queryByRole('button', { name: /toggle navigation menu/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /toggle navigation menu/i })
+      ).not.toBeInTheDocument();
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
   });
@@ -126,7 +145,7 @@ describe('Navbar', () => {
       // Check mobile-specific elements
       expect(screen.getByRole('button', { name: /toggle navigation menu/i })).toBeInTheDocument();
       expect(screen.getByTestId('logo')).toBeInTheDocument();
-      
+
       // Logo should be centered in mobile
       const logo = screen.getByTestId('logo');
       expect(logo).toHaveClass('absolute', 'left-1/2', 'transform', '-translate-x-1/2');
@@ -137,7 +156,7 @@ describe('Navbar', () => {
       render(<Navbar />);
       const hamburgerButton = screen.getByRole('button', { name: /toggle navigation menu/i });
       await user.click(hamburgerButton);
-      
+
       const hostButton = screen.getByRole('button', { name: /host/i });
       expect(hostButton).toHaveClass('justify-start');
     });
@@ -147,7 +166,7 @@ describe('Navbar', () => {
       render(<Navbar />);
       const hamburgerButton = screen.getByRole('button', { name: /toggle navigation menu/i });
       await user.click(hamburgerButton);
-      
+
       const joinLink = screen.getByTestId('link-/join');
       const joinButton = joinLink.querySelector('button');
       expect(joinButton).toHaveClass('justify-start', 'w-full');
@@ -208,7 +227,7 @@ describe('Navbar', () => {
 
     it('does not render quiz creation modal initially', () => {
       render(<Navbar />);
-      
+
       expect(screen.queryByTestId('quiz-create-modal')).not.toBeInTheDocument();
     });
   });
@@ -253,7 +272,7 @@ describe('Navbar', () => {
 
     it('does not render quiz list modal initially', () => {
       render(<Navbar />);
-      
+
       expect(screen.queryByTestId('quiz-list-modal')).not.toBeInTheDocument();
     });
   });
@@ -265,7 +284,7 @@ describe('Navbar', () => {
 
     it('renders join button with correct link', () => {
       render(<Navbar />);
-      
+
       const joinLink = screen.getByTestId('link-/join');
       expect(joinLink).toHaveAttribute('href', '/join');
       expect(joinLink).toContainElement(screen.getByRole('button', { name: /join/i }));
@@ -273,7 +292,7 @@ describe('Navbar', () => {
 
     it('renders logo with correct link', () => {
       render(<Navbar />);
-      
+
       // The logo component is mocked but should still render
       expect(screen.getByTestId('logo')).toBeInTheDocument();
     });
@@ -311,7 +330,7 @@ describe('Navbar', () => {
 
       // Open and close create modal multiple times
       const createButton = screen.getByRole('button', { name: /create/i });
-      
+
       await user.click(createButton);
       await waitFor(() => {
         expect(screen.getByTestId('quiz-create-modal')).toBeInTheDocument();
@@ -335,7 +354,9 @@ describe('Navbar', () => {
       const { rerender } = render(<Navbar />);
 
       // Initially desktop
-      expect(screen.queryByRole('button', { name: /toggle navigation menu/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /toggle navigation menu/i })
+      ).not.toBeInTheDocument();
       expect(screen.getByTestId('logo')).not.toHaveClass('absolute');
 
       // Switch to mobile
@@ -343,7 +364,12 @@ describe('Navbar', () => {
       rerender(<Navbar />);
 
       expect(screen.getByRole('button', { name: /toggle navigation menu/i })).toBeInTheDocument();
-      expect(screen.getByTestId('logo')).toHaveClass('absolute', 'left-1/2', 'transform', '-translate-x-1/2');
+      expect(screen.getByTestId('logo')).toHaveClass(
+        'absolute',
+        'left-1/2',
+        'transform',
+        '-translate-x-1/2'
+      );
     });
   });
 
@@ -354,20 +380,20 @@ describe('Navbar', () => {
 
     it('provides proper accessibility attributes for mobile menu toggle', () => {
       render(<Navbar />);
-      
+
       const hamburgerButton = screen.getByRole('button', { name: /toggle navigation menu/i });
       expect(hamburgerButton).toBeInTheDocument();
-      
+
       const srOnlyText = screen.getByText('Toggle navigation menu');
       expect(srOnlyText).toHaveClass('sr-only');
     });
 
     it('renders proper semantic HTML structure', () => {
       render(<Navbar />);
-      
+
       const header = screen.getByRole('banner');
       expect(header).toBeInTheDocument();
-      
+
       const nav = screen.getByRole('navigation');
       expect(nav).toBeInTheDocument();
       expect(header).toContainElement(nav);

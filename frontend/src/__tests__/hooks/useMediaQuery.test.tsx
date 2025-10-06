@@ -13,7 +13,7 @@ describe('useMediaQuery', () => {
     });
     act(() => {
       window.dispatchEvent(new Event('resize'));
-    });  
+    });
   });
 
   it('should return false when the window width is greater than or equal to the specified width', () => {

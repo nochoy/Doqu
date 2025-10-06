@@ -16,8 +16,19 @@ jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
 }));
 jest.mock('next/link', () => {
-  return function MockLink({ children, href, ...props }: { children: React.ReactNode, href: string }) {
-    return <a href={href} {...props}>{children}</a>;
+  return function MockLink({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+  }) {
+    return (
+      <a href={href} {...props}>
+        {children}
+      </a>
+    );
   };
 });
 
@@ -72,7 +83,10 @@ describe('AccountDropdownMenu', () => {
 
       expect(screen.getByText('Not signed in')).toBeInTheDocument();
       expect(screen.getByRole('menuitem', { name: /login/i })).toHaveAttribute('href', '/login');
-      expect(screen.getByRole('menuitem', { name: /register/i })).toHaveAttribute('href', '/register');
+      expect(screen.getByRole('menuitem', { name: /register/i })).toHaveAttribute(
+        'href',
+        '/register'
+      );
       expect(screen.queryByRole('menuitem', { name: /view profile/i })).not.toBeInTheDocument();
       expect(screen.queryByRole('menuitem', { name: /logout/i })).not.toBeInTheDocument();
     });
@@ -127,8 +141,14 @@ describe('AccountDropdownMenu', () => {
       render(<AccountDropdownMenu />);
       await openMenu();
 
-      expect(screen.getByRole('menuitem', { name: /view profile/i })).toHaveAttribute('href', `/profile/${mockUser.id}`);
-      expect(screen.getByRole('menuitem', { name: /settings/i })).toHaveAttribute('href', '/settings');
+      expect(screen.getByRole('menuitem', { name: /view profile/i })).toHaveAttribute(
+        'href',
+        `/profile/${mockUser.id}`
+      );
+      expect(screen.getByRole('menuitem', { name: /settings/i })).toHaveAttribute(
+        'href',
+        '/settings'
+      );
       expect(screen.getByRole('menuitem', { name: /logout/i })).toBeInTheDocument();
       expect(screen.queryByRole('menuitem', { name: /login/i })).not.toBeInTheDocument();
       expect(screen.queryByRole('menuitem', { name: /register/i })).not.toBeInTheDocument();

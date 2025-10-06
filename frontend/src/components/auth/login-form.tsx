@@ -67,7 +67,7 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader className="flex flex-col items-center">
-          <Logo/>
+          <Logo />
           <CardTitle>Welcome back!</CardTitle>
           <CardDescription>Login to your Doqu account</CardDescription>
         </CardHeader>
