@@ -2,6 +2,7 @@ import uuid
 
 import pytest
 from httpx import AsyncClient
+from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.question import QuestionCreate
@@ -47,17 +48,19 @@ async def test_create_question_for_quiz(
     }
     response = await async_client.post("/api/auth/login", json=login_data)
     assert response.status_code == 200
-    token = response.json()["access_token"]
+    token = response.cookies.get("access_token")
 
     headers = {"Authorization": f"Bearer {token}"}
+    question_in_dict = question_in.model_dump()
+    question_in_dict["quiz_id"] = str(question_in_dict["quiz_id"])
     response = await async_client.post(
-        "/api/questions/", json=question_in.model_dump(), headers=headers
+        "/api/questions/", json=question_in_dict, headers=headers
     )
 
     assert response.status_code == 201
     data = response.json()
     assert data["question_text"] == question_in.question_text
-    assert data["quiz_id"] == quiz.id
+    assert data["quiz_id"] == str(quiz.id)
 
 
 async def test_create_question_with_invalid_time_limit(
@@ -87,33 +90,27 @@ async def test_create_question_with_invalid_time_limit(
     }
     response = await async_client.post("/api/auth/login", json=login_data)
     assert response.status_code == 200
-    token = response.json()["access_token"]
+    token = response.cookies.get("access_token")
     headers = {"Authorization": f"Bearer {token}"}
 
     # Attempt to create a question with time_limit = 0
-    question_in_zero = QuestionCreate(
-        quiz_id=quiz.id,
-        question_text="What is the capital of France?",
-        type="MC",
-        time_limit=0,
-        correct_answer={"answer": "Paris"},
-        possible_answers={"options": ["Paris", "London", "Berlin", "Madrid"]},
-    )
-    response = await async_client.post(
-        "/api/questions/", json=question_in_zero.model_dump(), headers=headers
-    )
-    assert response.status_code == 422
+    with pytest.raises(ValidationError):
+        QuestionCreate(
+            quiz_id=quiz.id,
+            question_text="What is the capital of France?",
+            type="MC",
+            time_limit=0,
+            correct_answer={"answer": "Paris"},
+            possible_answers={"options": ["Paris", "London", "Berlin", "Madrid"]},
+        )
 
     # Attempt to create a question with time_limit > 60
-    question_in_large = QuestionCreate(
-        quiz_id=quiz.id,
-        question_text="What is the capital of France?",
-        type="MC",
-        time_limit=61,
-        correct_answer={"answer": "Paris"},
-        possible_answers={"options": ["Paris", "London", "Berlin", "Madrid"]},
-    )
-    response = await async_client.post(
-        "/api/questions/", json=question_in_large.model_dump(), headers=headers
-    )
-    assert response.status_code == 422
+    with pytest.raises(ValidationError):
+        QuestionCreate(
+            quiz_id=quiz.id,
+            question_text="What is the capital of France?",
+            type="MC",
+            time_limit=61,
+            correct_answer={"answer": "Paris"},
+            possible_answers={"options": ["Paris", "London", "Berlin", "Madrid"]},
+        )

@@ -75,6 +75,18 @@ def client(session: AsyncSession) -> Generator[TestClient, None, None]:
     app.dependency_overrides.clear()
 
 
+@pytest.fixture(scope="session")
+def test_user_data() -> dict:
+    """
+    Provides a dictionary with test user data.
+    """
+    return {
+        "email": "test@example.com",
+        "username": "testuser",
+        "password": "testpassword",
+    }
+
+
 @pytest_asyncio.fixture(scope="function")
 async def async_client(session: AsyncSession) -> AsyncClient:  # Return type is AsyncClient
     """Create an async test client with overridden DB dependency."""
