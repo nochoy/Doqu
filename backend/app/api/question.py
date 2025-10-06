@@ -177,7 +177,7 @@ async def delete_question(
     return None
 
 
-@router.get("/{quiz_id}", response_model=list[QuestionRead])
+@router.get("/quiz/{quiz_id}", response_model=list[QuestionRead])
 async def read_all_questions(
     quiz_id: uuid.UUID, session: AsyncSession = Depends(get_db)
 ) -> list[QuestionRead]:
