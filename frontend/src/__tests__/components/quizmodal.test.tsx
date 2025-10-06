@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useRouter } from 'next/navigation';
-import QuizCreateModal from '../components/quiz/QuizCreateModal';
+import QuizCreateModal from '@/components/quiz/QuizCreateModal';
 import { QuizSchema } from '@/types/quiz';
 
 // Mock dependencies
@@ -21,7 +21,7 @@ jest.mock('@/types/quiz', () => ({
   ],
 }));
 
-jest.mock('../lib/constants', () => ({
+jest.mock('@/lib/constants', () => ({
   TITLE_MAX_LENGTH: 100,
   DESC_MAX_LENGTH: 500,
 }));
@@ -29,7 +29,7 @@ jest.mock('../lib/constants', () => ({
 // Mock UI components
 // Button
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: string };
-jest.mock('../components/ui/button', () => ({
+jest.mock('@/components/ui/button', () => ({
   Button: ({ children, variant, ...props }: ButtonProps) => (
     <button data-variant={variant} {...props}>
       {children}
@@ -39,19 +39,19 @@ jest.mock('../components/ui/button', () => ({
 
 // Input
 type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
-jest.mock('../components/ui/input', () => ({
+jest.mock('@/components/ui/input', () => ({
   Input: ({ onChange, ...props }: InputProps) => <input onChange={onChange} {...props} />,
 }));
 
 // Label
 type LabelProps = React.LabelHTMLAttributes<HTMLLabelElement>;
-jest.mock('../components/ui/label', () => ({
+jest.mock('@/components/ui/label', () => ({
   Label: ({ children, ...props }: LabelProps) => <label {...props}>{children}</label>,
 }));
 
 // Textarea
 type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
-jest.mock('../components/ui/textarea', () => ({
+jest.mock('@/components/ui/textarea', () => ({
   Textarea: ({ onChange, ...props }: TextareaProps) => <textarea onChange={onChange} {...props} />,
 }));
 
@@ -102,7 +102,7 @@ interface OptionToggleProps {
   selectedValue: string;
   onChange: (value: string) => void;
 }
-jest.mock('../components/ui/OptionToggle', () => {
+jest.mock('@/components/ui/OptionToggle', () => {
   return function OptionToggle({
     label,
     optionOne,
