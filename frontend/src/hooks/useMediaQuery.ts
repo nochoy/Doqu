@@ -27,7 +27,7 @@ export const useMediaQuery = (width: number = 640): boolean => {
     return () => {
       window.removeEventListener('resize', handleResize);
     }
-  }, []);
+  }, [width]);
 
   return isClient ? isMobile : false;
 }
