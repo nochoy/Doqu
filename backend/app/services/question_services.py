@@ -2,10 +2,8 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
-from fastapi import HTTPException
 
 from app.models.question import Question, QuestionCreate, QuestionUpdate
-from app.services.quiz_service import QuizPermissionException
 
 
 class QuestionNotFoundException(Exception):

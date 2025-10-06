@@ -9,19 +9,18 @@ from app.db.session import get_db
 from app.models.question import QuestionCreate, QuestionRead, QuestionUpdate
 from app.models.user import User
 from app.services import question_services
-from app.services.quiz_service import (
-    get_quiz,
-    QuizPermissionException,
-    QuizNotFoundException,
-)
 from app.services.question_services import QuestionNotFoundException
+from app.services.quiz_service import (
+    QuizNotFoundException,
+    QuizPermissionException,
+    get_quiz,
+)
 from app.utils.responses import get_responses
-from app.api.dependencies import get_current_active_user
 
 router = APIRouter(
-    prefix="/questions", 
-    tags=["questions"], 
-    dependencies=[Depends(get_current_active_user)], 
+    prefix="/questions",
+    tags=["questions"],
+    dependencies=[Depends(get_current_active_user)],
     # responses=get_responses([400, 401, 404]),
 )
 
@@ -51,9 +50,7 @@ async def create_question(
     try:
         quiz = await get_quiz(session=session, quiz_id=question_in.quiz_id)
         if quiz.owner_id != current_user.id:
-            raise QuizPermissionException(
-                "Not authorized to add a question to this quiz"
-            )
+            raise QuizPermissionException("Not authorized to add a question to this quiz")
     except QuizNotFoundException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except QuizPermissionException as e:
@@ -113,9 +110,7 @@ async def update_question(
         HTTPException: If the specified question does not exist or user is not authorized.
     """
     try:
-        db_question = await question_services.get_question(
-            session=session, question_id=question_id
-        )
+        db_question = await question_services.get_question(session=session, question_id=question_id)
         if not db_question:
             raise QuestionNotFoundException("Question not found")
 
@@ -159,9 +154,7 @@ async def delete_question(
         HTTPException: If the specified question does not exist or user is not authorized.
     """
     try:
-        db_question = await question_services.get_question(
-            session=session, question_id=question_id
-        )
+        db_question = await question_services.get_question(session=session, question_id=question_id)
         if not db_question:
             raise QuestionNotFoundException("Question not found")
 
