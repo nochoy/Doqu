@@ -1,5 +1,5 @@
-from typing import Annotated, List
 import uuid
+from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.exc import SQLAlchemyError
@@ -48,7 +48,7 @@ async def create_quiz(
 @router.get("/", response_model=List[QuizRead])
 async def read_quizzes(
     session: Annotated[AsyncSession, Depends(get_db)],
-    owner_id: Annotated[uuid.UUID, Query()] = None,
+    owner_id: Annotated[uuid.UUID | None, Query()] = None,
     category: Annotated[str | None, Query(max_length=50)] = None,
     difficulty: Annotated[int | None, Query(ge=1, le=5)] = None,
     offset: Annotated[int, Query(ge=0)] = 0,

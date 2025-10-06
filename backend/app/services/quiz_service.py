@@ -1,5 +1,5 @@
 import uuid
-from typing import Any, List, cast
+from typing import List
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
@@ -66,8 +66,8 @@ async def get_quizzes(
     owner_id: uuid.UUID | None = None,
     category: str | None = None,
     difficulty: int | None = None,
-    offset: int = 0, 
-    limit: int = 100
+    offset: int = 0,
+    limit: int = 100,
 ) -> List[Quiz]:
     """
     Get a list of quizzes with pagination and optional
@@ -95,7 +95,7 @@ async def get_quizzes(
         statement = statement.where(Quiz.difficulty == difficulty)
 
     # Pagination
-    statement = statement.order_by(Quiz.id).offset(offset).limit(limit)
+    statement = statement.order_by(Quiz.id).offset(offset).limit(limit)  # type: ignore[arg-type]
 
     result = await session.execute(statement)
     quizzes = result.scalars().all()
