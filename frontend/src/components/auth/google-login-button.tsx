@@ -46,9 +46,10 @@ export default function GoogleLoginButton({
         setCurrentUser(result);
 
         const redirectUrl = searchParams.get('redirect');
-        const safeRedirect = redirectUrl && redirectUrl.startsWith('/') && !redirectUrl.startsWith('//')
-          ? redirectUrl
-          : '/';
+        const safeRedirect =
+          redirectUrl && redirectUrl.startsWith('/') && !redirectUrl.startsWith('//')
+            ? redirectUrl
+            : '/';
         router.push(safeRedirect);
       } catch (error) {
         console.error('Error occurred during Google login: ', error);

@@ -77,7 +77,7 @@ function QuizList({ className, quizzes, selectedQuiz, onQuizSelect, isLoading }:
           <Fragment key={quiz.id}>
             <div
               onClick={() => handleQuizClick(quiz.id)}
-              onKeyDown={(e) => {
+              onKeyDown={e => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   handleQuizClick(quiz.id);
