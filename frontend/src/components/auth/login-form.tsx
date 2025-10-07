@@ -56,7 +56,10 @@ export default function LoginForm({ className, ...props }: React.ComponentProps<
       setCurrentUser(result);
 
       const redirectUrl = searchParams.get('redirect');
-      router.push(redirectUrl || '/');
+      const safeRedirect = redirectUrl && redirectUrl.startsWith('/') && !redirectUrl.startsWith('//')
+        ? redirectUrl
+        : '/';
+      router.push(safeRedirect);
     } catch (err) {
       console.error('Login error: ', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
