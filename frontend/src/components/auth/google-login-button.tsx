@@ -39,10 +39,17 @@ export default function GoogleLoginButton({
           throw new Error(result.detail || 'Google login failed');
         }
 
+        if (!result || typeof result !== 'object') {
+          throw new Error('Invalid response from server');
+        }
+
         setCurrentUser(result);
 
         const redirectUrl = searchParams.get('redirect');
-        router.push(redirectUrl || '/');
+        const safeRedirect = redirectUrl && redirectUrl.startsWith('/') && !redirectUrl.startsWith('//')
+          ? redirectUrl
+          : '/';
+        router.push(safeRedirect);
       } catch (error) {
         console.error('Error occurred during Google login: ', error);
         onError?.(error instanceof Error ? error.message : 'An error occurred during Google login');
