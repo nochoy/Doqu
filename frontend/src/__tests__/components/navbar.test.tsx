@@ -118,8 +118,7 @@ describe('Navbar', () => {
     it('renders join button without mobile styles in desktop mode', () => {
       render(<Navbar />);
 
-      const joinLink = screen.getByTestId('link-/join');
-      const joinButton = joinLink.querySelector('button');
+      const joinButton = screen.getByRole('link', { name: /join/i });
       expect(joinButton).not.toHaveClass('justify-start', 'w-full');
     });
 
@@ -159,17 +158,6 @@ describe('Navbar', () => {
 
       const hostButton = screen.getByRole('button', { name: /host/i });
       expect(hostButton).toHaveClass('justify-start');
-    });
-
-    it('renders join button with mobile styles', async () => {
-      const user = userEvent.setup();
-      render(<Navbar />);
-      const hamburgerButton = screen.getByRole('button', { name: /toggle navigation menu/i });
-      await user.click(hamburgerButton);
-
-      const joinLink = screen.getByTestId('link-/join');
-      const joinButton = joinLink.querySelector('button');
-      expect(joinButton).toHaveClass('justify-start', 'w-full');
     });
 
     it('opens mobile sidebar when hamburger menu is clicked', async () => {
@@ -287,7 +275,6 @@ describe('Navbar', () => {
 
       const joinLink = screen.getByTestId('link-/join');
       expect(joinLink).toHaveAttribute('href', '/join');
-      expect(joinLink).toContainElement(screen.getByRole('button', { name: /join/i }));
     });
 
     it('renders logo with correct link', () => {
@@ -407,7 +394,7 @@ describe('Navbar', () => {
       // Desktop buttons
       expect(screen.getByRole('button', { name: /host/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /create/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /join/i })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /join/i })).toBeInTheDocument();
 
       // Mobile buttons (same buttons, different styling)
       mockUseMediaQuery.mockReturnValue(true);
@@ -418,7 +405,7 @@ describe('Navbar', () => {
 
       expect(screen.getByRole('button', { name: /host/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /create/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /join/i })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /join/i })).toBeInTheDocument();
     });
   });
 });

@@ -46,8 +46,8 @@ window.getComputedStyle = (elt, pseudo) => {
         const value = target[prop];
         return value === '' || value === undefined || value === null ? 'none' : value;
       }
-      return target[prop];
-    },
+      const value = target[prop];
+      return typeof value === 'function' ? value.bind(target) : value;    },
   });
 };
 
