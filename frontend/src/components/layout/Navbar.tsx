@@ -57,12 +57,12 @@ export default function Navbar() {
   );
 
   const JoinRoomButton = (
-    <Link href="/join">
-      <Button variant="ghost" className={isMobile ? 'justify-start w-full' : ''}>
+    <Button variant="ghost" asChild className={isMobile ? 'justify-start w-full' : ''}>
+      <Link href="/join">
         {isMobile && <UsersIcon size={20} />}
         Join
-      </Button>
-    </Link>
+      </Link>
+    </Button>
   );
 
   const CreateQuizButton = (
