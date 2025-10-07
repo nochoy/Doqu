@@ -125,8 +125,10 @@ describe('HomeLayout', () => {
     const children = layoutDiv?.childNodes;
 
     expect(children).toHaveLength(3);
-    expect(children?.[0]).toContainHTML('data-testid="navbar"');
+    const headerElement = children?.[0] as HTMLElement | undefined;
+    expect(headerElement).toHaveAttribute('data-testid', 'navbar');
     expect(children?.[1]?.nodeName).toBe('MAIN');
-    expect(children?.[2]).toContainHTML('data-testid="footer"');
+    const footerElement = children?.[2] as HTMLElement | undefined;
+    expect(footerElement).toHaveAttribute('data-testid', 'footer');
   });
 });
