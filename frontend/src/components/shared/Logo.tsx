@@ -13,7 +13,7 @@ export default function Logo({ className = '' }: LogoProps) {
         src="/DoquLogo1.svg"
         alt="Doqu logo"
         width={60}
-        height={120}
+        height={30}
         className={cn('h-10 w-auto', className)}
       />
     </Link>
