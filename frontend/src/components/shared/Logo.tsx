@@ -2,7 +2,11 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 
-export default function Logo({ className = '' }) {
+interface LogoProps {
+  className?: string;
+}
+
+export default function Logo({ className = '' }: LogoProps) {
   return (
     <Link href="/" className="flex items-center mb-0">
       <Image
