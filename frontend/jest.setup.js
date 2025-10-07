@@ -40,10 +40,15 @@ Object.defineProperty(window, 'matchMedia', {
 const originalGetComputedStyle = window.getComputedStyle;
 window.getComputedStyle = (elt, pseudo) => {
   const style = originalGetComputedStyle(elt, pseudo);
-  if (style.transform === '' || style.transform === undefined || style.transform === null) {
-    style.transform = 'none';
-  }
-  return style;
+  return new Proxy(style, {
+    get(target, prop) {
+      if (prop === 'transform') {
+        const value = target[prop];
+        return value === '' || value === undefined || value === null ? 'none' : value;
+      }
+      return target[prop];
+    },
+  });
 };
 
 // Mock PointerEvent methods for libraries that rely on them (like vaul)
