@@ -77,6 +77,12 @@ function QuizList({ className, quizzes, selectedQuiz, onQuizSelect, isLoading }:
           <Fragment key={quiz.id}>
             <div
               onClick={() => handleQuizClick(quiz.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleQuizClick(quiz.id);
+                }
+              }}
               role="button"
               tabIndex={0}
               aria-pressed={selectedQuiz === quiz.id}
@@ -148,6 +154,7 @@ export default function QuizListModal({ isOpen, onOpenChange }: QuizListModalPro
     e.preventDefault();
     // TODO: Link to create room?
     onOpenChange(false);
+    setSelectedQuiz('');
     setError(null);
 
     console.log('Selected quiz ID: ', selectedQuiz);
@@ -196,7 +203,7 @@ export default function QuizListModal({ isOpen, onOpenChange }: QuizListModalPro
           </DrawerContent>
         </Drawer>
       ) : (
-        // Desktop Drawer
+        // Desktop Dialog
         <Dialog open={isOpen} onOpenChange={handleModalOpenChange}>
           <DialogContent className="flex flex-col max-h-[50vh]">
             <DialogHeader>
