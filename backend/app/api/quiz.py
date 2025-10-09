@@ -51,6 +51,7 @@ async def read_quizzes(
     owner_id: Annotated[uuid.UUID | None, Query()] = None,
     category: Annotated[str | None, Query(max_length=50)] = None,
     difficulty: Annotated[int | None, Query(ge=1, le=5)] = None,
+    search: Annotated[str | None, Query(max_length=100)] = None,
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 100,
 ) -> List[QuizRead]:
@@ -60,9 +61,10 @@ async def read_quizzes(
 
     Args:
         session (AsyncSession): The DB session injected by dependency
-        owner_id (UUID): Filter by quiz owner if provided
+        owner_id (UUID | None): Filter by quiz owner if provided
         category (str | None): Filter by category if provided
         difficulty (int | None): Filter by difficulty level (1-5) if provided
+        search (str | None): Search quiz name/description/category if provided
         offset (int): Number of quizzes to skip for pagination
         limit (int): Maximum number of quizzes to return
 
@@ -74,6 +76,7 @@ async def read_quizzes(
         owner_id=owner_id,
         category=category,
         difficulty=difficulty,
+        search=search,
         offset=offset,
         limit=limit,
     )

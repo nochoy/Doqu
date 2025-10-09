@@ -2,7 +2,7 @@ import uuid
 from typing import List
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
+from sqlmodel import or_, select
 
 from app.models.quiz import Quiz, QuizCreate, QuizUpdate
 
@@ -66,6 +66,7 @@ async def get_quizzes(
     owner_id: uuid.UUID | None = None,
     category: str | None = None,
     difficulty: int | None = None,
+    search: str | None = None,
     offset: int = 0,
     limit: int = 100,
 ) -> List[Quiz]:
@@ -74,10 +75,11 @@ async def get_quizzes(
     filtering on owner_id, category, and difficulty.
 
     Args:
-        session(AsyncSession): The DB session
+        session (AsyncSession): The DB session
         owner_id (uuid.UUID | None): Filter by owner ID if provided
         category (str | None): Filter by category if provided
         difficulty (int | None): Filter by difficulty if provided (1-5)
+        search (str | None): Search quiz name/description/category if provided
         offset (int): Number of quizzes to skip for pagination
         limit (int): Max number of quizzes to return
 
@@ -93,6 +95,17 @@ async def get_quizzes(
         statement = statement.where(Quiz.category == category)
     if difficulty is not None:
         statement = statement.where(Quiz.difficulty == difficulty)
+
+    # Search
+    if search:
+        search_term = f"%{search}%"
+        statement = statement.where(
+            or_(
+                Quiz.title.ilike(search_term),
+                Quiz.description.ilike(search_term),
+                Quiz.category.ilike(search_term),
+            )
+        )
 
     # Pagination
     statement = statement.order_by(Quiz.id).offset(offset).limit(limit)  # type: ignore[arg-type]
