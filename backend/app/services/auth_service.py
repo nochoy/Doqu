@@ -143,16 +143,18 @@ def verify_google_token(request: GoogleLogin) -> GoogleUserData:
             redirect_uri=redirect_uri,
         )
 
+        if not request.code:
+            raise ValueError("Authorization code is required")
+
         #  Exchange authorization code for credentials
         flow.fetch_token(code=request.code)
         credentials = flow.credentials
-
         decoded_token = id_token.verify_oauth2_token(
             credentials.id_token,
             google_requests.Request(),
             settings.GOOGLE_CLIENT_ID,
         )
-    except Exception as e:
+    except (ValueError, KeyError) as e:
         raise ValueError(f"Failed to verify Google token: {str(e)}")
 
     google_id = decoded_token.get("sub") or ""

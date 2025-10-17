@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, Poppins, Merriweather } from 'next/font/google';
 import './globals.css';
-import Providers from '@/components/providers';
+import Providers from '@/components/shared/providers';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const poppins = Poppins({

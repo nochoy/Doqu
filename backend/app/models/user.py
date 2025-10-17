@@ -123,6 +123,8 @@ class UserRead(UserBase):
     is_active: bool
     created_at: datetime
     updated_at: datetime
+    password: Optional[str] = Field(default=None, exclude=True)
+    google_id: Optional[str] = Field(default=None, exclude=True)
 
 
 class UserLogin(BaseModel):

@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import SignupForm from '@/components/auth/signup-form';
-import Providers from '@/components/providers';
+import Providers from '@/components/shared/providers';
 
 // Mock Next.js router
 const mockPush = jest.fn();

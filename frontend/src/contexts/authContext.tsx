@@ -36,6 +36,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } catch (err) {
       console.error('Check auth status error: ', err);
+      setCurrentUser(null);
     }
   }, []);
 
