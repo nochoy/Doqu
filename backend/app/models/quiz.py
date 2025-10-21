@@ -30,7 +30,9 @@ class Quiz(SQLModel, table=True):
         default_factory=lambda: datetime.now(timezone.utc),
     )
 
-    questions: List["Question"] = Relationship(back_populates="quiz")
+    questions: List["Question"] = Relationship(
+        back_populates="quiz", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
 
 
 # --- Request Models --- #

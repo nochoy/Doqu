@@ -87,6 +87,23 @@ async def get_quizzes(session: AsyncSession, skip: int = 0, limit: int = 100) ->
     return list(quizzes)
 
 
+async def get_quizzes_by_owner(session: AsyncSession, owner_id: uuid.UUID) -> List[Quiz]:
+    """
+    Get all quizzes owned by a specific user.
+
+    Args:
+        session (AsyncSession): The DB session
+        owner_id (uuid.UUID): The ID of the owner
+
+    Returns:
+        List[Quiz]: A list of quiz objects
+    """
+    statement = select(Quiz).where(Quiz.owner_id == owner_id)
+    result = await session.execute(statement)
+    quizzes = result.scalars().all()
+    return list(quizzes)
+
+
 async def update_quiz(
     session: AsyncSession, quiz_id: uuid.UUID, quiz_in: QuizUpdate, user_id: uuid.UUID
 ) -> Quiz:

@@ -2,6 +2,7 @@
 
 import { FormData, Question } from '@/types/question';
 import QuestionForm from './QuestionForm';
+import { authenticatedFetch } from '@/lib/fetch-wrapper';
 
 interface QuestionsUpdateFormProps {
   question: Question;
@@ -11,7 +12,7 @@ interface QuestionsUpdateFormProps {
 export default function QuestionsUpdateForm({ question, onClose }: QuestionsUpdateFormProps) {
   const onSubmit = async (data: FormData) => {
     try {
-      const response = await fetch(
+      const response = await authenticatedFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/questions/${question.id}`,
         {
           method: 'PATCH',

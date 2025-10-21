@@ -50,3 +50,15 @@ export const QuizSchema = z.object({
 });
 
 export type CreateQuizResponse = { id: string };
+
+// Define the Quiz interface to match the backend QuizRead model
+export interface Quiz {
+  id: string;
+  owner_id: string;
+  created_at: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  difficulty: number | null;
+  is_public: boolean;
+}

@@ -66,6 +66,25 @@ async def read_quizzes(
     return [QuizRead.model_validate(quiz) for quiz in quizzes]
 
 
+@router.get("/my-quizzes", response_model=List[QuizRead], responses=get_responses(401, 403))
+async def read_user_quizzes(
+    session: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_active_user)],
+) -> List[QuizRead]:
+    """
+    Get a list of quizzes owned by the current user.
+
+    Args:
+        session (AsyncSession): The DB session injected by dependency
+        current_user (User): The current authenticated user
+
+    Returns:
+        List[QuizRead]: List of quiz objects
+    """
+    quizzes = await quiz_service.get_quizzes_by_owner(session=session, owner_id=current_user.id)
+    return [QuizRead.model_validate(quiz) for quiz in quizzes]
+
+
 @router.get("/{quiz_id}", response_model=QuizReadWithQuestions, responses=get_responses(404))
 async def read_quiz(
     session: Annotated[AsyncSession, Depends(get_db)],

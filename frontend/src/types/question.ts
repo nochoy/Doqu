@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-
 /**
  * General template for creating schemas for questions.
  * @param question_text - The text of the question.
@@ -15,10 +14,16 @@ import { z } from 'zod';
  * Multiple Choice Schema
  */
 const mcSchema = z.object({
-  question_text: z.string().trim().min(1, 'Question title is required.').max(250, 'Max 250 characters.'),
+  quiz_id: z.string(),
+  question_text: z
+    .string()
+    .trim()
+    .min(1, 'Question title is required.')
+    .max(250, 'Max 250 characters.'),
   type: z.literal('MC'),
   time_limit: z.coerce.number().int().min(1, 'Time limit must be at least 1 second.'),
   explanation: z.string().trim().max(250, 'Max 250 characters.').optional(),
+  point_value: z.coerce.number().int().min(1, 'Point value must be at least 1.'),
   correct_answer: z.object({
     answer: z.string().optional(),
   }),
@@ -34,10 +39,16 @@ const mcSchema = z.object({
  * True False Schema
  */
 const tfSchema = z.object({
-  question_text: z.string().trim().min(1, 'Question title is required.').max(250, 'Max 250 characters.'),
+  quiz_id: z.string(),
+  question_text: z
+    .string()
+    .trim()
+    .min(1, 'Question title is required.')
+    .max(250, 'Max 250 characters.'),
   type: z.literal('TF'),
   time_limit: z.coerce.number().int().min(1, 'Time limit must be at least 1 second.'),
   explanation: z.string().trim().max(250, 'Max 250 characters.').optional(),
+  point_value: z.coerce.number().int().min(1, 'Point value must be at least 1.'),
   correct_answer: z.object({
     answer: z.string().optional(),
   }),
@@ -51,10 +62,12 @@ const tfSchema = z.object({
  * Select Multiple Schema
  */
 const smSchema = z.object({
+  quiz_id: z.string(),
   question_text: z.string().min(1, 'Question title is required.'),
   type: z.literal('SM'),
   time_limit: z.coerce.number().int().min(1, 'Time limit must be at least 1 second.'),
   explanation: z.string().trim().max(250, 'Max 250 characters.').optional(),
+  point_value: z.coerce.number().int().min(1, 'Point value must be at least 1.'),
   correct_answer: z.object({
     answers: z.array(z.string()).optional(),
   }),

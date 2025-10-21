@@ -4,9 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_active_user
 from app.main import app
+from app.models.question import QuestionCreate
 from app.models.quiz import QuizCreate, QuizUpdate
 from app.models.user import User, UserCreate
-from app.services import quiz_service, user_service
+from app.services import question_service, quiz_service, user_service
 
 # Added import for custom service exceptions
 from app.services.quiz_service import QuizNotFoundException, QuizPermissionException
@@ -438,3 +439,36 @@ async def test_service_remove_quiz_not_found_raises(session: AsyncSession):
     owner = await create_test_user(session)
     with pytest.raises(QuizNotFoundException):
         await quiz_service.remove_quiz(session=session, quiz_id=424242, user_id=owner.id)
+
+
+@pytest.mark.asyncio
+async def test_delete_quiz_with_questions_cascade(async_client: AsyncClient, session: AsyncSession):
+    """Tests that deleting a quiz also deletes its associated questions."""
+    authenticated_client = await get_authenticated_client(async_client, session)
+    quiz_response = await authenticated_client.post("/api/quizzes/", json={"title": "Quiz with Questions"})
+    quiz_id = quiz_response.json()["id"]
+
+    question_payload = {
+        "quiz_id": quiz_id,
+        "question_text": "What is the capital of France?",
+        "choices": [
+            {"choice_text": "Berlin", "is_correct": False},
+            {"choice_text": "Madrid", "is_correct": False},
+            {"choice_text": "Paris", "is_correct": True},
+            {"choice_text": "Rome", "is_correct": False},
+        ],
+    }
+    question_response = await authenticated_client.post("/api/questions/", json=question_payload)
+    assert question_response.status_code == 201
+    question_id = question_response.json()["id"]
+
+    delete_response = await authenticated_client.delete(f"/api/quizzes/{quiz_id}")
+    assert delete_response.status_code == 204
+
+    # Verify quiz is deleted
+    get_quiz_response = await authenticated_client.get(f"/api/quizzes/{quiz_id}")
+    assert get_quiz_response.status_code == 404
+
+    # Verify question is also deleted
+    get_question_response = await authenticated_client.get(f"/api/questions/{question_id}")
+    assert get_question_response.status_code == 404

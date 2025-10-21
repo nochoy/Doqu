@@ -76,13 +76,13 @@ class QuestionUpdate(SQLModel):
     Represents fields that can be updated for an existing question.
     """
 
-    question_text: Optional[str] = Field(default=None, min_length=1, max_length=250)
+    question_text: Optional[str] = Field(min_length=1, max_length=250, default=None)
     type: Optional[QuestionType] = None
-    time_limit: Optional[int] = Field(default=None, ge=1, le=60)
-    explanation: Optional[str] = Field(default=None, max_length=250)
+    time_limit: Optional[int] = Field(ge=1, le=60, default=None)
+    explanation: Optional[str] = Field(max_length=250, default=None)
     correct_answer: Optional[Dict[str, Any]] = None
     possible_answers: Optional[Dict[str, Any]] = None
-    point_value: Optional[int] = Field(default=None, ge=10, le=100)
+    point_value: Optional[int] = Field(ge=1, le=100, default=None)
 
 
 class QuestionRead(SQLModel):

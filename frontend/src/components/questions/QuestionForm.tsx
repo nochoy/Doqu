@@ -38,6 +38,7 @@ interface QuestionFormProps {
   buttonText: string;
   title: string;
   description: string;
+  quizId?: string;
 }
 
 export default function QuestionForm({
@@ -47,6 +48,7 @@ export default function QuestionForm({
   buttonText,
   title,
   description,
+  quizId,
 }: QuestionFormProps) {
   const {
     register,
@@ -56,14 +58,18 @@ export default function QuestionForm({
     watch,
   } = useForm<FormData>({
     resolver: zodResolver(questionSchema),
-    defaultValues: initialData || {
-      question_text: '',
-      type: 'MC',
-      time_limit: 30,
-      explanation: '',
-      correct_answer: { answer: '' },
-      possible_answers: { a: '', b: '', c: '', d: '' },
-    },
+    defaultValues: initialData
+      ? initialData
+      : {
+          quiz_id: quizId,
+          question_text: '',
+          type: 'MC',
+          time_limit: 30,
+          point_value: 1,
+          explanation: '',
+          correct_answer: { answer: '' },
+          possible_answers: { a: '', b: '', c: '', d: '' },
+        },
   });
 
   const questionType = watch('type');
@@ -116,8 +122,8 @@ export default function QuestionForm({
                   </p>
                 )}
               </div>
-              {/* Type / Time Limit*/}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Type / Time Limit / Point Value */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <Label htmlFor="type">Type</Label>
                   <Select
@@ -147,6 +153,19 @@ export default function QuestionForm({
                   {errors.time_limit && (
                     <p className="text-sm font-medium text-destructive">
                       {errors.time_limit.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="point_value">Point Value</Label>
+                  <Input
+                    id="point_value"
+                    type="number"
+                    {...register('point_value', { valueAsNumber: true })}
+                  />
+                  {errors.point_value && (
+                    <p className="text-sm font-medium text-destructive">
+                      {errors.point_value.message}
                     </p>
                   )}
                 </div>
