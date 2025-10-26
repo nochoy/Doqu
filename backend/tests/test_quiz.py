@@ -185,10 +185,10 @@ async def test_read_quizzes_pagination_edge_cases(async_client: AsyncClient, ses
     for i in range(5):
         await authenticated_client.post("/api/quizzes/", json={"title": f"Quiz {i}"})
 
-    response = await authenticated_client.get("/api/quizzes/?skip=-5&limit=2")
+    response = await authenticated_client.get("/api/quizzes/?offset=-5&limit=2")
     assert response.status_code == 422
 
-    response = await authenticated_client.get("/api/quizzes/?skip=10&limit=5")
+    response = await authenticated_client.get("/api/quizzes/?offset=10&limit=5")
     assert response.status_code == 200
     assert len(response.json()) == 0
 
@@ -345,15 +345,15 @@ async def test_service_get_quizzes_ordering_and_clamp(session: AsyncSession):
     q3 = await quiz_service.create_quiz(session, QuizCreate(title="Q3"), owner.id)
 
     # negative skip should clamp to 0; huge limit should clamp to <= 100
-    rows = await quiz_service.get_quizzes(session, skip=-10, limit=10_000)
+    rows = await quiz_service.get_quizzes(session, offset=-10, limit=10_000)
     assert [r.id for r in rows][-3:] == [q1.id, q2.id, q3.id]
 
     # nominal pagination
-    rows2 = await quiz_service.get_quizzes(session, skip=1, limit=2)
+    rows2 = await quiz_service.get_quizzes(session, offset=1, limit=2)
     assert [r.id for r in rows2] == [q2.id, q3.id]
 
     # limit=0 -> empty
-    rows3 = await quiz_service.get_quizzes(session, skip=0, limit=0)
+    rows3 = await quiz_service.get_quizzes(session, offset=0, limit=0)
     assert rows3 == []
 
 

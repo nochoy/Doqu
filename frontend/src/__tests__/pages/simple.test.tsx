@@ -2,11 +2,11 @@ import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-import Home from '@/app/page';
+import Home from '@/app/(main)/page';
 import LoginPage from '@/app/login/page';
 import SignupPage from '@/app/signup/page';
-import Providers from '@/components/providers';
-import CreateQuizPage from '@/app/quiz/create/page';
+import Providers from '@/components/shared/providers';
+import CreateQuizPage from '@/app/(main)/quiz/create/page';
 
 describe('Home', () => {
   it('renders a heading', () => {

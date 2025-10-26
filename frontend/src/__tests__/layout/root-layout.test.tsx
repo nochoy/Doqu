@@ -4,7 +4,7 @@ import '@testing-library/jest-dom';
 import RootLayout from '@/app/layout';
 
 // Mock the Providers component
-jest.mock('@/components/providers', () => {
+jest.mock('@/components/shared/providers', () => {
   return function MockProviders({ children }: { children: React.ReactNode }) {
     return <div data-testid="providers">{children}</div>;
   };

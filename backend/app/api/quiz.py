@@ -48,21 +48,35 @@ async def create_quiz(
 @router.get("/", response_model=List[QuizRead])
 async def read_quizzes(
     session: Annotated[AsyncSession, Depends(get_db)],
-    skip: Annotated[int, Query(ge=0)] = 0,
+    owner_id: Annotated[uuid.UUID | None, Query()] = None,
+    category: Annotated[str | None, Query(max_length=50)] = None,
+    difficulty: Annotated[int | None, Query(ge=1, le=5)] = None,
+    offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 100,
 ) -> List[QuizRead]:
     """
-    Get a list of quizzes with pagination.
+    Get a list of quizzes with pagination and optional
+    filtering on `owner_id`, category, and/or difficulty.
 
     Args:
         session (AsyncSession): The DB session injected by dependency
-        skip (int): Number of quizzes to skip for pagination
+        owner_id (UUID): Filter by quiz owner if provided
+        category (str | None): Filter by category if provided
+        difficulty (int | None): Filter by difficulty level (1-5) if provided
+        offset (int): Number of quizzes to skip for pagination
         limit (int): Maximum number of quizzes to return
 
     Returns:
         List[QuizRead]: List of quiz objects
     """
-    quizzes = await quiz_service.get_quizzes(session=session, skip=skip, limit=limit)
+    quizzes = await quiz_service.get_quizzes(
+        session=session,
+        owner_id=owner_id,
+        category=category,
+        difficulty=difficulty,
+        offset=offset,
+        limit=limit,
+    )
     return [QuizRead.model_validate(quiz) for quiz in quizzes]
 
 

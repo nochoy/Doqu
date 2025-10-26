@@ -15,6 +15,7 @@ import { SignupFormInput, SignupFormSchema } from '@/types/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { EyeIcon, EyeSlashIcon } from '@phosphor-icons/react';
 import { useAuth } from '@/hooks/useAuth';
+import Logo from '../shared/Logo';
 
 export default function SignupForm({ className, ...props }: React.ComponentProps<'div'>) {
   const [showPassword, setShowPassword] = useState(false);
@@ -64,7 +65,8 @@ export default function SignupForm({ className, ...props }: React.ComponentProps
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
-        <CardHeader className="text-center">
+        <CardHeader className="flex flex-col items-center">
+          <Logo />
           <CardTitle>Welcome to Doqu!</CardTitle>
           <CardDescription>Create your Doqu account</CardDescription>
         </CardHeader>
