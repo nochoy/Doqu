@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -19,36 +21,44 @@ import { authenticatedFetch } from '@/lib/fetch-wrapper';
 
 /**
  * @description This page displays a list of all the quizzes for the logged-in user.
- * It also provides buttons to create, update, and delete quizzes.
+ * It also provides buttons to create, view/update, and delete quizzes.
  * @returns A React component that renders a list of quizzes.
  */
 export default function QuizzesPage() {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [error, setError] = useState<string | null>(null);
-
-  const fetchQuizzes = async () => {
-    try {
-      setError(null);
-      const response = await authenticatedFetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/quizzes/my-quizzes`
-      );
-      if (!response.ok) {
-        throw new Error('Failed to fetch quizzes');
-      }
-      const data = await response.json();
-      setQuizzes(data);
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('An unknown error occurred');
-      }
-    }
-  };
+  const { currentUser, userId } = useAuth();
+  const searchParams = useSearchParams();
+  const ownerId = searchParams.get('ownerId');
 
   useEffect(() => {
+    const fetchQuizzes = async () => {
+      try {
+        setError(null);
+        let url = `${process.env.NEXT_PUBLIC_API_URL}/api/quizzes/`;
+        if (ownerId) {
+          url += `?owner_id=${ownerId}`;
+        }
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error('Failed to fetch quizzes');
+        }
+        let data = await response.json();
+        if (!ownerId) {
+          data = data.filter((quiz: Quiz) => quiz.is_public);
+        }
+        setQuizzes(data);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unknown error occurred');
+        }
+      }
+    };
+
     fetchQuizzes();
-  }, []);
+  }, [currentUser, ownerId]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -61,7 +71,7 @@ export default function QuizzesPage() {
       if (!response.ok) {
         throw new Error('Failed to delete quiz');
       }
-      fetchQuizzes();
+      setQuizzes(quizzes.filter(quiz => quiz.id !== id));
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -75,9 +85,6 @@ export default function QuizzesPage() {
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl font-bold">Quiz Manager</h1>
-        <Link href="/quiz/create" passHref>
-          <Button>Create Quiz</Button>
-        </Link>
       </div>
       <Separator className="my-4" />
 
@@ -109,19 +116,24 @@ export default function QuizzesPage() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[200px]">
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                  <Link href={`/questions?quizId=${quiz.id}`} passHref>
+                  <Link
+                    href={`/questions?quizId=${quiz.id}${ownerId ? `&ownerId=${ownerId}` : ''}`}
+                    passHref
+                  >
                     <DropdownMenuItem>
                       <Edit className="mr-2 h-4 w-4" />
-                      Update
+                      View
                     </DropdownMenuItem>
                   </Link>
-                  <DropdownMenuItem
-                    onClick={() => handleDelete(quiz.id)}
-                    className="text-destructive"
-                  >
-                    <Trash className="mr-2 h-4 w-4" />
-                    Delete
-                  </DropdownMenuItem>
+                  {quiz.owner_id === userId && (
+                    <DropdownMenuItem
+                      onClick={() => handleDelete(quiz.id)}
+                      className="text-destructive"
+                    >
+                      <Trash className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

@@ -7,6 +7,7 @@ export interface AuthContextType {
   currentUser: User | null;
   setCurrentUser: React.Dispatch<React.SetStateAction<User | null>>;
   isAuthenticated: boolean;
+  userId: string | undefined;
   checkAuthStatus: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -16,6 +17,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const isAuthenticated = currentUser !== null;
+  const userId = currentUser?.id;
 
   const checkAuthStatus = useCallback(async () => {
     try {
@@ -56,7 +58,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ currentUser, setCurrentUser, isAuthenticated, checkAuthStatus, logout }}
+      value={{
+        currentUser,
+        setCurrentUser,
+        isAuthenticated,
+        userId,
+        checkAuthStatus,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>

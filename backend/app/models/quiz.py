@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, List, Optional
 
 from pydantic import field_validator
 from sqlalchemy import Column, DateTime, func
-from sqlmodel import Field, SQLModel, Relationship
+from sqlmodel import Field, Relationship, SQLModel
 
 from .question import Question, QuestionRead
 

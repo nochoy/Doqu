@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 import QuestionsCreateForm from '@/components/questions/QuestionsCreateForm';
 import QuestionsUpdateForm from '@/components/questions/QuestionsUpdateForm';
 import QuizUpdateForm from '@/components/quiz/QuizUpdateForm';
@@ -36,6 +37,7 @@ import { authenticatedFetch } from '@/lib/fetch-wrapper';
  */
 export default function CreateQuestionsPage() {
   const searchParams = useSearchParams();
+  const { userId } = useAuth();
   const quizId = searchParams.get('quizId');
   const ownerId = searchParams.get('ownerId');
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
@@ -117,7 +119,7 @@ export default function CreateQuestionsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         {/* <h1 className="text-2xl font-bold">{quiz ? quiz.title : 'Quiz'}</h1> */}
         <h1 className="text-2xl font-bold">{'Quiz Manager'}</h1>
-        {ownerId && (
+        {ownerId === userId && (
           <div className="flex gap-2">
             {quiz && (
               <Button onClick={() => setIsQuizUpdateFormOpen(true)} disabled={!quizId}>
@@ -203,7 +205,7 @@ export default function CreateQuestionsPage() {
                 </Tooltip>
                 <Badge variant="outline">{question.type}</Badge>
               </div>
-              {ownerId && (
+              {ownerId === userId && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm">
