@@ -2,6 +2,7 @@ import uuid
 from typing import List
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
 from app.models.quiz import Quiz, QuizCreate, QuizUpdate
@@ -41,13 +42,13 @@ async def create_quiz(session: AsyncSession, quiz_in: QuizCreate, owner_id: uuid
     return db_quiz
 
 
-async def get_quiz(session: AsyncSession, quiz_id: int) -> Quiz:
+async def get_quiz(session: AsyncSession, quiz_id: uuid.UUID) -> Quiz:
     """
     Get a single quiz by its ID.
 
     Args:
         session (AsyncSession): The DB session
-        quiz_id (int): The ID of the quiz to retrieve
+        quiz_id (uuid.UUID): The ID of the quiz to retrieve
 
     Returns:
         Quiz: Quiz object
@@ -55,7 +56,9 @@ async def get_quiz(session: AsyncSession, quiz_id: int) -> Quiz:
     Raises:
         QuizNotFoundException: If quiz id not found
     """
-    db_quiz = await session.get(Quiz, quiz_id)
+    statement = select(Quiz).where(Quiz.id == quiz_id).options(selectinload(Quiz.questions))
+    result = await session.execute(statement)
+    db_quiz = result.scalars().first()
     if not db_quiz:
         raise QuizNotFoundException("Quiz not found.")
     return db_quiz
@@ -102,15 +105,32 @@ async def get_quizzes(
     return list(quizzes)
 
 
+async def get_quizzes_by_owner(session: AsyncSession, owner_id: uuid.UUID) -> List[Quiz]:
+    """
+    Get all quizzes owned by a specific user.
+
+    Args:
+        session (AsyncSession): The DB session
+        owner_id (uuid.UUID): The ID of the owner
+
+    Returns:
+        List[Quiz]: A list of quiz objects
+    """
+    statement = select(Quiz).where(Quiz.owner_id == owner_id)
+    result = await session.execute(statement)
+    quizzes = result.scalars().all()
+    return list(quizzes)
+
+
 async def update_quiz(
-    session: AsyncSession, quiz_id: int, quiz_in: QuizUpdate, user_id: uuid.UUID
+    session: AsyncSession, quiz_id: uuid.UUID, quiz_in: QuizUpdate, user_id: uuid.UUID
 ) -> Quiz:
     """
     Update an existing quiz.
 
     Args:
         session (AsyncSession): The DB session
-        quiz_id (int): Existing quiz id to update
+        quiz_id (uuid.UUID): Existing quiz id to update
         quiz_in (QuizUpdate): Pydantic model with fields to update
 
     Returns:
@@ -139,13 +159,13 @@ async def update_quiz(
     return db_quiz
 
 
-async def remove_quiz(session: AsyncSession, quiz_id: int, user_id: uuid.UUID) -> None:
+async def remove_quiz(session: AsyncSession, quiz_id: uuid.UUID, user_id: uuid.UUID) -> None:
     """
     Delete a quiz from the database.
 
     Args:
         session (AsyncSession): The DB session
-        quiz_id (int): Quiz id to delete
+        quiz_id (uuid.UUID): Quiz id to delete
 
     Raises:
         QuizNotFoundException: If quiz id not found

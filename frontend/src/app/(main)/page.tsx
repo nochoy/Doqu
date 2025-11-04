@@ -9,9 +9,12 @@ import { useEffect } from 'react';
 export default function Home() {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, userId } = useAuth();
 
   useEffect(() => {
+    if (userId) {
+      console.log('Current User ID:', userId);
+    }
     const createQuiz = async () => {
       const quizInfo = {
         title: 'Test quiz title',
@@ -50,7 +53,7 @@ export default function Home() {
       }
     };
     createQuiz();
-  }, [router, pathname, isAuthenticated]);
+  }, [router, pathname, isAuthenticated, userId]);
 
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">

@@ -1,0 +1,102 @@
+import uuid
+
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
+
+from app.models.question import Question, QuestionCreate, QuestionUpdate
+
+
+class QuestionNotFoundException(Exception):
+    """Raised when a question is not found in the database."""
+
+    pass
+
+
+async def create_question(session: AsyncSession, question_in: QuestionCreate) -> Question:
+    """
+    Creates a new question in the database.
+
+    Args:
+        session (AsyncSession): The SQLAlchemy async session.
+        question_in (QuestionCreate): Data for creating the new question.
+
+    Returns:
+        Question: The newly created question.
+    """
+    question_data = question_in.model_dump()
+    db_question = Question(**question_data)
+
+    session.add(db_question)
+    await session.commit()
+    await session.refresh(db_question)
+    return db_question
+
+
+async def get_question(session: AsyncSession, question_id: uuid.UUID) -> Question | None:
+    """
+    Retrieves a question from the database by its ID.
+
+    Args:
+        session (AsyncSession): The SQLAlchemy async session.
+        question_id (uuid.UUID): The unique identifier of the question.
+
+    Returns:
+        Question or None: The retrieved question, or None if not found.
+    """
+    return await session.get(Question, question_id)
+
+
+async def get_all_questions(session: AsyncSession, quiz_id: uuid.UUID) -> list[Question]:
+    """
+    Retrieves all questions from the database for a specific quiz.
+
+    Args:
+        session (AsyncSession): The SQLAlchemy async session.
+        quiz_id (uuid.UUID): The ID of the quiz.
+
+    Returns:
+        list[Question]: A list of all questions for the specified quiz.
+    """
+    question_list = await session.execute(select(Question).where(Question.quiz_id == quiz_id))
+    return list(question_list.scalars().all())
+
+
+async def update_question(
+    session: AsyncSession, db_question: Question, question_in: QuestionUpdate
+) -> Question:
+    """
+    Updates an existing question in the database.
+
+    Args:
+        session (AsyncSession): The SQLAlchemy async session.
+        db_question (Question): The existing question to be updated.
+        question_in (QuestionUpdate): Updated data for the question.
+
+    Returns:
+        Question: The updated question.
+    """
+    update_data = question_in.model_dump(exclude_unset=True)
+    db_question.sqlmodel_update(update_data)
+
+    session.add(db_question)
+    await session.commit()
+    await session.refresh(db_question)
+    return db_question
+
+
+async def remove_question(session: AsyncSession, question_id: uuid.UUID) -> None:
+    """
+    Deletes a question from the database by its ID.
+
+    Args:
+        session (AsyncSession): The SQLAlchemy async session.
+        question_id (uuid.UUID): The unique identifier of the question to be deleted.
+
+    Note:
+        Silently ignores if the question does not exist.
+    """
+    db_question = await get_question(session=session, question_id=question_id)
+    if not db_question:
+        raise QuestionNotFoundException("Question not found")
+    await session.delete(db_question)
+    await session.commit()

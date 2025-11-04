@@ -2,12 +2,11 @@
 
 import { useState, FormEvent, ChangeEvent } from 'react';
 import { authenticatedFetch } from '@/lib/fetch-wrapper';
-import { XIcon } from '@phosphor-icons/react';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Textarea } from '../ui/textarea';
 import {
   Select,
   SelectContent,
@@ -15,12 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import OptionToggle from '@/components/ui/OptionToggle';
-import { TITLE_MAX_LENGTH, DESC_MAX_LENGTH } from '@/lib/constants';
-import { QuizCreateData, QuizSchema, CreateQuizResponse, categoryOptions } from '@/types/quiz';
+import OptionToggle from '../ui/OptionToggle';
+import { XIcon } from '@phosphor-icons/react';
+import { TITLE_MAX_LENGTH, DESC_MAX_LENGTH } from '../../lib/constants';
+import { QuizModalData, QuizSchema, categoryOptions, Quiz } from '@/types/quiz';
 
-interface QuizCreateModalProps {
+interface QuizUpdateFormProps {
   onClose: () => void;
+  quiz: Quiz;
 }
 
 const difficultyOptions = [
@@ -31,13 +32,13 @@ const difficultyOptions = [
   { value: 5, label: '5 (Hardest)' },
 ];
 
-export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
+export default function QuizUpdateForm({ onClose, quiz }: QuizUpdateFormProps) {
   const [formData, setFormData] = useState<QuizModalData>({
-    title: '',
-    description: '',
-    category: '',
-    difficulty: null,
-    is_public: true,
+    title: quiz.title,
+    description: quiz.description || '',
+    category: quiz.category || '',
+    difficulty: quiz.difficulty || null,
+    is_public: quiz.is_public,
   });
   const [validationErrors, setValidationErrors] = useState<Record<string, string | undefined>>({});
   const [error, setError] = useState<string | null>(null);
@@ -61,10 +62,10 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
       inputValue = value === '' ? null : Number(value);
     }
 
-    setFormData(prev => ({ ...prev, [name as keyof QuizCreateData]: inputValue }));
+    setFormData(prev => ({ ...prev, [name as keyof QuizModalData]: inputValue }));
   };
 
-  const handleSelectChange = (name: keyof QuizCreateData) => (value: string) => {
+  const handleSelectChange = (name: keyof QuizModalData) => (value: string) => {
     if (validationErrors[name as string]) {
       setValidationErrors(prev => ({ ...prev, [name as string]: undefined }));
     }
@@ -100,7 +101,7 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
 
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-      const endpoint = `${baseUrl}/api/quizzes/`;
+      const endpoint = `${baseUrl}/api/quizzes/${quiz.id}`;
       const raw = validationResult.data;
       const payload: Partial<typeof raw> = {
         ...raw,
@@ -109,17 +110,15 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
       };
 
       const response = await authenticatedFetch(endpoint, {
-        method: 'POST',
+        method: 'PATCH',
         body: JSON.stringify(payload),
         headers: {
           'Content-Type': 'application/json',
         },
       });
 
-      // const result = await response.json();
-
       if (!response.ok) {
-        let msg = 'Failed to create quiz. Please try again.';
+        let msg = 'Failed to update quiz. Please try again.';
         const contentType = response.headers.get('content-type');
 
         if (contentType && contentType.includes('application/json')) {
@@ -133,22 +132,7 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
 
         throw new Error(msg);
       }
-
-      //   console.log('Created Quiz: ', result);
-      // } catch (err) {
-      //   console.error('Create Quiz error: ', err);
-
-      //   if (err instanceof Error && err.message === 'Unauthorized') {
-      //     console.log('UNAUTHORIZED, redirecting to login page');
-      //   }
-      // }
-
-      const newQuiz = (await response.json()) as CreateQuizResponse;
-      if (newQuiz?.id != null) {
-        // router.push(`/quiz/${newQuiz.id}/edit`);
-      } else {
-        throw new Error('Quiz created but response did not include an id.');
-      }
+      onClose();
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -183,7 +167,7 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
           <XIcon size={24} className="text-muted-foreground" />
         </Button>
         <h2 id="quiz-settings-title" className="text-xl font-semibold mb-6 text-left">
-          Create a Quiz
+          Update Quiz
         </h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Title */}
@@ -324,7 +308,7 @@ export default function QuizCreateModal({ onClose }: QuizCreateModalProps) {
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : 'Create'}
+              {isLoading ? 'Saving...' : 'Update'}
             </Button>
           </div>
         </form>

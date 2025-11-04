@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_active_user
 from app.db.session import get_db
-from app.models.quiz import QuizCreate, QuizRead, QuizUpdate
+from app.models.quiz import QuizCreate, QuizRead, QuizReadWithQuestions, QuizUpdate
 from app.models.user import User
 from app.services import quiz_service
 from app.services.quiz_service import QuizNotFoundException, QuizPermissionException
@@ -80,11 +80,11 @@ async def read_quizzes(
     return [QuizRead.model_validate(quiz) for quiz in quizzes]
 
 
-@router.get("/{quiz_id}", response_model=QuizRead, responses=get_responses(404))
+@router.get("/{quiz_id}", response_model=QuizReadWithQuestions, responses=get_responses(404))
 async def read_quiz(
     session: Annotated[AsyncSession, Depends(get_db)],
-    quiz_id: Annotated[int, Path(ge=1)],
-) -> QuizRead:
+    quiz_id: Annotated[uuid.UUID, Path()],
+) -> QuizReadWithQuestions:
     """
     Get a single quiz by its ID.
 
@@ -102,13 +102,13 @@ async def read_quiz(
         db_quiz = await quiz_service.get_quiz(session=session, quiz_id=quiz_id)
     except QuizNotFoundException:
         raise HTTPException(status_code=404, detail="Quiz not found") from None
-    return QuizRead.model_validate(db_quiz)
+    return QuizReadWithQuestions.model_validate(db_quiz)
 
 
 @router.patch("/{quiz_id}", response_model=QuizRead, responses=get_responses(404, 403, 401))
 async def update_quiz(
     session: Annotated[AsyncSession, Depends(get_db)],
-    quiz_id: Annotated[int, Path(ge=1)],
+    quiz_id: Annotated[uuid.UUID, Path()],
     quiz_in: QuizUpdate,
     current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> QuizRead:
@@ -146,7 +146,7 @@ async def update_quiz(
 @router.delete("/{quiz_id}", status_code=204, responses=get_responses(404, 403, 401))
 async def delete_quiz(
     session: Annotated[AsyncSession, Depends(get_db)],
-    quiz_id: Annotated[int, Path(ge=1)],
+    quiz_id: Annotated[uuid.UUID, Path()],
     current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> None:
     """
